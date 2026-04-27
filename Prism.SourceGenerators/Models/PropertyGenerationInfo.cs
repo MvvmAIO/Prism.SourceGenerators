@@ -1,5 +1,6 @@
 using System;
 using Microsoft.CodeAnalysis;
+using Prism.SourceGenerators.Helpers;
 
 namespace Prism.SourceGenerators.Models;
 
@@ -13,6 +14,7 @@ namespace Prism.SourceGenerators.Models;
 /// <param name="IsPartialProperty">Whether this is a partial property declaration (uses <c>field</c> keyword).</param>
 /// <param name="DeclaredAccessibility">The declared accessibility of the property (used for partial property generation).</param>
 /// <param name="SetterAccessibility">The declared accessibility of the setter (e.g. <c>private set</c>). <see cref="Accessibility.NotApplicable"/> when same as property.</param>
+/// <param name="NotifyPropertyChangedFor">Property names to also raise <c>PropertyChanged</c> for when this property changes.</param>
 internal sealed record PropertyGenerationInfo(
     HierarchyInfo Hierarchy,
     string FieldName,
@@ -20,4 +22,5 @@ internal sealed record PropertyGenerationInfo(
     string FieldType,
     bool IsPartialProperty,
     Accessibility DeclaredAccessibility,
-    Accessibility SetterAccessibility) : IEquatable<PropertyGenerationInfo>;
+    Accessibility SetterAccessibility,
+    EquatableArray<string> NotifyPropertyChangedFor) : IEquatable<PropertyGenerationInfo>;

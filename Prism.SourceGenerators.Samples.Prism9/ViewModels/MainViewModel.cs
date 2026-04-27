@@ -8,12 +8,23 @@ namespace Prism.SourceGenerators.Samples.Prism9.ViewModels;
 /// <summary>
 /// Prism 9.0 sample ViewModel.
 /// Demonstrates [DelegateCommand], [AsyncDelegateCommand], [ObservesProperty],
+/// [NotifyPropertyChangedFor], OnChanged partial methods,
 /// and C# 14 partial property + field keyword support.
 /// AsyncDelegateCommand is provided natively by Prism.Core 9.0.537.
 /// </summary>
 public partial class MainViewModel : BindableBase
 {
     // --- [ObservableProperty] on partial properties (C# 14, field keyword) ---
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FullName))]
+    public partial string FirstName { get; set; } = "";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FullName))]
+    public partial string LastName { get; set; } = "";
+
+    public string FullName => $"{FirstName} {LastName}";
 
     [ObservableProperty]
     public partial string Title { get; set; } = "Hello Prism 9.0 Source Generators!";
@@ -26,6 +37,13 @@ public partial class MainViewModel : BindableBase
 
     [ObservableProperty]
     public partial string StatusMessage { get; set; } = "";
+
+    // OnChanged partial methods are auto-generated.
+    // Implement them to react to property changes:
+    partial void OnCounterChanged(int value)
+    {
+        StatusMessage = $"Counter changed to {value}";
+    }
 
     // --- [DelegateCommand] examples ---
     // With LangVersion >= 14, command properties are generated using the 'field' keyword:
