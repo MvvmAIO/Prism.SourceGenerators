@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Prism.SourceGenerators.Diagnostics;
+using Prism.SourceGenerators.Extensions;
 using Prism.SourceGenerators.Helpers;
 using Prism.SourceGenerators.Models;
 
@@ -160,7 +161,7 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
         HierarchyInfo hierarchy = HierarchyInfo.From(containingType);
 
         return new Result<PropertyGenerationInfo>(
-            new PropertyGenerationInfo(hierarchy, fieldName, propertyName, fieldType, IsPartialProperty: false),
+            new PropertyGenerationInfo(hierarchy, fieldName, propertyName, fieldType, IsPartialProperty: false, Accessibility.Public),
             ImmutableArray<DiagnosticInfo>.Empty);
     }
 
@@ -207,7 +208,7 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
         HierarchyInfo hierarchy = HierarchyInfo.From(containingType);
 
         return new Result<PropertyGenerationInfo>(
-            new PropertyGenerationInfo(hierarchy, propertyName, propertyName, fieldType, IsPartialProperty: true),
+            new PropertyGenerationInfo(hierarchy, propertyName, propertyName, fieldType, IsPartialProperty: true, propertySymbol.DeclaredAccessibility),
             ImmutableArray<DiagnosticInfo>.Empty);
     }
 
@@ -262,9 +263,9 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
                 PropertyDeclaration(
                     IdentifierName(info.FieldType),
                     Identifier(info.PropertyName))
-                .AddModifiers(
-                    Token(SyntaxKind.PublicKeyword),
-                    Token(SyntaxKind.PartialKeyword))
+                .WithModifiers(
+                    info.DeclaredAccessibility.ToSyntaxTokenList()
+                        .Add(Token(SyntaxKind.PartialKeyword)))
                 .AddAccessorListAccessors(
                     AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
                         .WithExpressionBody(ArrowExpressionClause(IdentifierName("field")))

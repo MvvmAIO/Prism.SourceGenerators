@@ -1,4 +1,5 @@
 using System;
+using Microsoft.CodeAnalysis;
 
 namespace Prism.SourceGenerators.Models;
 
@@ -10,9 +11,11 @@ namespace Prism.SourceGenerators.Models;
 /// <param name="PropertyName">The generated property name.</param>
 /// <param name="FieldType">The fully qualified type name.</param>
 /// <param name="IsPartialProperty">Whether this is a partial property declaration (uses <c>field</c> keyword).</param>
+/// <param name="DeclaredAccessibility">The declared accessibility of the property (used for partial property generation).</param>
 internal sealed record PropertyGenerationInfo(
     HierarchyInfo Hierarchy,
     string FieldName,
     string PropertyName,
     string FieldType,
-    bool IsPartialProperty) : IEquatable<PropertyGenerationInfo>;
+    bool IsPartialProperty,
+    Accessibility DeclaredAccessibility) : IEquatable<PropertyGenerationInfo>;
