@@ -109,7 +109,10 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
                     /// <param name="otherPropertyNames">The names of other properties to also notify.</param>
                     public NotifyPropertyChangedForAttribute(string propertyName, params string[] otherPropertyNames)
                     {
-                        PropertyNames = new[] { propertyName }.Concat(otherPropertyNames).ToArray();
+                        var names = new string[otherPropertyNames.Length + 1];
+                        names[0] = propertyName;
+                        otherPropertyNames.CopyTo(names, 1);
+                        PropertyNames = names;
                     }
 
                     /// <summary>
