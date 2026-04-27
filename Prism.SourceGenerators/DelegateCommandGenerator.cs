@@ -156,7 +156,7 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
 
         RegisterDiagnosticsAndCommands(context, delegateCommandInfos);
 
-        // --- [AsyncDelegateCommand] pipeline ---
+        // --- [AsyncDelegateCommand] pipeline (AllowMultiple=true, one command per attribute) ---
         IncrementalValuesProvider<Result<CommandGenerationInfo>> asyncCommandInfos =
             context.SyntaxProvider
                 .ForAttributeWithMetadataName(
@@ -165,7 +165,8 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
                     {
                         Parent: ClassDeclarationSyntax or RecordDeclarationSyntax
                     },
-                    static (context, token) => ExtractAsyncDelegateCommandInfo(context, token));
+                    static (context, token) => ExtractAsyncDelegateCommandInfos(context, token))
+                .SelectMany(static (results, _) => results);
 
         RegisterDiagnosticsAndCommands(context, asyncCommandInfos);
 
@@ -284,7 +285,7 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
             ImmutableArray<DiagnosticInfo>.Empty);
     }
 
-    private static Result<CommandGenerationInfo> ExtractAsyncDelegateCommandInfo(
+    private static ImmutableArray<Result<CommandGenerationInfo>> ExtractAsyncDelegateCommandInfos(
         GeneratorAttributeSyntaxContext context, System.Threading.CancellationToken token)
     {
         IMethodSymbol methodSymbol = (IMethodSymbol)context.TargetSymbol;
@@ -292,74 +293,76 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
 
         if (!IsPartialType(containingType, token))
         {
-            return CreateNonPartialDiagnostic(containingType);
+            return ImmutableArray.Create(CreateNonPartialDiagnostic(containingType));
         }
 
-        // [AsyncDelegateCommand] is always async
         string? parameterType = ExtractParameterType(methodSymbol, isAsync: true);
         string methodName = methodSymbol.Name;
-        string? commandName = null;
-        string? canExecute = null;
-        double? cancelAfterMicroseconds = null;
-        string? catchHandler = null;
-        string? cancellationTokenSourceFactory = null;
-        bool enableParallelExecution = false;
+        ImmutableArray<string> observesProperties = CollectObservesProperties(methodSymbol);
+        bool hasAsyncDelegateCommand = context.SemanticModel.Compilation
+            .GetTypeByMetadataName("Prism.Commands.AsyncDelegateCommand") is not null;
+        HierarchyInfo hierarchy = HierarchyInfo.From(containingType);
+
+        ImmutableArray<Result<CommandGenerationInfo>>.Builder builder =
+            ImmutableArray.CreateBuilder<Result<CommandGenerationInfo>>();
 
         foreach (AttributeData attr in methodSymbol.GetAttributes())
         {
-            if (attr.AttributeClass?.ToDisplayString() == AsyncDelegateCommandAttributeName)
+            if (attr.AttributeClass?.ToDisplayString() != AsyncDelegateCommandAttributeName)
+                continue;
+
+            string? commandName = null;
+            string? canExecute = null;
+            double? cancelAfterMicroseconds = null;
+            string? catchHandler = null;
+            string? cancellationTokenSourceFactory = null;
+            bool enableParallelExecution = false;
+
+            foreach (var namedArg in attr.NamedArguments)
             {
-                foreach (var namedArg in attr.NamedArguments)
+                switch (namedArg.Key)
                 {
-                    switch (namedArg.Key)
-                    {
-                        case "CommandName" when namedArg.Value.Value is string cn:
-                            commandName = cn;
-                            break;
-                        case "CanExecute" when namedArg.Value.Value is string ce:
-                            canExecute = ce;
-                            break;
-                        case "CancelAfterMicroseconds" when namedArg.Value.Value is double ms:
-                            cancelAfterMicroseconds = ms;
-                            break;
-                        case "Catch" when namedArg.Value.Value is string ch:
-                            catchHandler = ch;
-                            break;
-                        case "CancellationTokenSourceFactory" when namedArg.Value.Value is string ctsf:
-                            cancellationTokenSourceFactory = ctsf;
-                            break;
-                        case "EnableParallelExecution" when namedArg.Value.Value is bool epe:
-                            enableParallelExecution = epe;
-                            break;
-                    }
+                    case "CommandName" when namedArg.Value.Value is string cn:
+                        commandName = cn;
+                        break;
+                    case "CanExecute" when namedArg.Value.Value is string ce:
+                        canExecute = ce;
+                        break;
+                    case "CancelAfterMicroseconds" when namedArg.Value.Value is double ms:
+                        cancelAfterMicroseconds = ms;
+                        break;
+                    case "Catch" when namedArg.Value.Value is string ch:
+                        catchHandler = ch;
+                        break;
+                    case "CancellationTokenSourceFactory" when namedArg.Value.Value is string ctsf:
+                        cancellationTokenSourceFactory = ctsf;
+                        break;
+                    case "EnableParallelExecution" when namedArg.Value.Value is bool epe:
+                        enableParallelExecution = epe;
+                        break;
                 }
             }
+
+            commandName ??= GetCommandName(methodName);
+
+            builder.Add(new Result<CommandGenerationInfo>(
+                new CommandGenerationInfo(
+                    hierarchy,
+                    methodName,
+                    commandName,
+                    parameterType,
+                    IsAsync: true,
+                    canExecute,
+                    hasAsyncDelegateCommand,
+                    cancelAfterMicroseconds,
+                    catchHandler,
+                    cancellationTokenSourceFactory,
+                    enableParallelExecution,
+                    observesProperties),
+                ImmutableArray<DiagnosticInfo>.Empty));
         }
 
-        commandName ??= GetCommandName(methodName);
-
-        ImmutableArray<string> observesProperties = CollectObservesProperties(methodSymbol);
-
-        bool hasAsyncDelegateCommand = context.SemanticModel.Compilation
-            .GetTypeByMetadataName("Prism.Commands.AsyncDelegateCommand") is not null;
-
-        HierarchyInfo hierarchy = HierarchyInfo.From(containingType);
-
-        return new Result<CommandGenerationInfo>(
-            new CommandGenerationInfo(
-                hierarchy,
-                methodName,
-                commandName,
-                parameterType,
-                IsAsync: true,
-                canExecute,
-                hasAsyncDelegateCommand,
-                cancelAfterMicroseconds,
-                catchHandler,
-                cancellationTokenSourceFactory,
-                enableParallelExecution,
-                observesProperties),
-            ImmutableArray<DiagnosticInfo>.Empty);
+        return builder.ToImmutable();
     }
 
     private static ImmutableArray<string> CollectObservesProperties(IMethodSymbol methodSymbol)
@@ -597,6 +600,7 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
 
             using System;
             using System.Linq.Expressions;
+            using System.Runtime.ExceptionServices;
             using System.Threading;
             using System.Threading.Tasks;
             using System.Windows.Input;
@@ -699,7 +703,7 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
                             if (ex is TException typed)
                                 handler(typed);
                             else
-                                throw ex;
+                                ExceptionDispatchInfo.Capture(ex).Throw();
                         };
                         return this;
                     }
@@ -806,7 +810,7 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
                             if (ex is TException typed)
                                 handler(typed);
                             else
-                                throw ex;
+                                ExceptionDispatchInfo.Capture(ex).Throw();
                         };
                         return this;
                     }

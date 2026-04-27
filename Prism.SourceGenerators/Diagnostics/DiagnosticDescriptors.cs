@@ -25,8 +25,8 @@ internal static class DiagnosticDescriptors
     /// </summary>
     public static readonly DiagnosticDescriptor NonPartialClassWithDelegateCommand = new(
         id: "PSG0002",
-        title: "Class with [DelegateCommand] method must be partial",
-        messageFormat: "The class '{0}' contains methods with [DelegateCommand] but is not declared as partial",
+        title: "Class with command generation attribute must be partial",
+        messageFormat: "The class '{0}' contains methods with command generation attributes ([DelegateCommand] or [AsyncDelegateCommand]) but is not declared as partial",
         category: "Prism.SourceGenerators",
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
