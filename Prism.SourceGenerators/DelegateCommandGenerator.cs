@@ -463,9 +463,13 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
 
     private static bool SupportsFieldKeyword(GeneratorAttributeSyntaxContext context)
     {
+#if ROSLYN_4_12_0_OR_GREATER
         var parseOptions = (CSharpParseOptions)context.SemanticModel.SyntaxTree.Options;
-        // field keyword is stable in C# 14 (1400), preview in C# 13
+        // field keyword is stable in C# 14 (1400), preview in C# 13 (Roslyn 4.12+)
         return (int)parseOptions.LanguageVersion >= 1400;
+#else
+        return false;
+#endif
     }
 
     private static string GetCommandName(string methodName)
