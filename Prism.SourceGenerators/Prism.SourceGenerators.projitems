@@ -41,12 +41,14 @@
     <Compile Include="$(MSBuildThisFileDirectory)Models\DiagnosticInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\HierarchyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\HierarchyInfo.Syntax.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\CommandGenerationInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\PropertyGenerationInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\PropertyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Result.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\TypeInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\TypedConstantInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\TypedConstantInfo.Factory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DelegateCommandGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ObservablePropertyGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Polyfills\GeneratorAttributeSyntaxContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Polyfills\SyntaxValueProviderExtensions.cs" />

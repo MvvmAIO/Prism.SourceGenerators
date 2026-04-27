@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Prism.Mvvm;
 using Prism.SourceGenerators;
 
@@ -13,4 +14,31 @@ public partial class MainViewModel : BindableBase
 
     [ObservableProperty]
     private bool _isActive;
+
+    [DelegateCommand]
+    private void Increment()
+    {
+        Counter++;
+    }
+
+    [DelegateCommand]
+    private void Reset()
+    {
+        Counter = 0;
+    }
+
+    [DelegateCommand]
+    private async Task LoadDataAsync()
+    {
+        await Task.Delay(500);
+        Title = "Data loaded!";
+    }
+
+    [DelegateCommand(CanExecute = nameof(CanToggle))]
+    private void Toggle()
+    {
+        IsActive = !IsActive;
+    }
+
+    private bool CanToggle() => Counter > 0;
 }

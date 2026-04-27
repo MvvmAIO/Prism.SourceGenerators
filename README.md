@@ -45,6 +45,41 @@ public partial class MainViewModel : BindableBase
 }
 ```
 
+### `[DelegateCommand]`
+
+Generates `DelegateCommand` or `AsyncDelegateCommand` properties from methods.
+
+- **Synchronous methods** (`void`) generate `DelegateCommand` / `DelegateCommand<T>`
+- **Async methods** (`Task`) generate `AsyncDelegateCommand` / `AsyncDelegateCommand<T>`
+- For Prism < 9.0 (which lacks `AsyncDelegateCommand`), a polyfill is generated automatically
+
+```csharp
+using Prism.SourceGenerators;
+
+public partial class MainViewModel : BindableBase
+{
+    // Generates: DelegateCommand IncrementCommand
+    [DelegateCommand]
+    private void Increment() { /* ... */ }
+
+    // Generates: AsyncDelegateCommand LoadDataCommand
+    [DelegateCommand]
+    private async Task LoadDataAsync() { /* ... */ }
+
+    // With CanExecute support
+    [DelegateCommand(CanExecute = nameof(CanSubmit))]
+    private void Submit() { /* ... */ }
+    private bool CanSubmit() => true;
+}
+```
+
+## Diagnostics
+
+| ID | Description |
+|----|-------------|
+| PSG0001 | Class with `[ObservableProperty]` field must be `partial` |
+| PSG0002 | Class with `[DelegateCommand]` method must be `partial` |
+
 ## Building
 
 ```bash
