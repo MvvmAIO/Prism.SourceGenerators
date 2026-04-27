@@ -7,22 +7,25 @@ namespace Prism.SourceGenerators.Samples.Prism9.ViewModels;
 
 /// <summary>
 /// Prism 9.0 sample ViewModel.
-/// Demonstrates [DelegateCommand], [AsyncDelegateCommand], and [ObservesProperty].
+/// Demonstrates [DelegateCommand], [AsyncDelegateCommand], [ObservesProperty],
+/// and C# 14 partial property + field keyword support.
 /// AsyncDelegateCommand is provided natively by Prism.Core 9.0.537.
 /// </summary>
 public partial class MainViewModel : BindableBase
 {
-    [ObservableProperty]
-    private string _title = "Hello Prism 9.0 Source Generators!";
+    // --- [ObservableProperty] on partial properties (C# 14, field keyword) ---
 
     [ObservableProperty]
-    private int _counter;
+    public partial string Title { get; set; } = "Hello Prism 9.0 Source Generators!";
 
     [ObservableProperty]
-    private bool _isActive;
+    public partial int Counter { get; set; }
 
     [ObservableProperty]
-    private string _statusMessage = "";
+    public partial bool IsActive { get; set; }
+
+    [ObservableProperty]
+    public partial string StatusMessage { get; set; } = "";
 
     // --- [DelegateCommand] examples ---
 

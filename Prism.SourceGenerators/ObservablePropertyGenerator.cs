@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Prism.SourceGenerators.Diagnostics;
+using Prism.SourceGenerators.Extensions;
 using Prism.SourceGenerators.Helpers;
 using Prism.SourceGenerators.Models;
 
@@ -13,15 +14,25 @@ namespace Prism.SourceGenerators;
 
 /// <summary>
 /// A source generator that generates observable properties for classes inheriting from <c>Prism.Mvvm.BindableBase</c>.
-/// Fields annotated with <c>[ObservableProperty]</c> will have corresponding public properties generated
-/// that call <c>SetProperty</c> in the setter.
+/// <para>
+/// Supports two usage modes:
+/// <list type="bullet">
+/// <item><b>Field target</b> (all C# versions): Apply <c>[ObservableProperty]</c> to a private field to generate
+/// a public property that calls <c>SetProperty</c> in the setter.</item>
+/// <item><b>Partial property target</b> (C# 13+): Apply <c>[ObservableProperty]</c> to a <c>partial</c> property
+/// to generate the implementing declaration using the <c>field</c> keyword (semi-auto property).</item>
+/// </list>
+/// </para>
 /// </summary>
 [Generator(LanguageNames.CSharp)]
 public sealed class ObservablePropertyGenerator : IIncrementalGenerator
 {
+    private const string AttributeName = "Prism.SourceGenerators.ObservablePropertyAttribute";
+
     /// <inheritdoc/>
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
+        // Register the ObservableProperty attribute (targets both Field and Property)
         context.RegisterPostInitializationOutput(static ctx =>
         {
             ctx.AddSource("ObservablePropertyAttribute.g.cs", """
@@ -31,11 +42,27 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
                 namespace Prism.SourceGenerators;
 
                 /// <summary>
-                /// An attribute that can be applied to a field in a class inheriting from
+                /// An attribute that can be applied to a field or partial property in a class inheriting from
                 /// <c>Prism.Mvvm.BindableBase</c> to generate an observable property that
                 /// calls <c>SetProperty</c> in the setter.
+                /// <para>
+                /// <b>Field usage</b> (all C# versions):
+                /// <code>
+                /// [ObservableProperty]
+                /// private string _name;
+                /// </code>
+                /// Generates: <c>public string Name { get =&gt; _name; set =&gt; SetProperty(ref _name, value); }</c>
+                /// </para>
+                /// <para>
+                /// <b>Partial property usage</b> (C# 13+):
+                /// <code>
+                /// [ObservableProperty]
+                /// public partial string Name { get; set; }
+                /// </code>
+                /// Generates: <c>public partial string Name { get =&gt; field; set =&gt; SetProperty(ref field, value); }</c>
+                /// </para>
                 /// </summary>
-                [global::System.AttributeUsage(global::System.AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
+                [global::System.AttributeUsage(global::System.AttributeTargets.Field | global::System.AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
                 [global::System.Diagnostics.Conditional("PRISM_SOURCEGENERATORS_ATTRIBUTES")]
                 internal sealed class ObservablePropertyAttribute : global::System.Attribute
                 {
@@ -43,10 +70,11 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
                 """);
         });
 
-        IncrementalValuesProvider<Result<PropertyGenerationInfo>> propertyInfos =
+        // --- Pipeline 1: Field targets (traditional, all C# versions) ---
+        IncrementalValuesProvider<Result<PropertyGenerationInfo>> fieldInfos =
             context.SyntaxProvider
                 .ForAttributeWithMetadataName(
-                    "Prism.SourceGenerators.ObservablePropertyAttribute",
+                    AttributeName,
                     static (node, _) => node is VariableDeclaratorSyntax
                     {
                         Parent: VariableDeclarationSyntax
@@ -57,41 +85,31 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
                             }
                         }
                     },
-                    static (context, token) =>
+                    static (context, token) => ExtractFieldInfo(context, token));
+
+        RegisterDiagnosticsAndSource(context, fieldInfos);
+
+        // --- Pipeline 2: Property targets (partial property + field keyword, C# 13+) ---
+        IncrementalValuesProvider<Result<PropertyGenerationInfo>> propertyInfos =
+            context.SyntaxProvider
+                .ForAttributeWithMetadataName(
+                    AttributeName,
+                    static (node, _) => node is PropertyDeclarationSyntax
                     {
-                        IFieldSymbol fieldSymbol = (IFieldSymbol)context.TargetSymbol;
-                        INamedTypeSymbol containingType = fieldSymbol.ContainingType;
+                        Parent: ClassDeclarationSyntax or RecordDeclarationSyntax
+                    },
+                    static (context, token) => ExtractPropertyInfo(context, token));
 
-                        bool isPartial = containingType.DeclaringSyntaxReferences
-                            .Select(r => r.GetSyntax(token))
-                            .OfType<TypeDeclarationSyntax>()
-                            .Any(static t => t.Modifiers.Any(SyntaxKind.PartialKeyword));
+        RegisterDiagnosticsAndSource(context, propertyInfos);
+    }
 
-                        if (!isPartial)
-                        {
-                            return new Result<PropertyGenerationInfo>(
-                                default!,
-                                ImmutableArray.Create(
-                                    DiagnosticInfo.Create(
-                                        DiagnosticDescriptors.NonPartialClassWithObservableProperty,
-                                        containingType,
-                                        containingType.Name)));
-                        }
-
-                        string fieldName = fieldSymbol.Name;
-                        string propertyName = GetPropertyName(fieldName);
-                        string fieldType = fieldSymbol.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-                        HierarchyInfo hierarchy = HierarchyInfo.From(containingType);
-
-                        return new Result<PropertyGenerationInfo>(
-                            new PropertyGenerationInfo(hierarchy, fieldName, propertyName, fieldType),
-                            ImmutableArray<DiagnosticInfo>.Empty);
-                    });
-
+    private static void RegisterDiagnosticsAndSource(
+        IncrementalGeneratorInitializationContext context,
+        IncrementalValuesProvider<Result<PropertyGenerationInfo>> infos)
+    {
         // Report diagnostics
         context.RegisterSourceOutput(
-            propertyInfos
-                .Where(static item => !item.Errors.IsEmpty),
+            infos.Where(static item => !item.Errors.IsEmpty),
             static (context, result) =>
             {
                 foreach (DiagnosticInfo diagnostic in result.Errors.AsImmutableArray())
@@ -102,34 +120,174 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
 
         // Generate source for valid items
         context.RegisterSourceOutput(
-            propertyInfos
+            infos
                 .Where(static item => item.Value is not null && item.Errors.IsEmpty)
                 .Select(static (item, _) => item.Value!),
             static (context, info) =>
             {
-                CompilationUnitSyntax compilationUnit = info.Hierarchy.GetCompilationUnit(
-                    ImmutableArray.Create<MemberDeclarationSyntax>(
-                        PropertyDeclaration(
-                            IdentifierName(info.FieldType),
-                            Identifier(info.PropertyName))
-                        .AddModifiers(Token(SyntaxKind.PublicKeyword))
-                        .AddAccessorListAccessors(
-                            AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
-                                .WithExpressionBody(ArrowExpressionClause(IdentifierName(info.FieldName)))
-                                .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)),
-                            AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
-                                .WithExpressionBody(ArrowExpressionClause(
-                                    InvocationExpression(IdentifierName("SetProperty"))
-                                        .AddArgumentListArguments(
-                                            Argument(IdentifierName(info.FieldName))
-                                                .WithRefKindKeyword(Token(SyntaxKind.RefKeyword)),
-                                            Argument(IdentifierName("value")))))
-                                .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)))));
+                CompilationUnitSyntax compilationUnit = GenerateProperty(info);
 
                 context.AddSource(
                     $"{info.Hierarchy.FilenameHint}.{info.PropertyName}.g.cs",
                     compilationUnit.GetText(System.Text.Encoding.UTF8));
             });
+    }
+
+    private static Result<PropertyGenerationInfo> ExtractFieldInfo(
+        GeneratorAttributeSyntaxContext context, System.Threading.CancellationToken token)
+    {
+        IFieldSymbol fieldSymbol = (IFieldSymbol)context.TargetSymbol;
+        INamedTypeSymbol containingType = fieldSymbol.ContainingType;
+
+        bool isPartial = containingType.DeclaringSyntaxReferences
+            .Select(r => r.GetSyntax(token))
+            .OfType<TypeDeclarationSyntax>()
+            .Any(static t => t.Modifiers.Any(SyntaxKind.PartialKeyword));
+
+        if (!isPartial)
+        {
+            return new Result<PropertyGenerationInfo>(
+                default!,
+                ImmutableArray.Create(
+                    DiagnosticInfo.Create(
+                        DiagnosticDescriptors.NonPartialClassWithObservableProperty,
+                        containingType,
+                        containingType.Name)));
+        }
+
+        string fieldName = fieldSymbol.Name;
+        string propertyName = GetPropertyName(fieldName);
+        string fieldType = fieldSymbol.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        HierarchyInfo hierarchy = HierarchyInfo.From(containingType);
+
+        return new Result<PropertyGenerationInfo>(
+            new PropertyGenerationInfo(hierarchy, fieldName, propertyName, fieldType, IsPartialProperty: false, Accessibility.Public, Accessibility.NotApplicable),
+            ImmutableArray<DiagnosticInfo>.Empty);
+    }
+
+    private static Result<PropertyGenerationInfo> ExtractPropertyInfo(
+        GeneratorAttributeSyntaxContext context, System.Threading.CancellationToken token)
+    {
+        IPropertySymbol propertySymbol = (IPropertySymbol)context.TargetSymbol;
+        INamedTypeSymbol containingType = propertySymbol.ContainingType;
+
+        // Check containing type is partial
+        bool isTypePartial = containingType.DeclaringSyntaxReferences
+            .Select(r => r.GetSyntax(token))
+            .OfType<TypeDeclarationSyntax>()
+            .Any(static t => t.Modifiers.Any(SyntaxKind.PartialKeyword));
+
+        if (!isTypePartial)
+        {
+            return new Result<PropertyGenerationInfo>(
+                default!,
+                ImmutableArray.Create(
+                    DiagnosticInfo.Create(
+                        DiagnosticDescriptors.NonPartialClassWithObservableProperty,
+                        containingType,
+                        containingType.Name)));
+        }
+
+        // Check property is partial
+        PropertyDeclarationSyntax propertySyntax = (PropertyDeclarationSyntax)context.TargetNode;
+        bool isPropertyPartial = propertySyntax.Modifiers.Any(SyntaxKind.PartialKeyword);
+
+        if (!isPropertyPartial)
+        {
+            return new Result<PropertyGenerationInfo>(
+                default!,
+                ImmutableArray.Create(
+                    DiagnosticInfo.Create(
+                        DiagnosticDescriptors.NonPartialPropertyWithObservableProperty,
+                        propertySymbol,
+                        propertySymbol.Name)));
+        }
+
+        string propertyName = propertySymbol.Name;
+        string fieldType = propertySymbol.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        HierarchyInfo hierarchy = HierarchyInfo.From(containingType);
+
+        Accessibility setterAccessibility = propertySymbol.SetMethod?.DeclaredAccessibility ?? Accessibility.NotApplicable;
+        // Only store setter accessibility when it differs from the property-level accessibility
+        if (setterAccessibility == propertySymbol.DeclaredAccessibility)
+            setterAccessibility = Accessibility.NotApplicable;
+
+        return new Result<PropertyGenerationInfo>(
+            new PropertyGenerationInfo(hierarchy, propertyName, propertyName, fieldType, IsPartialProperty: true, propertySymbol.DeclaredAccessibility, setterAccessibility),
+            ImmutableArray<DiagnosticInfo>.Empty);
+    }
+
+    private static CompilationUnitSyntax GenerateProperty(PropertyGenerationInfo info)
+    {
+        if (info.IsPartialProperty)
+        {
+            return GeneratePartialProperty(info);
+        }
+
+        return GenerateFieldBackedProperty(info);
+    }
+
+    /// <summary>
+    /// Generates a traditional property backed by the user-declared field.
+    /// <code>
+    /// public TYPE NAME { get => _field; set => SetProperty(ref _field, value); }
+    /// </code>
+    /// </summary>
+    private static CompilationUnitSyntax GenerateFieldBackedProperty(PropertyGenerationInfo info)
+    {
+        return info.Hierarchy.GetCompilationUnit(
+            ImmutableArray.Create<MemberDeclarationSyntax>(
+                PropertyDeclaration(
+                    IdentifierName(info.FieldType),
+                    Identifier(info.PropertyName))
+                .AddModifiers(Token(SyntaxKind.PublicKeyword))
+                .AddAccessorListAccessors(
+                    AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
+                        .WithExpressionBody(ArrowExpressionClause(IdentifierName(info.FieldName)))
+                        .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)),
+                    BuildSetAccessor(info))));
+    }
+
+    /// <summary>
+    /// Generates a partial property implementation using the <c>field</c> keyword.
+    /// <code>
+    /// public partial TYPE NAME { get => field; set => SetProperty(ref field, value); }
+    /// </code>
+    /// </summary>
+    private static CompilationUnitSyntax GeneratePartialProperty(PropertyGenerationInfo info)
+    {
+        return info.Hierarchy.GetCompilationUnit(
+            ImmutableArray.Create<MemberDeclarationSyntax>(
+                PropertyDeclaration(
+                    IdentifierName(info.FieldType),
+                    Identifier(info.PropertyName))
+                .WithModifiers(
+                    info.DeclaredAccessibility.ToSyntaxTokenList()
+                        .Add(Token(SyntaxKind.PartialKeyword)))
+                .AddAccessorListAccessors(
+                    AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
+                        .WithExpressionBody(ArrowExpressionClause(IdentifierName("field")))
+                        .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)),
+                    BuildSetAccessor(info))));
+    }
+
+    private static AccessorDeclarationSyntax BuildSetAccessor(PropertyGenerationInfo info)
+    {
+        AccessorDeclarationSyntax setter = AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
+            .WithExpressionBody(ArrowExpressionClause(
+                InvocationExpression(IdentifierName("SetProperty"))
+                    .AddArgumentListArguments(
+                        Argument(IdentifierName(info.IsPartialProperty ? "field" : info.FieldName))
+                            .WithRefKindKeyword(Token(SyntaxKind.RefKeyword)),
+                        Argument(IdentifierName("value")))))
+            .WithSemicolonToken(Token(SyntaxKind.SemicolonToken));
+
+        if (info.SetterAccessibility != Accessibility.NotApplicable)
+        {
+            setter = setter.WithModifiers(info.SetterAccessibility.ToSyntaxTokenList());
+        }
+
+        return setter;
     }
 
     private static string GetPropertyName(string fieldName)
