@@ -5,7 +5,8 @@
     <File Path="LICENSE.txt" />
   </Folder>
   <Folder Name="/Samples/">
-    <Project Path="Prism.SourceGenerators.Samples/Prism.SourceGenerators.Samples.csproj" />
+    <Project Path="Prism.SourceGenerators.Samples.Prism9/Prism.SourceGenerators.Samples.Prism9.csproj" />
+    <Project Path="Prism.SourceGenerators.Samples.Prism8/Prism.SourceGenerators.Samples.Prism8.csproj" />
   </Folder>
   <Project Path="Prism.SourceGenerators/Prism.SourceGenerators.shproj" />
   <Project Path="Prism.SourceGenerators.Roslyn4001/Prism.SourceGenerators.Roslyn4001.csproj" />
