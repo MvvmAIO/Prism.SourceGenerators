@@ -135,7 +135,7 @@ public partial class MainViewModel : BindableBase
 
 | ID | Description |
 |----|-------------|
-| PSG0001 | Class with `[ObservableProperty]` field must be `partial` |
+| PSG0001 | Class with `[ObservableProperty]` members must be `partial` |
 | PSG0002 | Class with `[DelegateCommand]` / `[AsyncDelegateCommand]` method must be `partial` |
 | PSG0003 | Property with `[ObservableProperty]` must be declared as `partial` |
 
