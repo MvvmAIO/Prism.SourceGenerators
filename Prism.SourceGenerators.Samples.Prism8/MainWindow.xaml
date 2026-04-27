@@ -1,0 +1,26 @@
+<Window x:Class="Prism.SourceGenerators.Samples.Prism8.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:Prism.SourceGenerators.Samples.Prism8.ViewModels"
+        Title="Prism 8.0 - Source Generators Sample (with Polyfill)" Height="400" Width="525">
+    <Window.DataContext>
+        <vm:MainViewModel />
+    </Window.DataContext>
+    <StackPanel Margin="20">
+        <TextBlock Text="Prism 8.0 Sample" FontSize="24" FontWeight="Bold" Foreground="DarkOrange" Margin="0,0,0,5" />
+        <TextBlock Text="Uses auto-generated AsyncDelegateCommand polyfill (Prism 8.x has no AsyncDelegateCommand)" FontSize="12" Foreground="Gray" Margin="0,0,0,15" />
+
+        <TextBlock Text="{Binding Title}" FontSize="18" Margin="0,0,0,10" />
+        <TextBlock Text="{Binding Counter, StringFormat='Counter: {0}'}" FontSize="16" Margin="0,0,0,10" />
+        <CheckBox Content="Is Active" IsChecked="{Binding IsActive}" FontSize="16" Margin="0,0,0,10" />
+
+        <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+            <Button Content="Increment" Command="{Binding IncrementCommand}" Margin="0,0,10,0" Padding="10,5" />
+            <Button Content="Reset" Command="{Binding ResetCommand}" Margin="0,0,10,0" Padding="10,5" />
+            <Button Content="Load Data (Async)" Command="{Binding LoadDataCommand}" Margin="0,0,10,0" Padding="10,5" />
+            <Button Content="Toggle" Command="{Binding ToggleCommand}" Padding="10,5" />
+        </StackPanel>
+
+        <TextBlock Text="AsyncDelegateCommand type: Generated Polyfill (Prism &lt; 9.0)" FontSize="11" Foreground="OrangeRed" Margin="0,15,0,0" />
+    </StackPanel>
+</Window>
