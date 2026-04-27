@@ -63,6 +63,8 @@ Generates `DelegateCommand` or `AsyncDelegateCommand` properties from methods.
 - **Synchronous methods** (`void`) generate `DelegateCommand` / `DelegateCommand<T>`
 - **Async methods** (`Task`) generate `AsyncDelegateCommand` / `AsyncDelegateCommand<T>`
 - For Prism < 9.0 (which lacks `AsyncDelegateCommand`), a polyfill is generated automatically
+- **C# 14+**: Command properties use the `field` keyword (no separate backing field)
+- **C# 13 and earlier**: Command properties use a traditional backing field
 
 ```csharp
 using Prism.SourceGenerators;
@@ -82,6 +84,20 @@ public partial class MainViewModel : BindableBase
     private void Submit() { /* ... */ }
     private bool CanSubmit() => true;
 }
+```
+
+#### Generated output comparison
+
+**C# 14+ (LangVersion >= 14)** — uses `field` keyword:
+```csharp
+// No backing field needed
+public DelegateCommand IncrementCommand => field ??= new DelegateCommand(Increment);
+```
+
+**C# 13 and earlier** — traditional backing field:
+```csharp
+private DelegateCommand? _incrementCommand;
+public DelegateCommand IncrementCommand => _incrementCommand ??= new DelegateCommand(Increment);
 ```
 
 ### `[AsyncDelegateCommand]`
