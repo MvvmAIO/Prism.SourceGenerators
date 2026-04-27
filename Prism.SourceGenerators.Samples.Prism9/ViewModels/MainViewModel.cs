@@ -28,6 +28,8 @@ public partial class MainViewModel : BindableBase
     public partial string StatusMessage { get; set; } = "";
 
     // --- [DelegateCommand] examples ---
+    // With LangVersion >= 14, command properties are generated using the 'field' keyword:
+    //   public DelegateCommand IncrementCommand => field ??= new DelegateCommand(Increment);
 
     [DelegateCommand]
     private void Increment()

@@ -268,6 +268,8 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
 
         HierarchyInfo hierarchy = HierarchyInfo.From(containingType);
 
+        bool useFieldKeyword = SupportsFieldKeyword(context);
+
         return new Result<CommandGenerationInfo>(
             new CommandGenerationInfo(
                 hierarchy,
@@ -281,7 +283,8 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
                 Catch: null,
                 CancellationTokenSourceFactory: null,
                 EnableParallelExecution: false,
-                ObservesProperties: observesProperties),
+                ObservesProperties: observesProperties,
+                UseFieldKeyword: useFieldKeyword),
             ImmutableArray<DiagnosticInfo>.Empty);
     }
 
@@ -302,6 +305,7 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
         bool hasAsyncDelegateCommand = context.SemanticModel.Compilation
             .GetTypeByMetadataName("Prism.Commands.AsyncDelegateCommand") is not null;
         HierarchyInfo hierarchy = HierarchyInfo.From(containingType);
+        bool useFieldKeyword = SupportsFieldKeyword(context);
 
         ImmutableArray<Result<CommandGenerationInfo>>.Builder builder =
             ImmutableArray.CreateBuilder<Result<CommandGenerationInfo>>();
@@ -358,7 +362,8 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
                     catchHandler,
                     cancellationTokenSourceFactory,
                     enableParallelExecution,
-                    observesProperties),
+                    observesProperties,
+                    useFieldKeyword),
                 ImmutableArray<DiagnosticInfo>.Empty));
         }
 
@@ -454,6 +459,13 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
     private static bool IsCancellationToken(ITypeSymbol type)
     {
         return type.ToDisplayString() == "System.Threading.CancellationToken";
+    }
+
+    private static bool SupportsFieldKeyword(GeneratorAttributeSyntaxContext context)
+    {
+        var parseOptions = (CSharpParseOptions)context.SemanticModel.SyntaxTree.Options;
+        // field keyword is stable in C# 14 (1400), preview in C# 13
+        return (int)parseOptions.LanguageVersion >= 1400;
     }
 
     private static string GetCommandName(string methodName)
@@ -568,11 +580,17 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
             initialization = fluentSb.ToString();
         }
 
-        string fieldName = $"_{char.ToLowerInvariant(info.CommandName[0])}{info.CommandName.Substring(1)}";
-
-        sb.AppendLine($"        private {commandType}? {fieldName};");
-        sb.AppendLine();
-        sb.AppendLine($"        public {commandType} {info.CommandName} => {fieldName} ??= {initialization};");
+        if (info.UseFieldKeyword)
+        {
+            sb.AppendLine($"        public {commandType} {info.CommandName} => field ??= {initialization};");
+        }
+        else
+        {
+            string fieldName = $"_{char.ToLowerInvariant(info.CommandName[0])}{info.CommandName.Substring(1)}";
+            sb.AppendLine($"        private {commandType}? {fieldName};");
+            sb.AppendLine();
+            sb.AppendLine($"        public {commandType} {info.CommandName} => {fieldName} ??= {initialization};");
+        }
 
         // Close type hierarchy
         foreach (Models.TypeInfo _ in info.Hierarchy.Hierarchy.AsImmutableArray())

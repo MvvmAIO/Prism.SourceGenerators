@@ -18,4 +18,5 @@ internal sealed record CommandGenerationInfo(
     string? Catch,
     string? CancellationTokenSourceFactory,
     bool EnableParallelExecution,
-    EquatableArray<string> ObservesProperties) : IEquatable<CommandGenerationInfo>;
+    EquatableArray<string> ObservesProperties,
+    bool UseFieldKeyword) : IEquatable<CommandGenerationInfo>;

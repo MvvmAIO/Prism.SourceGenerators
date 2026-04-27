@@ -26,6 +26,9 @@ public partial class MainViewModel : BindableBase
     private string _statusMessage = "";
 
     // --- [DelegateCommand] examples ---
+    // With LangVersion < 14, command properties use a traditional backing field:
+    //   private DelegateCommand? _incrementCommand;
+    //   public DelegateCommand IncrementCommand => _incrementCommand ??= new DelegateCommand(Increment);
 
     [DelegateCommand]
     private void Increment()
