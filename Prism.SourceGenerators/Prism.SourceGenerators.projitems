@@ -52,7 +52,5 @@
     <Compile Include="$(MSBuildThisFileDirectory)ObservablePropertyGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Polyfills\GeneratorAttributeSyntaxContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Polyfills\SyntaxValueProviderExtensions.cs" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\ObservesPropertyAttribute.cs" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\AsyncDelegateCommandAttribute.cs" />
   </ItemGroup>
 </Project>

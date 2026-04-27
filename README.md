@@ -10,7 +10,8 @@ Prism.SourceGenerators.Roslyn4001/             # Roslyn 4.0.1
 Prism.SourceGenerators.Roslyn4031/             # Roslyn 4.3.1
 Prism.SourceGenerators.Roslyn4120/             # Roslyn 4.12.0
 Prism.SourceGenerators.Roslyn5000/             # Roslyn 5.0.0
-Prism.SourceGenerators.Samples/               # WPF sample application
+Prism.SourceGenerators.Samples.Prism9/         # WPF sample (Prism 9.0, native AsyncDelegateCommand)
+Prism.SourceGenerators.Samples.Prism8/         # WPF sample (Prism 8.x, polyfill AsyncDelegateCommand)
 ```
 
 ## Generators
@@ -70,6 +71,53 @@ public partial class MainViewModel : BindableBase
     [DelegateCommand(CanExecute = nameof(CanSubmit))]
     private void Submit() { /* ... */ }
     private bool CanSubmit() => true;
+}
+```
+
+### `[AsyncDelegateCommand]`
+
+Dedicated attribute for async methods with advanced Prism 9.0+ features.
+Supports fluent configuration: `EnableParallelExecution`, `CancelAfter`, `Catch`, `CancellationTokenSourceFactory`.
+
+```csharp
+using Prism.SourceGenerators;
+
+public partial class MainViewModel : BindableBase
+{
+    // Parallel execution enabled
+    [AsyncDelegateCommand(EnableParallelExecution = true)]
+    private async Task FetchDataAsync() { /* ... */ }
+
+    // With error handling and CanExecute
+    [AsyncDelegateCommand(CanExecute = nameof(CanSave), Catch = nameof(HandleError))]
+    private async Task SaveAsync() { /* ... */ }
+
+    private bool CanSave() => true;
+    private void HandleError(Exception ex) { /* ... */ }
+}
+```
+
+### `[ObservesProperty]`
+
+Automatically re-evaluates `CanExecute` when the specified properties change.
+Works with both `[DelegateCommand]` and `[AsyncDelegateCommand]`.
+
+```csharp
+using Prism.SourceGenerators;
+
+public partial class MainViewModel : BindableBase
+{
+    [ObservableProperty]
+    private bool _isValid;
+
+    [DelegateCommand(CanExecute = nameof(CanSubmit))]
+    [ObservesProperty(nameof(IsValid))]
+    private void Submit() { /* ... */ }
+
+    // Multiple properties
+    [AsyncDelegateCommand(CanExecute = nameof(CanSave))]
+    [ObservesProperty(nameof(Counter), nameof(IsActive))]
+    private async Task SaveAsync() { /* ... */ }
 }
 ```
 

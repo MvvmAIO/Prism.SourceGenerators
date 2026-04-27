@@ -1,4 +1,5 @@
 using System;
+using Prism.SourceGenerators.Helpers;
 
 namespace Prism.SourceGenerators.Models;
 
@@ -12,4 +13,9 @@ internal sealed record CommandGenerationInfo(
     string? ParameterType,
     bool IsAsync,
     string? CanExecute,
-    bool HasAsyncDelegateCommand) : IEquatable<CommandGenerationInfo>;
+    bool HasAsyncDelegateCommand,
+    double? CancelAfterMicroseconds,
+    string? Catch,
+    string? CancellationTokenSourceFactory,
+    bool EnableParallelExecution,
+    EquatableArray<string> ObservesProperties) : IEquatable<CommandGenerationInfo>;
