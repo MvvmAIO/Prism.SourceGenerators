@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Prism.Mvvm;
 using Prism.SourceGenerators;
@@ -6,6 +7,7 @@ namespace Prism.SourceGenerators.Samples.Prism9.ViewModels;
 
 /// <summary>
 /// Prism 9.0 sample ViewModel.
+/// Demonstrates [DelegateCommand], [AsyncDelegateCommand], and [ObservesProperty].
 /// AsyncDelegateCommand is provided natively by Prism.Core 9.0.537.
 /// </summary>
 public partial class MainViewModel : BindableBase
@@ -19,6 +21,11 @@ public partial class MainViewModel : BindableBase
     [ObservableProperty]
     private bool _isActive;
 
+    [ObservableProperty]
+    private string _statusMessage = "";
+
+    // --- [DelegateCommand] examples ---
+
     [DelegateCommand]
     private void Increment()
     {
@@ -31,9 +38,8 @@ public partial class MainViewModel : BindableBase
         Counter = 0;
     }
 
-    /// <summary>
-    /// Async command - uses native Prism.Commands.AsyncDelegateCommand (Prism 9.0+).
-    /// </summary>
+    // --- [DelegateCommand] with auto async detection ---
+
     [DelegateCommand]
     private async Task LoadDataAsync()
     {
@@ -41,11 +47,42 @@ public partial class MainViewModel : BindableBase
         Title = "Data loaded! (Prism 9.0 native AsyncDelegateCommand)";
     }
 
+    // --- [DelegateCommand] with CanExecute + ObservesProperty ---
+
     [DelegateCommand(CanExecute = nameof(CanToggle))]
+    [ObservesProperty(nameof(Counter))]
     private void Toggle()
     {
         IsActive = !IsActive;
     }
 
     private bool CanToggle() => Counter > 0;
+
+    // --- [AsyncDelegateCommand] with advanced features ---
+
+    [AsyncDelegateCommand(EnableParallelExecution = true)]
+    private async Task FetchDataAsync()
+    {
+        StatusMessage = "Fetching...";
+        await Task.Delay(1000);
+        StatusMessage = "Fetch complete! (parallel execution enabled)";
+    }
+
+    [AsyncDelegateCommand(
+        CanExecute = nameof(CanSave),
+        Catch = nameof(HandleSaveError))]
+    [ObservesProperty(nameof(Counter), nameof(IsActive))]
+    private async Task SaveAsync()
+    {
+        StatusMessage = "Saving...";
+        await Task.Delay(800);
+        StatusMessage = $"Saved! Counter={Counter}, IsActive={IsActive}";
+    }
+
+    private bool CanSave() => Counter > 0 && IsActive;
+
+    private void HandleSaveError(Exception ex)
+    {
+        StatusMessage = $"Save failed: {ex.Message}";
+    }
 }
