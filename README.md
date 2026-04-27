@@ -56,6 +56,50 @@ public partial class MainViewModel : BindableBase
 
 The partial property approach eliminates the need for a separate backing field and provides a cleaner API surface. Both modes can coexist in the same project.
 
+#### OnChanged partial methods
+
+For every `[ObservableProperty]`, the generator emits two `partial` method declarations that you can optionally implement to react to changes:
+
+```csharp
+public partial class MainViewModel : BindableBase
+{
+    [ObservableProperty]
+    public partial int Age { get; set; }
+
+    // Generated declarations (implement one or both):
+    // partial void OnAgeChanged(int value);
+    // partial void OnAgeChanged(int oldValue, int newValue);
+
+    partial void OnAgeChanged(int oldValue, int newValue)
+    {
+        Debug.WriteLine($"Age changed from {oldValue} to {newValue}");
+    }
+}
+```
+
+The generated setter uses `EqualityComparer<T>.Default.Equals` for change detection and calls both `OnChanged` overloads before raising `PropertyChanged`.
+
+### `[NotifyPropertyChangedFor]`
+
+Apply to a field or partial property alongside `[ObservableProperty]` to automatically raise `PropertyChanged` for additional dependent properties when the annotated property changes.
+
+```csharp
+public partial class MainViewModel : BindableBase
+{
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FullName))]
+    private string _firstName = "";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FullName))]
+    private string _lastName = "";
+
+    public string FullName => $"{FirstName} {LastName}";
+}
+```
+
+Supports multiple property names via `[NotifyPropertyChangedFor(nameof(A), nameof(B))]` or multiple attribute instances.
+
 ### `[DelegateCommand]`
 
 Generates `DelegateCommand` or `AsyncDelegateCommand` properties from methods.

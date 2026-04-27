@@ -7,12 +7,23 @@ namespace Prism.SourceGenerators.Samples.Prism8.ViewModels;
 
 /// <summary>
 /// Prism 8.0 sample ViewModel.
-/// Demonstrates [DelegateCommand], [AsyncDelegateCommand], and [ObservesProperty].
+/// Demonstrates [DelegateCommand], [AsyncDelegateCommand], [ObservesProperty],
+/// [NotifyPropertyChangedFor], and OnChanged partial methods.
 /// AsyncDelegateCommand is NOT available in Prism.Core 8.1.97,
 /// so the source generator will automatically generate a polyfill.
 /// </summary>
 public partial class MainViewModel : BindableBase
 {
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FullName))]
+    private string _firstName = "";
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(FullName))]
+    private string _lastName = "";
+
+    public string FullName => $"{FirstName} {LastName}";
+
     [ObservableProperty]
     private string _title = "Hello Prism 8.0 Source Generators!";
 
@@ -24,6 +35,13 @@ public partial class MainViewModel : BindableBase
 
     [ObservableProperty]
     private string _statusMessage = "";
+
+    // OnChanged partial methods are auto-generated.
+    // Implement them to react to property changes:
+    partial void OnCounterChanged(int value)
+    {
+        StatusMessage = $"Counter changed to {value}";
+    }
 
     // --- [DelegateCommand] examples ---
     // With LangVersion < 14, command properties use a traditional backing field:
