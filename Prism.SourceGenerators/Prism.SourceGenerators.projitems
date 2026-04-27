@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>de53d4fa-0469-4e2d-a70b-fde37d792a2e</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Prism.SourceGenerators</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Diagnostics\DiagnosticDescriptors.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\AccessibilityExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\AnalyzerConfigOptionsExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\AttributeDataExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\CompilationExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\DiagnosticsExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\GeneratorAttributeSyntaxContextWithOptions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\IMethodSymbolExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\INamedTypeSymbolExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\ISymbolExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\ITypeSymbolExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\IncrementalGeneratorInitializationContextExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\IncrementalValuesProviderExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\MemberDeclarationSyntaxExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\MethodDeclarationSyntaxExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\SourceProductionContextExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\SymbolInfoExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\SymbolKindExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\SyntaxKindExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\SyntaxNodeExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\SyntaxTokenExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\SyntaxTokenListExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\TypeDeclarationSyntaxExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\EquatableArray{T}.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\HashCode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\ImmutableArrayBuilder{T}.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\ObjectPool{T}.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\TypeSyntaxFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\AttributeInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\DiagnosticInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\HierarchyInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\HierarchyInfo.Syntax.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\PropertyGenerationInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\PropertyInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\Result.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\TypeInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\TypedConstantInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\TypedConstantInfo.Factory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObservablePropertyGenerator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Polyfills\GeneratorAttributeSyntaxContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Polyfills\SyntaxValueProviderExtensions.cs" />
+  </ItemGroup>
+</Project>

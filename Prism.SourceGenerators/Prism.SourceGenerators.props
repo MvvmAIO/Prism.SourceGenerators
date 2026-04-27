@@ -1,0 +1,46 @@
+<Project>
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <IsRoslynComponent>true</IsRoslynComponent>
+    <PackageId>Prism.SourceGenerators</PackageId>
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
+  <!--
+    Multi-targeting for different Roslyn versions, following the CommunityToolkit.Mvvm pattern.
+    Each Roslyn-versioned project uses the naming scheme: Prism.SourceGenerators.Roslyn<MAJOR><MINOR2><PATCH>
+    The Roslyn version is parsed from the project name suffix to determine the Microsoft.CodeAnalysis.CSharp version.
+  -->
+  <PropertyGroup>
+    <AssemblyName>$(MSBuildProjectName.Substring(0, $([MSBuild]::Subtract($(MSBuildProjectName.Length), 11))))</AssemblyName>
+
+    <PrismSourceGeneratorRoslynMajorVersion>$(MSBuildProjectName.Substring($([MSBuild]::Subtract($(MSBuildProjectName.Length), 4)), 1))</PrismSourceGeneratorRoslynMajorVersion>
+    <PrismSourceGeneratorRoslynMinorVersion>$(MSBuildProjectName.Substring($([MSBuild]::Subtract($(MSBuildProjectName.Length), 3)), 2))</PrismSourceGeneratorRoslynMinorVersion>
+    <PrismSourceGeneratorRoslynPatchVersion>$(MSBuildProjectName.Substring($([MSBuild]::Subtract($(MSBuildProjectName.Length), 1)), 1))</PrismSourceGeneratorRoslynPatchVersion>
+    <PrismSourceGeneratorRoslynVersion>$(PrismSourceGeneratorRoslynMajorVersion).$(PrismSourceGeneratorRoslynMinorVersion).$(PrismSourceGeneratorRoslynPatchVersion)</PrismSourceGeneratorRoslynVersion>
+
+    <DefineConstants Condition="$([MSBuild]::VersionGreaterThanOrEquals($(PrismSourceGeneratorRoslynVersion), 4.3.1))">$(DefineConstants);ROSLYN_4_3_1_OR_GREATER</DefineConstants>
+    <DefineConstants Condition="$([MSBuild]::VersionGreaterThanOrEquals($(PrismSourceGeneratorRoslynVersion), 4.12.0))">$(DefineConstants);ROSLYN_4_12_0_OR_GREATER</DefineConstants>
+    <DefineConstants Condition="$([MSBuild]::VersionGreaterThanOrEquals($(PrismSourceGeneratorRoslynVersion), 5.0.0))">$(DefineConstants);ROSLYN_5_0_0_OR_GREATER</DefineConstants>
+
+    <NoWarn Condition="$([MSBuild]::VersionLessThan($(PrismSourceGeneratorRoslynVersion), 5.0.0))">$(NoWarn);RS2003</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(PrismSourceGeneratorRoslynVersion)" PrivateAssets="all" Pack="false" />
+    <PackageReference Include="Polyfill" Version="10.3.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+</Project>
