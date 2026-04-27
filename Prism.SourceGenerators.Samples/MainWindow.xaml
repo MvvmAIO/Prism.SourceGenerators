@@ -1,0 +1,14 @@
+<Window x:Class="Prism.SourceGenerators.Samples.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:Prism.SourceGenerators.Samples.ViewModels"
+        Title="Prism Source Generators Sample" Height="350" Width="525">
+    <Window.DataContext>
+        <vm:MainViewModel />
+    </Window.DataContext>
+    <StackPanel Margin="20">
+        <TextBlock Text="{Binding Title}" FontSize="20" Margin="0,0,0,10" />
+        <TextBlock Text="{Binding Counter, StringFormat='Counter: {0}'}" FontSize="16" Margin="0,0,0,10" />
+        <CheckBox Content="Is Active" IsChecked="{Binding IsActive}" FontSize="16" />
+    </StackPanel>
+</Window>

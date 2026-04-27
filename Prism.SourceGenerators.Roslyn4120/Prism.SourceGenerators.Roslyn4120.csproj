@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\Prism.SourceGenerators\Prism.SourceGenerators.props" />
+  <Import Project="..\Prism.SourceGenerators\Prism.SourceGenerators.projitems" Label="Shared" />
+
+</Project>

@@ -1,3 +1,15 @@
 <Solution>
-  <Project Path="Prism.SourceGenerators/Prism.SourceGenerators.csproj" />
+  <Folder Name="/Solution Items/">
+    <File Path=".gitignore" />
+    <File Path=".gitattributes" />
+    <File Path="LICENSE.txt" />
+  </Folder>
+  <Folder Name="/Samples/">
+    <Project Path="Prism.SourceGenerators.Samples/Prism.SourceGenerators.Samples.csproj" />
+  </Folder>
+  <Project Path="Prism.SourceGenerators/Prism.SourceGenerators.shproj" />
+  <Project Path="Prism.SourceGenerators.Roslyn4001/Prism.SourceGenerators.Roslyn4001.csproj" />
+  <Project Path="Prism.SourceGenerators.Roslyn4031/Prism.SourceGenerators.Roslyn4031.csproj" />
+  <Project Path="Prism.SourceGenerators.Roslyn4120/Prism.SourceGenerators.Roslyn4120.csproj" />
+  <Project Path="Prism.SourceGenerators.Roslyn5000/Prism.SourceGenerators.Roslyn5000.csproj" />
 </Solution>
