@@ -161,7 +161,7 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
         HierarchyInfo hierarchy = HierarchyInfo.From(containingType);
 
         return new Result<PropertyGenerationInfo>(
-            new PropertyGenerationInfo(hierarchy, fieldName, propertyName, fieldType, IsPartialProperty: false, Accessibility.Public),
+            new PropertyGenerationInfo(hierarchy, fieldName, propertyName, fieldType, IsPartialProperty: false, Accessibility.Public, Accessibility.NotApplicable),
             ImmutableArray<DiagnosticInfo>.Empty);
     }
 
@@ -207,8 +207,13 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
         string fieldType = propertySymbol.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
         HierarchyInfo hierarchy = HierarchyInfo.From(containingType);
 
+        Accessibility setterAccessibility = propertySymbol.SetMethod?.DeclaredAccessibility ?? Accessibility.NotApplicable;
+        // Only store setter accessibility when it differs from the property-level accessibility
+        if (setterAccessibility == propertySymbol.DeclaredAccessibility)
+            setterAccessibility = Accessibility.NotApplicable;
+
         return new Result<PropertyGenerationInfo>(
-            new PropertyGenerationInfo(hierarchy, propertyName, propertyName, fieldType, IsPartialProperty: true, propertySymbol.DeclaredAccessibility),
+            new PropertyGenerationInfo(hierarchy, propertyName, propertyName, fieldType, IsPartialProperty: true, propertySymbol.DeclaredAccessibility, setterAccessibility),
             ImmutableArray<DiagnosticInfo>.Empty);
     }
 
@@ -240,14 +245,7 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
                     AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
                         .WithExpressionBody(ArrowExpressionClause(IdentifierName(info.FieldName)))
                         .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)),
-                    AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
-                        .WithExpressionBody(ArrowExpressionClause(
-                            InvocationExpression(IdentifierName("SetProperty"))
-                                .AddArgumentListArguments(
-                                    Argument(IdentifierName(info.FieldName))
-                                        .WithRefKindKeyword(Token(SyntaxKind.RefKeyword)),
-                                    Argument(IdentifierName("value")))))
-                        .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)))));
+                    BuildSetAccessor(info))));
     }
 
     /// <summary>
@@ -270,14 +268,26 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
                     AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
                         .WithExpressionBody(ArrowExpressionClause(IdentifierName("field")))
                         .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)),
-                    AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
-                        .WithExpressionBody(ArrowExpressionClause(
-                            InvocationExpression(IdentifierName("SetProperty"))
-                                .AddArgumentListArguments(
-                                    Argument(IdentifierName("field"))
-                                        .WithRefKindKeyword(Token(SyntaxKind.RefKeyword)),
-                                    Argument(IdentifierName("value")))))
-                        .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)))));
+                    BuildSetAccessor(info))));
+    }
+
+    private static AccessorDeclarationSyntax BuildSetAccessor(PropertyGenerationInfo info)
+    {
+        AccessorDeclarationSyntax setter = AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
+            .WithExpressionBody(ArrowExpressionClause(
+                InvocationExpression(IdentifierName("SetProperty"))
+                    .AddArgumentListArguments(
+                        Argument(IdentifierName(info.IsPartialProperty ? "field" : info.FieldName))
+                            .WithRefKindKeyword(Token(SyntaxKind.RefKeyword)),
+                        Argument(IdentifierName("value")))))
+            .WithSemicolonToken(Token(SyntaxKind.SemicolonToken));
+
+        if (info.SetterAccessibility != Accessibility.NotApplicable)
+        {
+            setter = setter.WithModifiers(info.SetterAccessibility.ToSyntaxTokenList());
+        }
+
+        return setter;
     }
 
     private static string GetPropertyName(string fieldName)

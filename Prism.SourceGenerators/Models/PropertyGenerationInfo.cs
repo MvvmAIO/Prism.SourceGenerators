@@ -12,10 +12,12 @@ namespace Prism.SourceGenerators.Models;
 /// <param name="FieldType">The fully qualified type name.</param>
 /// <param name="IsPartialProperty">Whether this is a partial property declaration (uses <c>field</c> keyword).</param>
 /// <param name="DeclaredAccessibility">The declared accessibility of the property (used for partial property generation).</param>
+/// <param name="SetterAccessibility">The declared accessibility of the setter (e.g. <c>private set</c>). <see cref="Accessibility.NotApplicable"/> when same as property.</param>
 internal sealed record PropertyGenerationInfo(
     HierarchyInfo Hierarchy,
     string FieldName,
     string PropertyName,
     string FieldType,
     bool IsPartialProperty,
-    Accessibility DeclaredAccessibility) : IEquatable<PropertyGenerationInfo>;
+    Accessibility DeclaredAccessibility,
+    Accessibility SetterAccessibility) : IEquatable<PropertyGenerationInfo>;
