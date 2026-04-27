@@ -18,23 +18,14 @@ Prism.SourceGenerators.Samples.Prism8/         # WPF sample (Prism 8.x, polyfill
 
 ### `[ObservableProperty]`
 
-Generates observable properties for classes inheriting from `BindableBase`. Annotate a field with `[ObservableProperty]` and the generator will create a public property that calls `SetProperty` in the setter.
+Generates observable properties for classes inheriting from `BindableBase`. Supports two usage modes depending on the C# language version.
 
-**Before (manual):**
-```csharp
-public class MainViewModel : BindableBase
-{
-    private string _title = "Hello";
-    public string Title
-    {
-        get => _title;
-        set => SetProperty(ref _title, value);
-    }
-}
-```
+#### Field target (all C# versions)
 
-**After (with source generator):**
+Annotate a private field with `[ObservableProperty]` to generate a public property that calls `SetProperty` in the setter.
+
 ```csharp
+// C# 12 or earlier
 using Prism.SourceGenerators;
 
 public partial class MainViewModel : BindableBase
@@ -42,9 +33,28 @@ public partial class MainViewModel : BindableBase
     [ObservableProperty]
     private string _title = "Hello";
 
-    // The 'Title' property is auto-generated with SetProperty
+    // Generated: public string Title { get => _title; set => SetProperty(ref _title, value); }
 }
 ```
+
+#### Partial property target (C# 13+ with `field` keyword)
+
+Annotate a `partial` property with `[ObservableProperty]` to generate the implementing declaration using the `field` keyword (semi-auto property).
+
+```csharp
+// C# 13+ / .NET 9+ (requires LangVersion 13.0+ or preview)
+using Prism.SourceGenerators;
+
+public partial class MainViewModel : BindableBase
+{
+    [ObservableProperty]
+    public partial string Title { get; set; } = "Hello";
+
+    // Generated: public partial string Title { get => field; set => SetProperty(ref field, value); }
+}
+```
+
+The partial property approach eliminates the need for a separate backing field and provides a cleaner API surface. Both modes can coexist in the same project.
 
 ### `[DelegateCommand]`
 
@@ -126,7 +136,8 @@ public partial class MainViewModel : BindableBase
 | ID | Description |
 |----|-------------|
 | PSG0001 | Class with `[ObservableProperty]` field must be `partial` |
-| PSG0002 | Class with `[DelegateCommand]` method must be `partial` |
+| PSG0002 | Class with `[DelegateCommand]` / `[AsyncDelegateCommand]` method must be `partial` |
+| PSG0003 | Property with `[ObservableProperty]` must be declared as `partial` |
 
 ## Building
 

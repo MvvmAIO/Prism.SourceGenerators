@@ -30,4 +30,15 @@ internal static class DiagnosticDescriptors
         category: "Prism.SourceGenerators",
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
+
+    /// <summary>
+    /// PSG0003: Property with [ObservableProperty] must be declared as partial.
+    /// </summary>
+    public static readonly DiagnosticDescriptor NonPartialPropertyWithObservableProperty = new(
+        id: "PSG0003",
+        title: "Property with [ObservableProperty] must be partial",
+        messageFormat: "The property '{0}' has [ObservableProperty] but is not declared as partial; add the 'partial' modifier to both the property and its containing class",
+        category: "Prism.SourceGenerators",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
 }
