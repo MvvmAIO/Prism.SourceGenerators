@@ -107,7 +107,8 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
                                 parameterType = param.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
                             }
                         }
-                        else if (isAsync && methodSymbol.Parameters.Length == 2)
+                        else if (isAsync && methodSymbol.Parameters.Length == 2
+                            && IsCancellationToken(methodSymbol.Parameters[1].Type))
                         {
                             // (T param, CancellationToken ct)
                             parameterType = methodSymbol.Parameters[0].Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
