@@ -26,6 +26,7 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
     private const string DelegateCommandAttributeName = "Prism.SourceGenerators.DelegateCommandAttribute";
     private const string AsyncDelegateCommandAttributeName = "Prism.SourceGenerators.AsyncDelegateCommandAttribute";
     private const string ObservesPropertyAttributeName = "Prism.SourceGenerators.ObservesPropertyAttribute";
+    private const string ObservablePropertyAttributeName = "Prism.SourceGenerators.ObservablePropertyAttribute";
 
     /// <inheritdoc/>
     public void Initialize(IncrementalGeneratorInitializationContext context)
@@ -172,14 +173,14 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
 
         // --- Polyfill generation (combined from both pipelines, emitted once) ---
         IncrementalValueProvider<bool> needsPolyfillFromDelegate = delegateCommandInfos
-            .Where(static item => item.Value is not null && item.Errors.IsEmpty)
+            .Where(static item => item.Value is not null && !item.HasBlockingDiagnostics)
             .Select(static (item, _) => item.Value!)
             .Where(static item => item.IsAsync && !item.HasAsyncDelegateCommand)
             .Collect()
             .Select(static (items, _) => items.Length > 0);
 
         IncrementalValueProvider<bool> needsPolyfillFromAsync = asyncCommandInfos
-            .Where(static item => item.Value is not null && item.Errors.IsEmpty)
+            .Where(static item => item.Value is not null && !item.HasBlockingDiagnostics)
             .Select(static (item, _) => item.Value!)
             .Where(static item => !item.HasAsyncDelegateCommand)
             .Collect()
@@ -194,6 +195,7 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
             if (needs)
             {
                 context.AddSource("AsyncDelegateCommand.Polyfill.g.cs", GenerateAsyncDelegateCommandPolyfill());
+                context.ReportDiagnostic(Diagnostic.Create(DiagnosticDescriptors.AsyncDelegateCommandPolyfillInUse, Location.None, "AsyncDelegateCommand"));
             }
         });
     }
@@ -216,7 +218,7 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
         // Generate command properties
         context.RegisterSourceOutput(
             commandInfos
-                .Where(static item => item.Value is not null && item.Errors.IsEmpty)
+                .Where(static item => item.Value is not null && !item.HasBlockingDiagnostics)
                 .Select(static (item, _) => item.Value!),
             static (context, info) =>
             {
@@ -232,13 +234,22 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
     {
         IMethodSymbol methodSymbol = (IMethodSymbol)context.TargetSymbol;
         INamedTypeSymbol containingType = methodSymbol.ContainingType;
+        Compilation compilation = context.SemanticModel.Compilation;
 
         if (!IsPartialType(containingType, token))
         {
             return CreateNonPartialDiagnostic(containingType);
         }
 
-        bool isAsync = IsAsyncMethod(methodSymbol, context.SemanticModel.Compilation);
+        bool isAsync = IsAsyncMethod(methodSymbol, compilation);
+        ImmutableArray<DiagnosticInfo>.Builder diagnostics = ImmutableArray.CreateBuilder<DiagnosticInfo>();
+        if (!IsValidDelegateCommandMethodSignature(methodSymbol, isAsync))
+        {
+            diagnostics.Add(DiagnosticInfo.Create(
+                DiagnosticDescriptors.InvalidDelegateCommandMethodSignature,
+                methodSymbol,
+                methodSymbol.Name));
+        }
 
         string? parameterType = ExtractParameterType(methodSymbol, isAsync);
         string methodName = methodSymbol.Name;
@@ -263,12 +274,34 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
 
         ImmutableArray<string> observesProperties = CollectObservesProperties(methodSymbol);
 
-        bool hasAsyncDelegateCommand = context.SemanticModel.Compilation
+        bool hasAsyncDelegateCommand = compilation
             .GetTypeByMetadataName("Prism.Commands.AsyncDelegateCommand") is not null;
 
         HierarchyInfo hierarchy = HierarchyInfo.From(containingType);
 
         bool useFieldKeyword = SupportsFieldKeyword(context);
+
+        if (canExecute is not null && !HasMember(containingType, canExecute))
+        {
+            diagnostics.Add(DiagnosticInfo.Create(
+                DiagnosticDescriptors.CanExecuteMemberNotFound,
+                methodSymbol,
+                canExecute,
+                containingType.Name));
+        }
+
+        foreach (string observedProperty in observesProperties)
+        {
+            if (!HasPropertyInTypeHierarchy(containingType, observedProperty)
+                && !IsObservableGeneratedProperty(containingType, observedProperty))
+            {
+                diagnostics.Add(DiagnosticInfo.Create(
+                    DiagnosticDescriptors.ObservesPropertyNotFound,
+                    methodSymbol,
+                    observedProperty,
+                    containingType.Name));
+            }
+        }
 
         return new Result<CommandGenerationInfo>(
             new CommandGenerationInfo(
@@ -286,7 +319,7 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
                 EnableParallelExecution: false,
                 ObservesProperties: observesProperties,
                 UseFieldKeyword: useFieldKeyword),
-            ImmutableArray<DiagnosticInfo>.Empty);
+            diagnostics.ToImmutable());
     }
 
     private static ImmutableArray<Result<CommandGenerationInfo>> ExtractAsyncDelegateCommandInfos(
@@ -303,7 +336,8 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
         string? parameterType = ExtractParameterType(methodSymbol, isAsync: true);
         string methodName = methodSymbol.Name;
         ImmutableArray<string> observesProperties = CollectObservesProperties(methodSymbol);
-        bool hasAsyncDelegateCommand = context.SemanticModel.Compilation
+        Compilation compilation = context.SemanticModel.Compilation;
+        bool hasAsyncDelegateCommand = compilation
             .GetTypeByMetadataName("Prism.Commands.AsyncDelegateCommand") is not null;
         HierarchyInfo hierarchy = HierarchyInfo.From(containingType);
         bool useFieldKeyword = SupportsFieldKeyword(context);
@@ -323,6 +357,15 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
             string? catchType = null;
             string? cancellationTokenSourceFactory = null;
             bool enableParallelExecution = false;
+            ImmutableArray<DiagnosticInfo>.Builder diagnostics = ImmutableArray.CreateBuilder<DiagnosticInfo>();
+
+            if (!IsValidAsyncDelegateCommandMethodSignature(methodSymbol))
+            {
+                diagnostics.Add(DiagnosticInfo.Create(
+                    DiagnosticDescriptors.InvalidAsyncDelegateCommandMethodSignature,
+                    methodSymbol,
+                    methodSymbol.Name));
+            }
 
             foreach (var namedArg in attr.NamedArguments)
             {
@@ -333,13 +376,37 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
                         break;
                     case "CanExecute" when namedArg.Value.Value is string ce:
                         canExecute = ce;
+                        if (!HasMember(containingType, ce))
+                        {
+                            diagnostics.Add(DiagnosticInfo.Create(
+                                DiagnosticDescriptors.CanExecuteMemberNotFound,
+                                methodSymbol,
+                                ce,
+                                containingType.Name));
+                        }
                         break;
                     case "CancelAfterMicroseconds" when namedArg.Value.Value is double ms:
                         cancelAfterMicroseconds = ms;
                         break;
                     case "Catch" when namedArg.Value.Value is string ch:
                         catchHandler = ch;
-                        catchType = ResolveCatchType(containingType, ch, context.SemanticModel.Compilation);
+                        catchType = ResolveCatchType(containingType, ch, compilation);
+                        if (!HasMember(containingType, ch))
+                        {
+                            diagnostics.Add(DiagnosticInfo.Create(
+                                DiagnosticDescriptors.CatchHandlerNotFound,
+                                methodSymbol,
+                                ch,
+                                containingType.Name));
+                        }
+                        else if (!IsValidCatchHandler(containingType, ch, compilation))
+                        {
+                            diagnostics.Add(DiagnosticInfo.Create(
+                                DiagnosticDescriptors.CatchHandlerInvalidSignature,
+                                methodSymbol,
+                                ch,
+                                containingType.Name));
+                        }
                         break;
                     case "CancellationTokenSourceFactory" when namedArg.Value.Value is string ctsf:
                         cancellationTokenSourceFactory = ctsf;
@@ -351,6 +418,19 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
             }
 
             commandName ??= GetCommandName(methodName);
+
+            foreach (string observedProperty in observesProperties)
+            {
+                if (!HasPropertyInTypeHierarchy(containingType, observedProperty)
+                    && !IsObservableGeneratedProperty(containingType, observedProperty))
+                {
+                    diagnostics.Add(DiagnosticInfo.Create(
+                        DiagnosticDescriptors.ObservesPropertyNotFound,
+                        methodSymbol,
+                        observedProperty,
+                        containingType.Name));
+                }
+            }
 
             builder.Add(new Result<CommandGenerationInfo>(
                 new CommandGenerationInfo(
@@ -368,7 +448,7 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
                     enableParallelExecution,
                     observesProperties,
                     useFieldKeyword),
-                ImmutableArray<DiagnosticInfo>.Empty));
+                diagnostics.ToImmutable()));
         }
 
         return builder.ToImmutable();
@@ -465,6 +545,111 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
         return type.ToDisplayString() == "System.Threading.CancellationToken";
     }
 
+    private static bool IsValidDelegateCommandMethodSignature(IMethodSymbol methodSymbol, bool isAsync)
+    {
+        if (!isAsync)
+        {
+            return methodSymbol.ReturnsVoid && methodSymbol.Parameters.Length <= 1;
+        }
+
+        if (!IsTaskReturnType(methodSymbol.ReturnType))
+            return false;
+
+        if (methodSymbol.Parameters.Length == 0)
+            return true;
+
+        if (methodSymbol.Parameters.Length == 1)
+            return true;
+
+        return methodSymbol.Parameters.Length == 2 && IsCancellationToken(methodSymbol.Parameters[1].Type);
+    }
+
+    private static bool IsValidAsyncDelegateCommandMethodSignature(IMethodSymbol methodSymbol)
+    {
+        if (!IsTaskReturnType(methodSymbol.ReturnType))
+            return false;
+
+        if (methodSymbol.Parameters.Length == 0)
+            return true;
+
+        if (methodSymbol.Parameters.Length == 1)
+            return true;
+
+        return methodSymbol.Parameters.Length == 2 && IsCancellationToken(methodSymbol.Parameters[1].Type);
+    }
+
+    private static bool IsTaskReturnType(ITypeSymbol returnType)
+    {
+        if (returnType is not INamedTypeSymbol namedType)
+            return false;
+
+        return namedType.ToDisplayString() == "System.Threading.Tasks.Task";
+    }
+
+    private static bool HasMember(INamedTypeSymbol containingType, string memberName)
+    {
+        for (INamedTypeSymbol? current = containingType; current is not null; current = current.BaseType)
+        {
+            if (current.GetMembers(memberName).Length > 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool HasPropertyInTypeHierarchy(INamedTypeSymbol containingType, string propertyName)
+    {
+        for (INamedTypeSymbol? current = containingType; current is not null; current = current.BaseType)
+        {
+            if (current.GetMembers(propertyName).OfType<IPropertySymbol>().Any())
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool IsObservableGeneratedProperty(INamedTypeSymbol containingType, string propertyName)
+    {
+        for (INamedTypeSymbol? current = containingType; current is not null; current = current.BaseType)
+        {
+            foreach (IFieldSymbol field in current.GetMembers().OfType<IFieldSymbol>())
+            {
+                if (HasAttribute(field, ObservablePropertyAttributeName)
+                    && GetObservablePropertyName(field.Name) == propertyName)
+                {
+                    return true;
+                }
+            }
+
+            foreach (IPropertySymbol property in current.GetMembers().OfType<IPropertySymbol>())
+            {
+                if (HasAttribute(property, ObservablePropertyAttributeName)
+                    && property.Name == propertyName)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static bool HasAttribute(ISymbol symbol, string attributeName) =>
+        symbol.GetAttributes().Any(attr => attr.AttributeClass?.ToDisplayString() == attributeName);
+
+    private static string GetObservablePropertyName(string fieldName)
+    {
+        if (fieldName.StartsWith("m_") && fieldName.Length > 2)
+            return char.ToUpperInvariant(fieldName[2]) + fieldName.Substring(3);
+        if (fieldName.StartsWith("_") && fieldName.Length > 1)
+            return char.ToUpperInvariant(fieldName[1]) + fieldName.Substring(2);
+        return char.ToUpperInvariant(fieldName[0]) + fieldName.Substring(1);
+    }
+
     private static string? ResolveCatchType(INamedTypeSymbol containingType, string catchName, Compilation compilation)
     {
         INamedTypeSymbol? exceptionType = compilation.GetTypeByMetadataName("System.Exception");
@@ -526,6 +711,59 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
         }
 
         return null;
+    }
+
+    private static bool IsValidCatchHandler(INamedTypeSymbol containingType, string catchName, Compilation compilation)
+    {
+        INamedTypeSymbol? exceptionType = compilation.GetTypeByMetadataName("System.Exception");
+        if (exceptionType is null)
+            return false;
+
+        foreach (ISymbol member in containingType.GetMembers(catchName))
+        {
+            switch (member)
+            {
+                case IMethodSymbol { Parameters.Length: 1 } method:
+                {
+                    ITypeSymbol parameterType = method.Parameters[0].Type;
+                    if (parameterType is ITypeParameterSymbol typeParameter)
+                    {
+                        if (typeParameter.ConstraintTypes.Any(constraint => IsExceptionTypeOrDerived(constraint, exceptionType)))
+                        {
+                            return true;
+                        }
+                    }
+                    else if (IsExceptionTypeOrDerived(parameterType, exceptionType))
+                    {
+                        return true;
+                    }
+
+                    break;
+                }
+                case IPropertySymbol property:
+                {
+                    if (TryGetActionArgumentType(property.Type, out ITypeSymbol actionArgType)
+                        && IsExceptionTypeOrDerived(actionArgType, exceptionType))
+                    {
+                        return true;
+                    }
+
+                    break;
+                }
+                case IFieldSymbol field:
+                {
+                    if (TryGetActionArgumentType(field.Type, out ITypeSymbol actionArgType)
+                        && IsExceptionTypeOrDerived(actionArgType, exceptionType))
+                    {
+                        return true;
+                    }
+
+                    break;
+                }
+            }
+        }
+
+        return false;
     }
 
     private static bool TryGetActionArgumentType(ITypeSymbol type, out ITypeSymbol argumentType)

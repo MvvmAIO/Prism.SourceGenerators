@@ -174,7 +174,7 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
         // Generate source for valid items
         context.RegisterSourceOutput(
             infos
-                .Where(static item => item.Value is not null && item.Errors.IsEmpty)
+                .Where(static item => item.Value is not null && !item.HasBlockingDiagnostics)
                 .Select(static (item, _) => item.Value!),
             static (context, info) =>
             {

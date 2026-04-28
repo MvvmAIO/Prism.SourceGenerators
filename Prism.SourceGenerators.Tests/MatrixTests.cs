@@ -232,4 +232,50 @@ public sealed class MatrixTests
         GeneratedSource hello2Command = Assert.Single(output.GeneratedSources.Where(s => s.HintName.EndsWith(".Hello2Command.g.cs")));
         Assert.Contains(".Catch<global::System.OperationCanceledException>(OnOperationCanceledException2)", hello2Command.Source);
     }
+
+    [Fact]
+    public void AsyncDelegateCommand_reports_warning_for_missing_catch_handler_without_blocking_generation()
+    {
+        const string source = """
+            namespace Demo;
+
+            public partial class Vm : Prism.Mvvm.BindableBase
+            {
+                [AsyncDelegateCommand(Catch = "MissingHandler", CommandName = nameof(HelloCommand))]
+                private async System.Threading.Tasks.Task HelloAsync()
+                {
+                    await System.Threading.Tasks.Task.CompletedTask;
+                }
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source, languageVersion: LanguageVersion.Preview);
+        Assert.Contains(output.Diagnostics, d => d.Id == "PSG2001");
+        Assert.Contains(output.GeneratedSources, s => s.HintName.EndsWith(".HelloCommand.g.cs"));
+    }
+
+    [Fact]
+    public void AsyncDelegateCommand_reports_info_when_polyfill_is_generated()
+    {
+        const string source = """
+            namespace Demo;
+
+            public partial class Vm : Prism.Mvvm.BindableBase
+            {
+                [DelegateCommand]
+                private async System.Threading.Tasks.Task LoadAsync()
+                {
+                    await System.Threading.Tasks.Task.CompletedTask;
+                }
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(
+            source,
+            languageVersion: LanguageVersion.Preview,
+            hasAsyncDelegateCommand: false);
+
+        Assert.Contains(output.Diagnostics, d => d.Id == "PSG3001");
+        Assert.Contains(output.GeneratedSources, s => s.HintName == "AsyncDelegateCommand.Polyfill.g.cs");
+    }
 }

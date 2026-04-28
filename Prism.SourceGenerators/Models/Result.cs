@@ -6,8 +6,10 @@
 // more info in ThirdPartyNotices.txt in the root of the project.
 
 using System;
+using System.Linq;
 
 using Prism.SourceGenerators.Helpers;
+using Microsoft.CodeAnalysis;
 
 namespace Prism.SourceGenerators.Models;
 
@@ -18,4 +20,8 @@ namespace Prism.SourceGenerators.Models;
 /// <param name="Value">The wrapped value for the current result.</param>
 /// <param name="Errors">The associated diagnostic errors, if any.</param>
 internal sealed record Result<TValue>(TValue Value, EquatableArray<DiagnosticInfo> Errors)
-    where TValue : IEquatable<TValue>?;
+    where TValue : IEquatable<TValue>?
+{
+    public bool HasBlockingDiagnostics =>
+        Errors.AsImmutableArray().Any(static d => d.Descriptor.DefaultSeverity == DiagnosticSeverity.Error);
+}
