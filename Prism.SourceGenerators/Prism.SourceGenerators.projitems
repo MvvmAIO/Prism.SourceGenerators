@@ -48,6 +48,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Models\TypeInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\TypedConstantInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\TypedConstantInfo.Factory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BindableBaseGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DelegateCommandGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ObservablePropertyGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Polyfills\GeneratorAttributeSyntaxContext.cs" />

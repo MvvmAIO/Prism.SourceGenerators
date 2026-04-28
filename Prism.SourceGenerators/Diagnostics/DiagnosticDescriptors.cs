@@ -41,4 +41,15 @@ internal static class DiagnosticDescriptors
         category: "Prism.SourceGenerators",
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
+
+    /// <summary>
+    /// PSG0004: Class with [BindableBase] must be partial.
+    /// </summary>
+    public static readonly DiagnosticDescriptor NonPartialClassWithBindableBase = new(
+        id: "PSG0004",
+        title: "Class with [BindableBase] must be partial",
+        messageFormat: "The class '{0}' has [BindableBase] but is not declared as partial",
+        category: "Prism.SourceGenerators",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
 }
