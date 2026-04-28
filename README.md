@@ -1,5 +1,7 @@
 # Prism.SourceGenerators
 
+**English** | [简体中文](README.zh-CN.md) | [日本語](README.ja.md)
+
 Roslyn source generators for the [Prism](https://github.com/PrismLibrary/Prism) MVVM library.
 
 ## Project Structure
