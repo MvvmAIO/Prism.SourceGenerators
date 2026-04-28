@@ -232,5 +232,5 @@ dotnet build Prism.SourceGenerators.slnx
 
 ## 要件
 
-- .NET SDK 9.0.200+ または .NET 10 SDK
+- .NET 10 SDK
 - Visual Studio 2022 17.13+ / Rider / VS Code with C# Dev Kit（`.slnx` サポート）
