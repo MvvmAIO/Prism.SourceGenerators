@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IsPackable>true</IsPackable>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+
+    <PackageId>Prism.SourceGenerators</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>MvvmAIO</Authors>
+    <Description>Roslyn source generators for the Prism MVVM library. Generates ObservableProperty, DelegateCommand, AsyncDelegateCommand, and BindableBase implementations.</Description>
+    <PackageTags>prism;mvvm;source-generator;roslyn;wpf;observable-property;delegate-command</PackageTags>
+    <PackageProjectUrl>https://github.com/MvvmAIO/Prism.SourceGenerators</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/MvvmAIO/Prism.SourceGenerators</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Prism.SourceGenerators.Roslyn4001\Prism.SourceGenerators.Roslyn4001.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Prism.SourceGenerators.Roslyn4031\Prism.SourceGenerators.Roslyn4031.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Prism.SourceGenerators.Roslyn4120\Prism.SourceGenerators.Roslyn4120.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Prism.SourceGenerators.Roslyn5000\Prism.SourceGenerators.Roslyn5000.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md" Pack="true" PackagePath="\" Visible="false" />
+    <None Include="..\LICENSE.txt" Pack="true" PackagePath="\" Visible="false" />
+    <None Include="..\Prism.SourceGenerators.Roslyn4001\bin\$(Configuration)\netstandard2.0\Prism.SourceGenerators.dll"
+          Pack="true"
+          PackagePath="analyzers/dotnet/roslyn4.0/cs"
+          Visible="false" />
+    <None Include="..\Prism.SourceGenerators.Roslyn4031\bin\$(Configuration)\netstandard2.0\Prism.SourceGenerators.dll"
+          Pack="true"
+          PackagePath="analyzers/dotnet/roslyn4.3/cs"
+          Visible="false" />
+    <None Include="..\Prism.SourceGenerators.Roslyn4120\bin\$(Configuration)\netstandard2.0\Prism.SourceGenerators.dll"
+          Pack="true"
+          PackagePath="analyzers/dotnet/roslyn4.12/cs"
+          Visible="false" />
+    <None Include="..\Prism.SourceGenerators.Roslyn5000\bin\$(Configuration)\netstandard2.0\Prism.SourceGenerators.dll"
+          Pack="true"
+          PackagePath="analyzers/dotnet/roslyn5.0/cs"
+          Visible="false" />
+  </ItemGroup>
+
+</Project>

@@ -15,6 +15,7 @@
     <Project Path="Prism.SourceGenerators.Tests/Prism.SourceGenerators.Tests.csproj" />
   </Folder>
   <Project Path="Prism.SourceGenerators/Prism.SourceGenerators.shproj" />
+  <Project Path="Prism.SourceGenerators.Package/Prism.SourceGenerators.Package.csproj" />
   <Project Path="Prism.SourceGenerators.Roslyn4001/Prism.SourceGenerators.Roslyn4001.csproj" />
   <Project Path="Prism.SourceGenerators.Roslyn4031/Prism.SourceGenerators.Roslyn4031.csproj" />
   <Project Path="Prism.SourceGenerators.Roslyn4120/Prism.SourceGenerators.Roslyn4120.csproj" />
