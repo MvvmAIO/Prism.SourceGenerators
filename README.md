@@ -193,6 +193,28 @@ public partial class MainViewModel : BindableBase
 }
 ```
 
+### `[BindableBase]`
+
+Apply to a class that does **not** inherit from `Prism.Mvvm.BindableBase` to automatically generate an `INotifyPropertyChanged` implementation. The generated code includes `PropertyChanged` event, `SetProperty<T>`, `RaisePropertyChanged`, and `OnPropertyChanged` methods.
+
+```csharp
+using Prism.SourceGenerators;
+
+[BindableBase]
+public partial class SimpleViewModel
+{
+    private string _message = "Hello!";
+
+    public string Message
+    {
+        get => _message;
+        set => SetProperty(ref _message, value);
+    }
+}
+```
+
+If the class already inherits from `BindableBase` or a base class that implements `INotifyPropertyChanged`, no code is generated.
+
 ## Diagnostics
 
 | ID | Description |
@@ -200,6 +222,7 @@ public partial class MainViewModel : BindableBase
 | PSG0001 | Class with `[ObservableProperty]` members must be `partial` |
 | PSG0002 | Class with `[DelegateCommand]` / `[AsyncDelegateCommand]` method must be `partial` |
 | PSG0003 | Property with `[ObservableProperty]` must be declared as `partial` |
+| PSG0004 | Class with `[BindableBase]` must be `partial` |
 
 ## Building
 

@@ -193,6 +193,28 @@ public partial class MainViewModel : BindableBase
 }
 ```
 
+### `[BindableBase]`
+
+应用于**未**继承 `Prism.Mvvm.BindableBase` 的类，自动生成 `INotifyPropertyChanged` 实现。生成的代码包含 `PropertyChanged` 事件、`SetProperty<T>`、`RaisePropertyChanged` 和 `OnPropertyChanged` 方法。
+
+```csharp
+using Prism.SourceGenerators;
+
+[BindableBase]
+public partial class SimpleViewModel
+{
+    private string _message = "Hello!";
+
+    public string Message
+    {
+        get => _message;
+        set => SetProperty(ref _message, value);
+    }
+}
+```
+
+如果类已经继承了 `BindableBase` 或其基类已实现 `INotifyPropertyChanged`，则不会生成任何代码。
+
 ## 诊断
 
 | ID | 描述 |
@@ -200,6 +222,7 @@ public partial class MainViewModel : BindableBase
 | PSG0001 | 包含 `[ObservableProperty]` 成员的类必须声明为 `partial` |
 | PSG0002 | 包含 `[DelegateCommand]` / `[AsyncDelegateCommand]` 方法的类必须声明为 `partial` |
 | PSG0003 | 标注 `[ObservableProperty]` 的属性必须声明为 `partial` |
+| PSG0004 | 标注 `[BindableBase]` 的类必须声明为 `partial` |
 
 ## 构建
 
