@@ -281,6 +281,7 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
                 hasAsyncDelegateCommand,
                 CancelAfterMicroseconds: null,
                 Catch: null,
+                CatchType: null,
                 CancellationTokenSourceFactory: null,
                 EnableParallelExecution: false,
                 ObservesProperties: observesProperties,
@@ -319,6 +320,7 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
             string? canExecute = null;
             double? cancelAfterMicroseconds = null;
             string? catchHandler = null;
+            string? catchType = null;
             string? cancellationTokenSourceFactory = null;
             bool enableParallelExecution = false;
 
@@ -337,6 +339,7 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
                         break;
                     case "Catch" when namedArg.Value.Value is string ch:
                         catchHandler = ch;
+                        catchType = ResolveCatchType(containingType, ch, context.SemanticModel.Compilation);
                         break;
                     case "CancellationTokenSourceFactory" when namedArg.Value.Value is string ctsf:
                         cancellationTokenSourceFactory = ctsf;
@@ -360,6 +363,7 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
                     hasAsyncDelegateCommand,
                     cancelAfterMicroseconds,
                     catchHandler,
+                    catchType,
                     cancellationTokenSourceFactory,
                     enableParallelExecution,
                     observesProperties,
@@ -459,6 +463,100 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
     private static bool IsCancellationToken(ITypeSymbol type)
     {
         return type.ToDisplayString() == "System.Threading.CancellationToken";
+    }
+
+    private static string? ResolveCatchType(INamedTypeSymbol containingType, string catchName, Compilation compilation)
+    {
+        INamedTypeSymbol? exceptionType = compilation.GetTypeByMetadataName("System.Exception");
+        if (exceptionType is null)
+            return null;
+
+        foreach (ISymbol member in containingType.GetMembers(catchName))
+        {
+            switch (member)
+            {
+                case IMethodSymbol { Parameters.Length: 1 } method:
+                {
+                    ITypeSymbol parameterType = method.Parameters[0].Type;
+                    if (parameterType is ITypeParameterSymbol typeParameter)
+                    {
+                        ITypeSymbol? constrainedExceptionType = typeParameter.ConstraintTypes
+                            .FirstOrDefault(constraint => IsExceptionTypeOrDerived(constraint, exceptionType));
+
+                        if (constrainedExceptionType is not null
+                            && !SymbolEqualityComparer.Default.Equals(constrainedExceptionType, exceptionType))
+                        {
+                            return constrainedExceptionType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                        }
+
+                        return null;
+                    }
+
+                    if (IsExceptionTypeOrDerived(parameterType, exceptionType)
+                        && !SymbolEqualityComparer.Default.Equals(parameterType, exceptionType))
+                    {
+                        return parameterType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                    }
+
+                    break;
+                }
+                case IPropertySymbol property:
+                {
+                    if (TryGetActionArgumentType(property.Type, out ITypeSymbol actionArgType)
+                        && IsExceptionTypeOrDerived(actionArgType, exceptionType)
+                        && !SymbolEqualityComparer.Default.Equals(actionArgType, exceptionType))
+                    {
+                        return actionArgType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                    }
+
+                    break;
+                }
+                case IFieldSymbol field:
+                {
+                    if (TryGetActionArgumentType(field.Type, out ITypeSymbol actionArgType)
+                        && IsExceptionTypeOrDerived(actionArgType, exceptionType)
+                        && !SymbolEqualityComparer.Default.Equals(actionArgType, exceptionType))
+                    {
+                        return actionArgType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                    }
+
+                    break;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static bool TryGetActionArgumentType(ITypeSymbol type, out ITypeSymbol argumentType)
+    {
+        if (type is INamedTypeSymbol namedType
+            && namedType.Name == "Action"
+            && namedType.ContainingNamespace.ToDisplayString() == "System"
+            && namedType.TypeArguments.Length == 1)
+        {
+            argumentType = namedType.TypeArguments[0];
+            return true;
+        }
+
+        argumentType = null!;
+        return false;
+    }
+
+    private static bool IsExceptionTypeOrDerived(ITypeSymbol type, INamedTypeSymbol exceptionType)
+    {
+        if (type is not INamedTypeSymbol namedType)
+            return false;
+
+        for (INamedTypeSymbol? current = namedType; current is not null; current = current.BaseType)
+        {
+            if (SymbolEqualityComparer.Default.Equals(current, exceptionType))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static bool SupportsFieldKeyword(GeneratorAttributeSyntaxContext context)
@@ -574,7 +672,16 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
                 fluentSb.Append($"\n                .CancellationTokenSourceFactory({ctsFactory})");
 
             if (info.Catch is { } catchHandler)
-                fluentSb.Append($"\n                .Catch({catchHandler})");
+            {
+                if (info.CatchType is { } catchType)
+                {
+                    fluentSb.Append($"\n                .Catch<{catchType}>({catchHandler})");
+                }
+                else
+                {
+                    fluentSb.Append($"\n                .Catch({catchHandler})");
+                }
+            }
 
             foreach (string prop in info.ObservesProperties.AsImmutableArray())
             {

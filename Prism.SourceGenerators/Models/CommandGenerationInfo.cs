@@ -16,6 +16,7 @@ internal sealed record CommandGenerationInfo(
     bool HasAsyncDelegateCommand,
     double? CancelAfterMicroseconds,
     string? Catch,
+    string? CatchType,
     string? CancellationTokenSourceFactory,
     bool EnableParallelExecution,
     EquatableArray<string> ObservesProperties,

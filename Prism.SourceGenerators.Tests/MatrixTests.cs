@@ -193,4 +193,43 @@ public sealed class MatrixTests
         GeneratorRunOutput output = GeneratorTestHarness.Run(source, languageVersion: languageVersion);
         Assert.Contains(output.Diagnostics, d => d.Id == diagnosticId);
     }
+
+    [Fact]
+    public void AsyncDelegateCommand_catch_uses_generic_overload_for_specific_exception_types()
+    {
+        const string source = """
+            namespace Demo;
+
+            public partial class Vm : Prism.Mvvm.BindableBase
+            {
+                [AsyncDelegateCommand(Catch = nameof(OnOperationCanceledException), CommandName = nameof(HelloCommand))]
+                private async System.Threading.Tasks.Task HelloAsync()
+                {
+                    await System.Threading.Tasks.Task.CompletedTask;
+                }
+
+                [AsyncDelegateCommand(Catch = nameof(OnOperationCanceledException2), CommandName = nameof(Hello2Command))]
+                private async System.Threading.Tasks.Task Hello2Async()
+                {
+                    await System.Threading.Tasks.Task.CompletedTask;
+                }
+
+                private void OnOperationCanceledException(System.OperationCanceledException ex)
+                {
+                }
+
+                private void OnOperationCanceledException2<TEx>(TEx ex) where TEx : System.OperationCanceledException
+                {
+                }
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source, languageVersion: LanguageVersion.Preview);
+
+        GeneratedSource helloCommand = Assert.Single(output.GeneratedSources.Where(s => s.HintName.EndsWith(".HelloCommand.g.cs")));
+        Assert.Contains(".Catch<global::System.OperationCanceledException>(OnOperationCanceledException)", helloCommand.Source);
+
+        GeneratedSource hello2Command = Assert.Single(output.GeneratedSources.Where(s => s.HintName.EndsWith(".Hello2Command.g.cs")));
+        Assert.Contains(".Catch<global::System.OperationCanceledException>(OnOperationCanceledException2)", hello2Command.Source);
+    }
 }

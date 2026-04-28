@@ -27,6 +27,7 @@ internal static class GeneratorTestHarness
                     public AsyncDelegateCommand CancelAfter(TimeSpan timeout) => this;
                     public AsyncDelegateCommand CancellationTokenSourceFactory(Func<CancellationToken> factory) => this;
                     public AsyncDelegateCommand Catch(Action<Exception> handler) => this;
+                    public AsyncDelegateCommand Catch<TException>(Action<TException> handler) where TException : Exception => this;
                     public AsyncDelegateCommand ObservesProperty<T>(Func<T> propertyExpression) => this;
                 }
 
@@ -38,6 +39,7 @@ internal static class GeneratorTestHarness
                     public AsyncDelegateCommand<T> CancelAfter(TimeSpan timeout) => this;
                     public AsyncDelegateCommand<T> CancellationTokenSourceFactory(Func<CancellationToken> factory) => this;
                     public AsyncDelegateCommand<T> Catch(Action<Exception> handler) => this;
+                    public AsyncDelegateCommand<T> Catch<TException>(Action<TException> handler) where TException : Exception => this;
                     public AsyncDelegateCommand<T> ObservesProperty<TProperty>(Func<TProperty> propertyExpression) => this;
                 }
                 """
