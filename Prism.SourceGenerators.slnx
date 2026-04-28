@@ -3,6 +3,9 @@
     <File Path=".gitignore" />
     <File Path=".gitattributes" />
     <File Path="LICENSE.txt" />
+    <File Path="README.ja.md" />
+    <File Path="README.md" />
+    <File Path="README.zh-CN.md" />
   </Folder>
   <Folder Name="/Samples/">
     <Project Path="Prism.SourceGenerators.Samples.Prism9/Prism.SourceGenerators.Samples.Prism9.csproj" />
