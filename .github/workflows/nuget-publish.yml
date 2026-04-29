@@ -33,7 +33,19 @@ jobs:
         run: dotnet build "Prism.SourceGenerators.Package/Prism.SourceGenerators.Package.csproj" --configuration Release --no-restore
 
       - name: Pack
-        run: dotnet pack "Prism.SourceGenerators.Package/Prism.SourceGenerators.Package.csproj" --configuration Release --no-build -p:ContinuousIntegrationBuild=true
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF_NAME}" != v* ]]; then
+            echo "Error: tag must start with 'v'. Current tag: ${GITHUB_REF_NAME}"
+            exit 1
+          fi
+
+          VERSION="${GITHUB_REF_NAME#v}"
+          dotnet pack "Prism.SourceGenerators.Package/Prism.SourceGenerators.Package.csproj" \
+            --configuration Release \
+            --no-build \
+            -p:ContinuousIntegrationBuild=true \
+            -p:Version="${VERSION}"
 
       - name: Push to NuGet
         run: dotnet nuget push "Prism.SourceGenerators.Package/bin/Release/*.nupkg" --api-key "${{ secrets.NUGET_API_KEY }}" --source "https://api.nuget.org/v3/index.json" --skip-duplicate
