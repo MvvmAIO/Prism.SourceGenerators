@@ -21,8 +21,8 @@ Prism.SourceGenerators.Roslyn4001/             # Roslyn 4.0.1
 Prism.SourceGenerators.Roslyn4031/             # Roslyn 4.3.1
 Prism.SourceGenerators.Roslyn4120/             # Roslyn 4.12.0
 Prism.SourceGenerators.Roslyn5000/             # Roslyn 5.0.0
-Prism.SourceGenerators.Samples.Prism9/         # WPF サンプル（Prism 9.0、ネイティブ AsyncDelegateCommand）
-Prism.SourceGenerators.Samples.Prism8/         # WPF サンプル（Prism 8.x、ポリフィル AsyncDelegateCommand）
+Prism.SourceGenerators.Samples.Prism9/         # Avalonia 12 サンプル（Prism 9.0、ネイティブ AsyncDelegateCommand）
+Prism.SourceGenerators.Samples.Prism8/         # Avalonia 12 サンプル（Prism 8.x、ポリフィル AsyncDelegateCommand）
 ```
 
 ## ジェネレーター
