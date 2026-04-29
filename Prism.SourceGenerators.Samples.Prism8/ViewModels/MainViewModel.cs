@@ -1,4 +1,5 @@
 using System;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Prism.Mvvm;
 using Prism.SourceGenerators;
@@ -14,6 +15,22 @@ namespace Prism.SourceGenerators.Samples.Prism8.ViewModels;
 /// </summary>
 public partial class MainViewModel : BindableBase
 {
+    public ObservableCollection<NavigationItem> NavigationItems { get; } =
+    [
+        new("dashboard", "Dashboard", "Overview and quick status of the sample."),
+        new("commands", "Commands", "Exercise DelegateCommand and AsyncDelegateCommand generation."),
+        new("profile", "Profile", "Demo area for observable properties and dependent notifications.")
+    ];
+
+    [ObservableProperty]
+    private NavigationItem _selectedNavigationItem = new("dashboard", "Dashboard", "Overview and quick status of the sample.");
+
+    [ObservableProperty]
+    private string _currentSectionTitle = "Dashboard";
+
+    [ObservableProperty]
+    private string _currentSectionDescription = "Overview and quick status of the sample.";
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(FullName))]
     private string _firstName = "";
@@ -35,6 +52,18 @@ public partial class MainViewModel : BindableBase
 
     [ObservableProperty]
     private string _statusMessage = "";
+
+    public MainViewModel()
+    {
+        SelectedNavigationItem = NavigationItems[0];
+    }
+
+    partial void OnSelectedNavigationItemChanged(NavigationItem value)
+    {
+        CurrentSectionTitle = value.Title;
+        CurrentSectionDescription = value.Description;
+        StatusMessage = $"Switched to {value.Title}.";
+    }
 
     // OnChanged partial methods are auto-generated.
     // Implement them to react to property changes:
@@ -108,3 +137,5 @@ public partial class MainViewModel : BindableBase
         StatusMessage = $"Save failed: {ex.Message}";
     }
 }
+
+public sealed record NavigationItem(string Key, string Title, string Description);

@@ -1,0 +1,49 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Prism.SourceGenerators.Samples.Prism9.MainWindow"
+        Title="Prism 9.0 - Prism.DryIoc.Avalonia Sample"
+        Height="560"
+        Width="960">
+  <Grid ColumnDefinitions="220,*">
+    <Border Grid.Column="0" Background="#0F172A" Padding="12">
+      <StackPanel Spacing="12">
+        <TextBlock Text="Prism 9 Navigation" FontSize="16" FontWeight="Bold" Foreground="White" />
+        <ListBox ItemsSource="{Binding NavigationItems}" SelectedItem="{Binding SelectedNavigationItem}">
+          <ListBox.ItemTemplate>
+            <DataTemplate>
+              <TextBlock Text="{Binding Title}" Margin="4" />
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </StackPanel>
+    </Border>
+
+    <ScrollViewer Grid.Column="1">
+      <StackPanel Margin="20" Spacing="10">
+        <TextBlock Text="{Binding CurrentSectionTitle}" FontSize="24" FontWeight="Bold" Foreground="DarkBlue" />
+        <TextBlock Text="{Binding CurrentSectionDescription}" FontSize="13" Foreground="Gray" />
+        <Separator Margin="0,4,0,8" />
+
+        <TextBlock Text="{Binding Title}" FontSize="18" />
+        <TextBlock Text="{Binding Counter, StringFormat=Counter: {0}}" FontSize="16" />
+        <CheckBox Content="Is Active" IsChecked="{Binding IsActive}" FontSize="16" />
+
+        <TextBlock Text="[DelegateCommand] - basic commands:" FontSize="13" FontWeight="SemiBold" />
+        <WrapPanel>
+          <Button Content="Increment" Command="{Binding IncrementCommand}" Margin="0,0,10,10" Padding="10,5" />
+          <Button Content="Reset" Command="{Binding ResetCommand}" Margin="0,0,10,10" Padding="10,5" />
+          <Button Content="Load Data (Async)" Command="{Binding LoadDataCommand}" Margin="0,0,10,10" Padding="10,5" />
+          <Button Content="Toggle (CanExecute+ObservesProperty)" Command="{Binding ToggleCommand}" Margin="0,0,10,10" Padding="10,5" />
+        </WrapPanel>
+
+        <TextBlock Text="[AsyncDelegateCommand] - advanced features:" FontSize="13" FontWeight="SemiBold" />
+        <WrapPanel>
+          <Button Content="Fetch Data (Parallel)" Command="{Binding FetchDataCommand}" Margin="0,0,10,10" Padding="10,5" />
+          <Button Content="Save (Catch+ObservesProperty)" Command="{Binding SaveCommand}" Margin="0,0,10,10" Padding="10,5" />
+        </WrapPanel>
+
+        <TextBlock Text="{Binding StatusMessage}" FontSize="14" Foreground="DarkGreen" />
+      </StackPanel>
+    </ScrollViewer>
+  </Grid>
+</Window>

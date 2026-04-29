@@ -1,27 +1,27 @@
 using Avalonia;
-using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using Prism.SourceGenerators.Samples.Prism8.ViewModels;
+using Prism.DryIoc;
+using Prism.Ioc;
 
 namespace Prism.SourceGenerators.Samples.Prism8;
 
-public partial class App : Avalonia.Application
+public partial class App : PrismApplication
 {
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
+        base.Initialize();
     }
 
-    public override void OnFrameworkInitializationCompleted()
+    protected override AvaloniaObject CreateShell()
     {
-        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
-        {
-            desktop.MainWindow = new MainWindow
-            {
-                DataContext = new MainViewModel()
-            };
-        }
+        var shell = Container.Resolve<MainWindow>();
+        shell.DataContext = Container.Resolve<ViewModels.MainViewModel>();
+        return shell;
+    }
 
-        base.OnFrameworkInitializationCompleted();
+    protected override void RegisterTypes(IContainerRegistry containerRegistry)
+    {
+        containerRegistry.RegisterSingleton<ViewModels.MainViewModel>();
     }
 }
