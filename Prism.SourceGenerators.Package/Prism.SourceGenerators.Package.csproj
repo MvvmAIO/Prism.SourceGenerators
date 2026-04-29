@@ -6,6 +6,8 @@
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <DevelopmentDependency>true</DevelopmentDependency>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
 
     <PackageId>MvvmAIO.Prism.SourceGenerators</PackageId>
     <Version>0.1.2</Version>
@@ -15,11 +17,14 @@
     <PackageProjectUrl>https://github.com/MvvmAIO/Prism.SourceGenerators</PackageProjectUrl>
     <RepositoryUrl>https://github.com/MvvmAIO/Prism.SourceGenerators</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="all" />
     <ProjectReference Include="..\Prism.SourceGenerators.Roslyn4001\Prism.SourceGenerators.Roslyn4001.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\Prism.SourceGenerators.Roslyn4031\Prism.SourceGenerators.Roslyn4031.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\Prism.SourceGenerators.Roslyn4120\Prism.SourceGenerators.Roslyn4120.csproj" ReferenceOutputAssembly="false" />
@@ -28,7 +33,12 @@
 
   <ItemGroup>
     <None Include="..\README.md" Pack="true" PackagePath="\" Visible="false" />
+    <None Include="..\CHANGELOG.md" Pack="true" PackagePath="\" Visible="false" />
     <None Include="..\LICENSE.txt" Pack="true" PackagePath="\" Visible="false" />
+    <None Include="build\MvvmAIO.Prism.SourceGenerators.props" Pack="true" PackagePath="build/" Visible="false" />
+    <None Include="build\MvvmAIO.Prism.SourceGenerators.targets" Pack="true" PackagePath="build/" Visible="false" />
+    <None Include="buildTransitive\MvvmAIO.Prism.SourceGenerators.props" Pack="true" PackagePath="buildTransitive/" Visible="false" />
+    <None Include="buildTransitive\MvvmAIO.Prism.SourceGenerators.targets" Pack="true" PackagePath="buildTransitive/" Visible="false" />
     <None Include="..\Prism.SourceGenerators.Roslyn4001\bin\$(Configuration)\netstandard2.0\Prism.SourceGenerators.dll"
           Pack="true"
           PackagePath="analyzers/dotnet/roslyn4.0/cs"

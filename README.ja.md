@@ -232,6 +232,25 @@ public partial class SimpleViewModel
 | PSG0002 | `[DelegateCommand]` / `[AsyncDelegateCommand]` メソッドを持つクラスは `partial` として宣言する必要があります |
 | PSG0003 | `[ObservableProperty]` を付与されたプロパティは `partial` として宣言する必要があります |
 | PSG0004 | `[BindableBase]` を付与されたクラスは `partial` として宣言する必要があります |
+| PSG1001 | `[DelegateCommand]` メソッドのシグネチャが無効です |
+| PSG1002 | `[AsyncDelegateCommand]` メソッドのシグネチャが無効です |
+| PSG2001 | Catch ハンドラーのメンバーが見つかりません |
+| PSG2002 | Catch ハンドラーのシグネチャに互換性がありません |
+| PSG2003 | CanExecute メンバーが見つかりません |
+| PSG2004 | 監視対象のプロパティが見つかりません |
+| PSG3001 | AsyncDelegateCommand polyfill を使用中です（Prism < 9.0） |
+
+## インストール
+
+```xml
+<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.1.2" />
+```
+
+または:
+
+```bash
+dotnet add package MvvmAIO.Prism.SourceGenerators
+```
 
 ## ビルド
 

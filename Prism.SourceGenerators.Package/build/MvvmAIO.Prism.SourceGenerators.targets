@@ -1,0 +1,21 @@
+<Project>
+  <PropertyGroup>
+    <_MvvmAIOPrismSourceGeneratorsCscPath>$(CscToolPath)$(CscToolExe)</_MvvmAIOPrismSourceGeneratorsCscPath>
+    <_MvvmAIOPrismSourceGeneratorsCscVersion Condition="Exists('$(_MvvmAIOPrismSourceGeneratorsCscPath)')">$([System.Diagnostics.FileVersionInfo]::GetVersionInfo('$(_MvvmAIOPrismSourceGeneratorsCscPath)').FileVersion)</_MvvmAIOPrismSourceGeneratorsCscVersion>
+    <_MvvmAIOPrismSourceGeneratorsCscMajor Condition="'$(_MvvmAIOPrismSourceGeneratorsCscVersion)' != ''">$([System.Version]::Parse('$(_MvvmAIOPrismSourceGeneratorsCscVersion)').Major)</_MvvmAIOPrismSourceGeneratorsCscMajor>
+    <_MvvmAIOPrismSourceGeneratorsCscMinor Condition="'$(_MvvmAIOPrismSourceGeneratorsCscVersion)' != ''">$([System.Version]::Parse('$(_MvvmAIOPrismSourceGeneratorsCscVersion)').Minor)</_MvvmAIOPrismSourceGeneratorsCscMinor>
+    <_MvvmAIOPrismSourceGeneratorsAnalyzerDir Condition="'$(_MvvmAIOPrismSourceGeneratorsAnalyzerDir)' == '' and '$(_MvvmAIOPrismSourceGeneratorsCscMajor)' == '4' and '$(_MvvmAIOPrismSourceGeneratorsCscMinor)' &lt;= '0'">roslyn4.0</_MvvmAIOPrismSourceGeneratorsAnalyzerDir>
+    <_MvvmAIOPrismSourceGeneratorsAnalyzerDir Condition="'$(_MvvmAIOPrismSourceGeneratorsAnalyzerDir)' == '' and '$(_MvvmAIOPrismSourceGeneratorsCscMajor)' == '4' and '$(_MvvmAIOPrismSourceGeneratorsCscMinor)' &lt;= '3'">roslyn4.3</_MvvmAIOPrismSourceGeneratorsAnalyzerDir>
+    <_MvvmAIOPrismSourceGeneratorsAnalyzerDir Condition="'$(_MvvmAIOPrismSourceGeneratorsAnalyzerDir)' == '' and '$(_MvvmAIOPrismSourceGeneratorsCscMajor)' == '4'">roslyn4.12</_MvvmAIOPrismSourceGeneratorsAnalyzerDir>
+    <_MvvmAIOPrismSourceGeneratorsAnalyzerDir Condition="'$(_MvvmAIOPrismSourceGeneratorsAnalyzerDir)' == '' and '$(_MvvmAIOPrismSourceGeneratorsCscMajor)' &gt;= '5'">roslyn5.0</_MvvmAIOPrismSourceGeneratorsAnalyzerDir>
+    <_MvvmAIOPrismSourceGeneratorsAnalyzerDir Condition="'$(_MvvmAIOPrismSourceGeneratorsAnalyzerDir)' == ''">roslyn4.12</_MvvmAIOPrismSourceGeneratorsAnalyzerDir>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(MvvmAIOPrismSourceGeneratorsAnalyzerAdded)' != 'true'">
+    <Analyzer Include="$(MSBuildThisFileDirectory)..\analyzers\dotnet\$(_MvvmAIOPrismSourceGeneratorsAnalyzerDir)\cs\Prism.SourceGenerators.dll" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <MvvmAIOPrismSourceGeneratorsAnalyzerAdded>true</MvvmAIOPrismSourceGeneratorsAnalyzerAdded>
+  </PropertyGroup>
+</Project>

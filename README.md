@@ -232,6 +232,25 @@ If the class already inherits from `BindableBase` or a base class that implement
 | PSG0002 | Class with `[DelegateCommand]` / `[AsyncDelegateCommand]` method must be `partial` |
 | PSG0003 | Property with `[ObservableProperty]` must be declared as `partial` |
 | PSG0004 | Class with `[BindableBase]` must be `partial` |
+| PSG1001 | Method signature is invalid for `[DelegateCommand]` |
+| PSG1002 | Method signature is invalid for `[AsyncDelegateCommand]` |
+| PSG2001 | Catch handler member was not found |
+| PSG2002 | Catch handler signature is not compatible |
+| PSG2003 | CanExecute member was not found |
+| PSG2004 | Observed property was not found |
+| PSG3001 | AsyncDelegateCommand polyfill is active (Prism < 9.0) |
+
+## Installation
+
+```xml
+<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.1.2" />
+```
+
+Or:
+
+```bash
+dotnet add package MvvmAIO.Prism.SourceGenerators
+```
 
 ## Building
 

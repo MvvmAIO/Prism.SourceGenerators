@@ -232,6 +232,25 @@ public partial class SimpleViewModel
 | PSG0002 | 包含 `[DelegateCommand]` / `[AsyncDelegateCommand]` 方法的类必须声明为 `partial` |
 | PSG0003 | 标注 `[ObservableProperty]` 的属性必须声明为 `partial` |
 | PSG0004 | 标注 `[BindableBase]` 的类必须声明为 `partial` |
+| PSG1001 | `[DelegateCommand]` 方法签名无效 |
+| PSG1002 | `[AsyncDelegateCommand]` 方法签名无效 |
+| PSG2001 | 未找到 Catch 处理程序成员 |
+| PSG2002 | Catch 处理程序签名不兼容 |
+| PSG2003 | 未找到 CanExecute 成员 |
+| PSG2004 | 未找到被观察的属性 |
+| PSG3001 | 正在使用 AsyncDelegateCommand polyfill（Prism < 9.0） |
+
+## 安装
+
+```xml
+<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.1.2" />
+```
+
+或：
+
+```bash
+dotnet add package MvvmAIO.Prism.SourceGenerators
+```
 
 ## 构建
 

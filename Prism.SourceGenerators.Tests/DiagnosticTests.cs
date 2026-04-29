@@ -43,6 +43,68 @@ public sealed class DiagnosticTests
         {
         }
         """)]
+    [InlineData("PSG1001", """
+        namespace Demo;
+
+        public partial class Foo : Prism.Mvvm.BindableBase
+        {
+            [DelegateCommand]
+            private int Save()
+            {
+                return 1;
+            }
+        }
+        """)]
+    [InlineData("PSG1002", """
+        namespace Demo;
+
+        public partial class Foo : Prism.Mvvm.BindableBase
+        {
+            [AsyncDelegateCommand]
+            private void Save()
+            {
+            }
+        }
+        """)]
+    [InlineData("PSG2002", """
+        namespace Demo;
+
+        public partial class Foo : Prism.Mvvm.BindableBase
+        {
+            [AsyncDelegateCommand(Catch = nameof(OnError))]
+            private async System.Threading.Tasks.Task SaveAsync()
+            {
+                await System.Threading.Tasks.Task.CompletedTask;
+            }
+
+            private void OnError(int code)
+            {
+            }
+        }
+        """)]
+    [InlineData("PSG2003", """
+        namespace Demo;
+
+        public partial class Foo : Prism.Mvvm.BindableBase
+        {
+            [DelegateCommand(CanExecute = nameof(CanSaveMissing))]
+            private void Save()
+            {
+            }
+        }
+        """)]
+    [InlineData("PSG2004", """
+        namespace Demo;
+
+        public partial class Foo : Prism.Mvvm.BindableBase
+        {
+            [DelegateCommand]
+            [ObservesProperty(nameof(NotExistingProperty))]
+            private void Save()
+            {
+            }
+        }
+        """)]
     public void Reports_expected_diagnostic_for_invalid_input(string diagnosticId, string source)
     {
         GeneratorRunOutput output = GeneratorTestHarness.Run(source);
