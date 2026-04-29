@@ -4,6 +4,15 @@
 
 为 [Prism](https://github.com/PrismLibrary/Prism) MVVM 库提供的 Roslyn 源生成器。
 
+## CI 状态
+
+[![.NET](https://github.com/MvvmAIO/Prism.SourceGenerators/actions/workflows/dotnet.yml/badge.svg?branch=master)](https://github.com/MvvmAIO/Prism.SourceGenerators/actions/workflows/dotnet.yml)
+[![Tests](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/MvvmAIO/Prism.SourceGenerators/master/.github/badges/tests.json)](https://github.com/MvvmAIO/Prism.SourceGenerators/actions/workflows/dotnet.yml)
+
+- 点击上方工作流可查看最新构建状态。
+- `Tests` 徽章会直接显示最新通过/失败/跳过数量。
+- 运行还会上传 `test-results`（`.trx`）制品，可用于查看详细测试报告。
+
 ## 项目结构
 
 ```

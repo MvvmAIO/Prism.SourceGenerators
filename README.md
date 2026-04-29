@@ -4,6 +4,15 @@
 
 Roslyn source generators for the [Prism](https://github.com/PrismLibrary/Prism) MVVM library.
 
+## CI Status
+
+[![.NET](https://github.com/MvvmAIO/Prism.SourceGenerators/actions/workflows/dotnet.yml/badge.svg?branch=master)](https://github.com/MvvmAIO/Prism.SourceGenerators/actions/workflows/dotnet.yml)
+[![Tests](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/MvvmAIO/Prism.SourceGenerators/master/.github/badges/tests.json)](https://github.com/MvvmAIO/Prism.SourceGenerators/actions/workflows/dotnet.yml)
+
+- Open the workflow page above to see the latest pipeline status.
+- The `Tests` badge displays the latest passed/failed/skipped counts.
+- The run also uploads a `test-results` artifact (`.trx`) for detailed test reports.
+
 ## Project Structure
 
 ```

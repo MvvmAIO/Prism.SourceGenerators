@@ -6,8 +6,18 @@ name: .NET
 on:
   push:
     branches: [ "master" ]
+    paths-ignore:
+      - ".github/badges/tests.json"
   pull_request:
     branches: [ "master" ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -20,9 +30,68 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props', '**/packages.lock.json', '**/global.json') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build --no-restore
+      run: dotnet build --no-restore --configuration Release -warnaserror
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=test-results.trx" --results-directory ./TestResults
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: ./TestResults/**/*.trx
+    - name: Generate test badge payload
+      if: always()
+      shell: pwsh
+      run: |
+        $trxFiles = Get-ChildItem -Path "./TestResults" -Filter "*.trx" -Recurse -ErrorAction SilentlyContinue
+        $total = 0
+        $passed = 0
+        $failed = 0
+        $skipped = 0
+
+        foreach ($file in $trxFiles) {
+          [xml]$trx = Get-Content $file.FullName
+          $counters = $trx.TestRun.ResultSummary.Counters
+          if ($null -ne $counters) {
+            $total += [int]$counters.total
+            $passed += [int]$counters.passed
+            $failed += [int]$counters.failed
+            $skipped += [int]$counters.notExecuted
+          }
+        }
+
+        if ($failed -gt 0) {
+          $color = "red"
+        } elseif ($skipped -gt 0) {
+          $color = "yellow"
+        } else {
+          $color = "brightgreen"
+        }
+
+        $message = "$passed passed | $failed failed | $skipped skipped"
+        $payload = @{
+          schemaVersion = 1
+          label = "tests"
+          message = $message
+          color = $color
+        } | ConvertTo-Json -Compress
+
+        New-Item -ItemType Directory -Path ".github/badges" -Force | Out-Null
+        Set-Content -Path ".github/badges/tests.json" -Value $payload
+
+    - name: Commit test badge payload
+      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        commit_message: "chore(ci): update test badge payload [skip ci]"
+        file_pattern: .github/badges/tests.json
