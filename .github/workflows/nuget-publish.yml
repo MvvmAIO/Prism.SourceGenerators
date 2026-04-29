@@ -5,6 +5,10 @@ on:
     tags:
       - "v*"
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Package version (e.g. 0.1.2)"
+        required: true
 
 permissions:
   contents: read
@@ -35,12 +39,16 @@ jobs:
       - name: Pack
         shell: bash
         run: |
-          if [[ "${GITHUB_REF_NAME}" != v* ]]; then
+          if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
+            VERSION="${{ github.event.inputs.version }}"
+          elif [[ "${GITHUB_REF_NAME}" == v* ]]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          else
             echo "Error: tag must start with 'v'. Current tag: ${GITHUB_REF_NAME}"
             exit 1
           fi
 
-          VERSION="${GITHUB_REF_NAME#v}"
+          echo "Publishing version: ${VERSION}"
           dotnet pack "Prism.SourceGenerators.Package/Prism.SourceGenerators.Package.csproj" \
             --configuration Release \
             --no-build \
