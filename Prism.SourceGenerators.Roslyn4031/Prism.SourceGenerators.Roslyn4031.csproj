@@ -2,5 +2,8 @@
 
   <Import Project="..\Prism.SourceGenerators\Prism.SourceGenerators.props" />
   <Import Project="..\Prism.SourceGenerators\Prism.SourceGenerators.projitems" Label="Shared" />
+  <ItemGroup>
+    <PackageReference Include="System.Memory" Version="4.6.3" />
+  </ItemGroup>
 
 </Project>
