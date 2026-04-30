@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System;
 using Nuke.Common;
 using Nuke.Common.CI;
 using Nuke.Common.Execution;
@@ -13,13 +14,15 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
 sealed class Build : NukeBuild
 {
     [Parameter("Build configuration (Debug/Release)")]
-    string Configuration { get; } = IsLocalBuild ? "Debug" : "Release";
+    string Configuration { get; set; } = IsLocalBuild ? "Debug" : "Release";
 
     [Parameter("Package version override (for release/tag builds)")]
-    string? Version { get; }
+    string? Version { get; set; } = Environment.GetEnvironmentVariable("VERSION");
 
     [Parameter("NuGet API key (required for Publish target)")]
-    string? NuGetApiKey { get; }
+    string? NuGetApiKey { get; set; } =
+        Environment.GetEnvironmentVariable("NUGET_API_KEY")
+        ?? Environment.GetEnvironmentVariable("APIKEY");
 
     AbsolutePath Root => RootDirectory;
     AbsolutePath SolutionFile => Root / "Prism.SourceGenerators.slnx";
