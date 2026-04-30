@@ -258,6 +258,26 @@ dotnet add package MvvmAIO.Prism.SourceGenerators
 dotnet build Prism.SourceGenerators.slnx
 ```
 
+## Nuke Build
+
+This repository uses [Nuke](https://nuke.build/) as the build orchestration layer for local automation and CI.
+
+- Main source solution: `Prism.SourceGenerators.slnx`
+- Build automation solution: `build.slnx` (contains only `build/_build.csproj`)
+
+Common commands:
+
+```bash
+# CI pipeline locally (clean + restore + compile + test)
+dotnet run --project build/_build.csproj -- --target Ci --configuration Release
+
+# Pack NuGet package (optionally override version)
+dotnet run --project build/_build.csproj -- --target Pack --configuration Release --version 0.1.2
+
+# Publish NuGet package
+dotnet run --project build/_build.csproj -- --target Publish --configuration Release --version 0.1.2 --nuget-api-key <NUGET_API_KEY>
+```
+
 ## Requirements
 
 - .NET 10 SDK

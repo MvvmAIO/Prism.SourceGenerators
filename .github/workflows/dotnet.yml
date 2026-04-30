@@ -41,12 +41,8 @@ jobs:
         key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props', '**/packages.lock.json', '**/global.json') }}
         restore-keys: |
           ${{ runner.os }}-nuget-
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --no-restore --configuration Release -warnaserror
-    - name: Test
-      run: dotnet test --no-build --configuration Release --verbosity normal --logger "trx;LogFileName=test-results.trx" --results-directory ./TestResults
+    - name: Run CI targets via Nuke
+      run: dotnet run --project "build/_build.csproj" -- --target Ci --configuration Release
     - name: Upload test results
       if: always()
       uses: actions/upload-artifact@v4

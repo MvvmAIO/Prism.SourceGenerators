@@ -258,6 +258,26 @@ dotnet add package MvvmAIO.Prism.SourceGenerators
 dotnet build Prism.SourceGenerators.slnx
 ```
 
+## Nuke 构建
+
+本仓库使用 [Nuke](https://nuke.build/) 作为本地自动化与 CI 的构建编排层。
+
+- 主源码解决方案：`Prism.SourceGenerators.slnx`
+- 构建自动化解决方案：`build.slnx`（仅包含 `build/_build.csproj`）
+
+常用命令：
+
+```bash
+# 本地执行 CI 流程（clean + restore + compile + test）
+dotnet run --project build/_build.csproj -- --target Ci --configuration Release
+
+# 打包 NuGet（可选覆盖版本号）
+dotnet run --project build/_build.csproj -- --target Pack --configuration Release --version 0.1.2
+
+# 发布 NuGet
+dotnet run --project build/_build.csproj -- --target Publish --configuration Release --version 0.1.2 --nuget-api-key <NUGET_API_KEY>
+```
+
 ## 要求
 
 - .NET 10 SDK
