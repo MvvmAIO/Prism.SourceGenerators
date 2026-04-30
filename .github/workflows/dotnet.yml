@@ -42,13 +42,23 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-nuget-
     - name: Run CI targets via Nuke
-      run: dotnet run --project "build/_build.csproj" -- --target Ci --configuration Release
+      shell: bash
+      run: |
+        set -o pipefail
+        dotnet run --project "build/_build.csproj" -- --target Ci --configuration Release 2>&1 | tee ci.log
     - name: Upload test results
       if: always()
       uses: actions/upload-artifact@v4
       with:
         name: test-results
         path: ./TestResults/**/*.trx
+    - name: Upload CI log
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ci-log
+        path: ./ci.log
+        if-no-files-found: warn
     - name: Generate test badge payload
       if: always()
       shell: pwsh
@@ -95,3 +105,19 @@ jobs:
       with:
         commit_message: "chore(ci): update test badge payload [skip ci]"
         file_pattern: .github/badges/tests.json
+    - name: Write CI summary
+      if: always()
+      shell: bash
+      run: |
+        {
+          echo "## CI Run Summary"
+          echo ""
+          echo "- Workflow: \`${GITHUB_WORKFLOW}\`"
+          echo "- Branch/Ref: \`${GITHUB_REF}\`"
+          echo "- Actor: \`${GITHUB_ACTOR}\`"
+          echo "- Job status: \`${{ job.status }}\`"
+          echo ""
+          echo "### Artifacts"
+          echo "- \`test-results\` (.trx)"
+          echo "- \`ci-log\` (full Nuke/CLI output)"
+        } >> "$GITHUB_STEP_SUMMARY"

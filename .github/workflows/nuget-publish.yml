@@ -15,6 +15,7 @@ permissions:
 
 jobs:
   publish:
+    if: github.actor == github.repository_owner
     runs-on: ubuntu-latest
 
     steps:
@@ -46,4 +47,38 @@ jobs:
           echo "VERSION=${VERSION}" >> "$GITHUB_ENV"
 
       - name: Pack and publish via Nuke
-        run: dotnet run --project "build/_build.csproj" -- --target Publish --configuration Release --version "${{ env.VERSION }}" --nuget-api-key "${{ secrets.NUGET_API_KEY }}"
+        shell: bash
+        run: |
+          set -o pipefail
+          dotnet run --project "build/_build.csproj" -- --target Publish --configuration Release --version "${{ env.VERSION }}" --nuget-api-key "${{ secrets.NUGET_API_KEY }}" 2>&1 | tee publish.log
+      - name: Upload publish log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-publish-log
+          path: ./publish.log
+          if-no-files-found: warn
+      - name: Upload package artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-packages
+          path: Prism.SourceGenerators.Package/bin/Release/*.nupkg
+          if-no-files-found: warn
+      - name: Write publish summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## NuGet Publish Summary"
+            echo ""
+            echo "- Version: \`${VERSION:-unknown}\`"
+            echo "- Trigger: \`${GITHUB_EVENT_NAME}\`"
+            echo "- Ref: \`${GITHUB_REF}\`"
+            echo "- Actor: \`${GITHUB_ACTOR}\`"
+            echo "- Job status: \`${{ job.status }}\`"
+            echo ""
+            echo "### Artifacts"
+            echo "- \`nuget-publish-log\` (full publish output)"
+            echo "- \`nuget-packages\` (generated .nupkg files, if any)"
+          } >> "$GITHUB_STEP_SUMMARY"
