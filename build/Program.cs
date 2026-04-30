@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System;
+using System.Linq;
 using Nuke.Common;
 using Nuke.Common.CI;
 using Nuke.Common.Execution;
@@ -13,6 +14,8 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
 [UnsetVisualStudioEnvironmentVariables]
 sealed class Build : NukeBuild
 {
+    static readonly string[] AllowedPublishActors = ["Skymly", "wys0610"];
+
     [Parameter("Build configuration (Debug/Release)")]
     string Configuration { get; set; } = IsLocalBuild ? "Debug" : "Release";
 
@@ -23,6 +26,9 @@ sealed class Build : NukeBuild
     string? NuGetApiKey { get; set; } =
         Environment.GetEnvironmentVariable("NUGET_API_KEY")
         ?? Environment.GetEnvironmentVariable("APIKEY");
+
+    bool IsAuthorizedPublishActor =>
+        !IsServerBuild || AllowedPublishActors.Contains(Environment.GetEnvironmentVariable("GITHUB_ACTOR") ?? string.Empty, StringComparer.OrdinalIgnoreCase);
 
     AbsolutePath Root => RootDirectory;
     AbsolutePath SolutionFile => Root / "Prism.SourceGenerators.slnx";
@@ -97,6 +103,7 @@ sealed class Build : NukeBuild
 
     Target Publish => _ => _
         .DependsOn(Pack)
+        .Requires(() => IsAuthorizedPublishActor)
         .Requires(() => !string.IsNullOrWhiteSpace(NuGetApiKey))
         .Executes(() =>
         {

@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   publish:
-    if: github.actor == github.repository_owner
+    if: contains(fromJson('["Skymly","wys0610"]'), github.actor)
     runs-on: ubuntu-latest
 
     steps:
