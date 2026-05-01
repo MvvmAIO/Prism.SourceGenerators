@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System;
 using System.Linq;
+
 using Nuke.Common;
 using Nuke.Common.CI;
 using Nuke.Common.Execution;
@@ -8,6 +9,7 @@ using Nuke.Common.IO;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
 using Nuke.Common.Utilities.Collections;
+
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
 [ShutdownDotNetAfterServerBuild]
@@ -25,6 +27,12 @@ sealed class Build : NukeBuild
     [Parameter("NuGet API key (required for Publish target)")]
     string? NuGetApiKey { get; set; } =
         Environment.GetEnvironmentVariable("NUGET_API_KEY")
+        ?? Environment.GetEnvironmentVariable("APIKEY");
+
+    [Parameter("NuGet API key for MvvmAIO.Prism.Bcl.Commands (optional; falls back to --nuget-api-key)")]
+    string? BclNuGetApiKey { get; set; } =
+        Environment.GetEnvironmentVariable("NUGET_API_KEY_BCL")
+        ?? Environment.GetEnvironmentVariable("NUGET_API_KEY")
         ?? Environment.GetEnvironmentVariable("APIKEY");
 
     bool IsAuthorizedPublishActor =>
@@ -123,6 +131,8 @@ sealed class Build : NukeBuild
         .Requires(() => !string.IsNullOrWhiteSpace(NuGetApiKey))
         .Executes(() =>
         {
+            string bclApiKey = string.IsNullOrWhiteSpace(BclNuGetApiKey) ? NuGetApiKey! : BclNuGetApiKey!;
+
             DotNetNuGetPush(s => s
                 .SetTargetPath(Root / "Prism.SourceGenerators.Package" / "bin" / Configuration / "*.nupkg")
                 .SetApiKey(NuGetApiKey)
@@ -131,7 +141,7 @@ sealed class Build : NukeBuild
 
             DotNetNuGetPush(s => s
                 .SetTargetPath(Root / "Prism.Bcl.Commands" / "bin" / Configuration / "*.nupkg")
-                .SetApiKey(NuGetApiKey)
+                .SetApiKey(bclApiKey)
                 .SetSource("https://api.nuget.org/v3/index.json")
                 .EnableSkipDuplicate());
         });

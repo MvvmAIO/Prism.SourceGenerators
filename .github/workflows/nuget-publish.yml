@@ -53,7 +53,7 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          dotnet run --project "build/_build.csproj" -- --target Publish --configuration Release --version "${{ env.VERSION }}" --nuget-api-key "${{ secrets.NUGET_API_KEY }}" 2>&1 | tee publish.log
+          dotnet run --project "build/_build.csproj" -- --target Publish --configuration Release --version "${{ env.VERSION }}" --nuget-api-key "${{ secrets.NUGET_API_KEY }}" --bcl-nuget-api-key "${{ secrets.NUGET_API_KEY_BCL }}" 2>&1 | tee publish.log
       - name: Upload publish log
         if: always()
         uses: actions/upload-artifact@v4
