@@ -2,15 +2,37 @@
 
 All notable changes to this project are documented in this file.
 
-## Unreleased`n`n## [0.2.0] - 2026-05-01
+## Unreleased
+
+## [0.2.0] - 2026-05-01
+
+### Changed
+- **Breaking:** AsyncDelegateCommand is no longer embedded in the analyzer package.
+- Main package **`MvvmAIO.Prism.SourceGenerators`** now contains analyzers + **`MvvmAIO.Prism.Core`** only.
+- Prism 8 async command compatibility is split to a separate package **`MvvmAIO.Prism.Bcl.Commands`**.
+- Packaging targets now inject only **`MvvmAIO.Prism.Core`** (no Prism8 command auto-injection).
+- Added integration coverage in **`Prism.SourceGenerators.Integration.Tests`** for PSG3002 scenarios.
+
+### Added
+- New project **`Prism.Bcl.Commands`** producing **`MvvmAIO.Prism.Bcl.Commands`** for Prism.Core 8.1.97 async commands.
+- New integration tests validating:
+  - Prism.Core 8 without BCL package reports PSG3002.
+  - Adding BCL package resolves PSG3002.
 
 ### Fixed
-- **MSB4086** loading WPF/other projects in the IDE when `CscToolPath` / compiler file version is not available yet: Roslyn-folder conditions in **`MvvmAIO.Prism.SourceGenerators.targets`** now require non-empty major (and minor where `<=` is used) before numeric comparison, so design-time evaluation falls back to **roslyn4.12**.
+- Corrected package identity references to **`MvvmAIO.Prism.SourceGenerators`** across packaging, samples, diagnostics, tests, and docs.
+- Fixed changelog formatting corruption and restored version history entries.
+
+## [0.1.7] - 2026-05-01
+
+### Fixed
+- **MSB4086** while loading WPF/other projects in the IDE when `CscToolPath` / compiler file version is unavailable during design-time evaluation.
+- Roslyn folder selection conditions in targets now guard numeric comparisons with non-empty checks, falling back safely to **roslyn4.12**.
 
 ## [0.1.6] - 2026-05-01
 
 ### Changed
-- **Breaking:** AsyncDelegateCommand is no longer embedded in the analyzer. MvvmAIO.Prism.Prism.SourceGenerators contains analyzers + MvvmAIO.Prism.Core only; Prism.Core 8.1.97 consumers should install MvvmAIO.Prism.Bcl.Commands manually. Missing assemblies while async commands are used still reports PSG3002 (replaces PSG3001).
+- **Breaking:** AsyncDelegateCommand is no longer embedded in the analyzer. MvvmAIO.Prism.SourceGenerators contains analyzers + MvvmAIO.Prism.Core only; Prism.Core 8.1.97 consumers should install MvvmAIO.Prism.Bcl.Commands manually. Missing assemblies while async commands are used still reports PSG3002 (replaces PSG3001).
 
 ### Added
 - Prism.Bcl.Commands project producing **`MvvmAIO.Prism.Bcl.Commands`** as a separate NuGet package for Prism.Core 8.1.97 async commands.

@@ -53,7 +53,7 @@ public sealed class Prism8PackagingIntegrationTests
         string expected = string.Format(
             CultureInfo.InvariantCulture,
             format.ToString(CultureInfo.InvariantCulture),
-            "MvvmAIO.Prism.Prism.SourceGenerators");
+            "MvvmAIO.Prism.SourceGenerators");
 
         Assert.All(psg3002, d =>
             Assert.Equal(expected, d.GetMessage(CultureInfo.InvariantCulture)));

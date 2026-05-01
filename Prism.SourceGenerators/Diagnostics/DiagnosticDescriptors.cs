@@ -131,6 +131,6 @@ internal static class DiagnosticDescriptors
         category: Category,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true,
-        description: "Use MvvmAIO.Prism.Prism.SourceGenerators for analyzer + attributes, and install MvvmAIO.Prism.Bcl.Commands manually when targeting Prism.Core 8.1.97. Alternatively upgrade to Prism 9+.",
+        description: "Use MvvmAIO.Prism.SourceGenerators for analyzer + attributes, and install MvvmAIO.Prism.Bcl.Commands manually when targeting Prism.Core 8.1.97. Alternatively upgrade to Prism 9+.",
         helpLinkUri: HelpLink);
 }

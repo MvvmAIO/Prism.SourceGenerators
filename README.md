@@ -21,7 +21,7 @@ Prism.SourceGenerators.Roslyn4001/             # Roslyn 4.0.1
 Prism.SourceGenerators.Roslyn4031/             # Roslyn 4.3.1
 Prism.SourceGenerators.Roslyn4120/             # Roslyn 4.12.0
 Prism.SourceGenerators.Roslyn5000/             # Roslyn 5.0.0
-Prism.Core/                                    # MvvmAIO.Prism.Core (attributes), bundled in MvvmAIO.Prism.Prism.SourceGenerators
+Prism.Core/                                    # MvvmAIO.Prism.Core (attributes), bundled in MvvmAIO.Prism.SourceGenerators
 Prism.Bcl.Commands/                            # MvvmAIO.Prism.Bcl.Commands (Prism 8 AsyncDelegateCommand package, install manually)
 Prism.SourceGenerators.Samples.Prism9/         # Avalonia 12 sample (Prism 9.0, native AsyncDelegateCommand)
 Prism.SourceGenerators.Samples.Prism8/         # Avalonia 12 sample (Prism 8.1.97; same MSBuild lib selection as the NuGet package)
@@ -119,7 +119,7 @@ Generates `DelegateCommand` or `AsyncDelegateCommand` properties from methods.
 
 - **Synchronous methods** (`void`) generate `DelegateCommand` / `DelegateCommand<T>`
 - **Async methods** (`Task`) generate `AsyncDelegateCommand` / `AsyncDelegateCommand<T>`
-- For Prism &lt; 9.0, use NuGet **`MvvmAIO.Prism.Prism.SourceGenerators`**, which adds **`MvvmAIO.Prism.Core`** for source-generator attributes. For Prism.Core 8.1.97 async commands, install **`MvvmAIO.Prism.Bcl.Commands`** manually so `AsyncDelegateCommand` exists. If those assemblies are missing while async commands are used, **PSG3002** is reported.
+- For Prism &lt; 9.0, use NuGet **`MvvmAIO.Prism.SourceGenerators`**, which adds **`MvvmAIO.Prism.Core`** for source-generator attributes. For Prism.Core 8.1.97 async commands, install **`MvvmAIO.Prism.Bcl.Commands`** manually so `AsyncDelegateCommand` exists. If those assemblies are missing while async commands are used, **PSG3002** is reported.
 - **C# 14+**: Command properties use the `field` keyword (no separate backing field)
 - **C# 13 and earlier**: Command properties use a traditional backing field
 
@@ -240,18 +240,18 @@ If the class already inherits from `BindableBase` or a base class that implement
 | PSG2002 | Catch handler signature is not compatible |
 | PSG2003 | CanExecute member was not found |
 | PSG2004 | Observed property was not found |
-| PSG3002 | `AsyncDelegateCommand` not found; install **`MvvmAIO.Prism.Prism.SourceGenerators`** and, on Prism.Core 8.1.97, **`MvvmAIO.Prism.Bcl.Commands`** (or upgrade to Prism 9+) |
+| PSG3002 | `AsyncDelegateCommand` not found; install **`MvvmAIO.Prism.SourceGenerators`** and, on Prism.Core 8.1.97, **`MvvmAIO.Prism.Bcl.Commands`** (or upgrade to Prism 9+) |
 
 ## Installation
 
 ```xml
-<PackageReference Include="MvvmAIO.Prism.Prism.SourceGenerators" Version="0.2.0" />
+<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.2.0" />
 ```
 
 Or:
 
 ```bash
-dotnet add package MvvmAIO.Prism.Prism.SourceGenerators
+dotnet add package MvvmAIO.Prism.SourceGenerators
 ```
 
 ## Building
@@ -276,7 +276,7 @@ dotnet run --project build/_build.csproj -- --target Ci --configuration Release
 # Pack NuGet package (optionally override version)
 dotnet run --project build/_build.csproj -- --target Pack --configuration Release --version 0.2.0
 
-# Publish NuGet packages (MvvmAIO.Prism.Prism.SourceGenerators + MvvmAIO.Prism.Bcl.Commands)
+# Publish NuGet packages (MvvmAIO.Prism.SourceGenerators + MvvmAIO.Prism.Bcl.Commands)
 dotnet run --project build/_build.csproj -- --target Publish --configuration Release --version 0.2.0 --nuget-api-key <NUGET_API_KEY>
 ```
 

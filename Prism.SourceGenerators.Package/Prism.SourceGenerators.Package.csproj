@@ -9,7 +9,7 @@
     <Deterministic>true</Deterministic>
     <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
 
-    <PackageId>MvvmAIO.Prism.Prism.SourceGenerators</PackageId>
+    <PackageId>MvvmAIO.Prism.SourceGenerators</PackageId>
     <Version>0.2.0</Version>
     <Authors>MvvmAIO;Skymly;wys0610</Authors>
     <Description>Roslyn source generators for the Prism MVVM library. Generates ObservableProperty, DelegateCommand, AsyncDelegateCommand, and BindableBase implementations. This package contains Prism.SourceGenerators analyzers and MvvmAIO.Prism.Core (attribute definitions). For Prism.Core 8.1.97 async commands, install MvvmAIO.Prism.Bcl.Commands manually.</Description>
@@ -36,10 +36,10 @@
     <None Include="..\README.md" Pack="true" PackagePath="\" Visible="false" />
     <None Include="..\CHANGELOG.md" Pack="true" PackagePath="\" Visible="false" />
     <None Include="..\LICENSE.txt" Pack="true" PackagePath="\" Visible="false" />
-    <None Include="build\MvvmAIO.Prism.Prism.SourceGenerators.props" Pack="true" PackagePath="build/" Visible="false" />
-    <None Include="build\MvvmAIO.Prism.Prism.SourceGenerators.props" Pack="true" PackagePath="buildTransitive/" Visible="false" />
-    <None Include="build\MvvmAIO.Prism.Prism.SourceGenerators.targets" Pack="true" PackagePath="build/" Visible="false" />
-    <None Include="build\MvvmAIO.Prism.Prism.SourceGenerators.targets" Pack="true" PackagePath="buildTransitive/" Visible="false" />
+    <None Include="build\MvvmAIO.Prism.SourceGenerators.props" Pack="true" PackagePath="build/" Visible="false" />
+    <None Include="build\MvvmAIO.Prism.SourceGenerators.props" Pack="true" PackagePath="buildTransitive/" Visible="false" />
+    <None Include="build\MvvmAIO.Prism.SourceGenerators.targets" Pack="true" PackagePath="build/" Visible="false" />
+    <None Include="build\MvvmAIO.Prism.SourceGenerators.targets" Pack="true" PackagePath="buildTransitive/" Visible="false" />
     <None Include="..\Prism.Core\bin\$(Configuration)\netstandard2.0\MvvmAIO.Prism.Core.dll" Pack="true" PackagePath="lib/netstandard2.0/" Visible="false" />
     <None Include="..\Prism.SourceGenerators.Roslyn4001\bin\$(Configuration)\netstandard2.0\Prism.SourceGenerators.dll" Pack="true" PackagePath="analyzers/dotnet/roslyn4.0/cs" Visible="false" />
     <None Include="..\Prism.SourceGenerators.Roslyn4031\bin\$(Configuration)\netstandard2.0\Prism.SourceGenerators.dll" Pack="true" PackagePath="analyzers/dotnet/roslyn4.3/cs" Visible="false" />

@@ -21,7 +21,7 @@ Prism.SourceGenerators.Roslyn4001/             # Roslyn 4.0.1
 Prism.SourceGenerators.Roslyn4031/             # Roslyn 4.3.1
 Prism.SourceGenerators.Roslyn4120/             # Roslyn 4.12.0
 Prism.SourceGenerators.Roslyn5000/             # Roslyn 5.0.0
-Prism.Core/                                    # MvvmAIO.Prism.Core（属性）、MvvmAIO.Prism.Prism.SourceGenerators に同梱
+Prism.Core/                                    # MvvmAIO.Prism.Core（属性）、MvvmAIO.Prism.SourceGenerators に同梱
 Prism.Bcl.Commands/                            # MvvmAIO.Prism.Bcl.Commands（Prism 8 AsyncDelegateCommand パッケージ、手動インストール）
 Prism.SourceGenerators.Samples.Prism9/         # Avalonia 12 サンプル（Prism 9.0、ネイティブ AsyncDelegateCommand）
 Prism.SourceGenerators.Samples.Prism8/         # Avalonia 12 サンプル（Prism 8.1.97、NuGet と同じ MSBuild のアセンブリ選択）
@@ -119,7 +119,7 @@ public partial class MainViewModel : BindableBase
 
 - **同期メソッド**（`void`）は `DelegateCommand` / `DelegateCommand<T>` を生成
 - **非同期メソッド**（`Task`）は `AsyncDelegateCommand` / `AsyncDelegateCommand<T>` を生成
-- Prism &lt; 9.0 の場合、NuGet **`MvvmAIO.Prism.Prism.SourceGenerators`** を使用してください。**`MvvmAIO.Prism.Core`**（属性定義）を追加します。Prism.Core 8.1.97 の非同期コマンドを使う場合は **`MvvmAIO.Prism.Bcl.Commands`** を手動で追加してください。非同期コマンド使用時にこれらのアセンブリがない場合は **PSG3002** が報告されます。
+- Prism &lt; 9.0 の場合、NuGet **`MvvmAIO.Prism.SourceGenerators`** を使用してください。**`MvvmAIO.Prism.Core`**（属性定義）を追加します。Prism.Core 8.1.97 の非同期コマンドを使う場合は **`MvvmAIO.Prism.Bcl.Commands`** を手動で追加してください。非同期コマンド使用時にこれらのアセンブリがない場合は **PSG3002** が報告されます。
 - **C# 14+**：Command プロパティは `field` キーワードを使用（個別のバッキングフィールド不要）
 - **C# 13 以前**：Command プロパティは従来のバッキングフィールドを使用
 
@@ -240,18 +240,18 @@ public partial class SimpleViewModel
 | PSG2002 | Catch ハンドラーのシグネチャに互換性がありません |
 | PSG2003 | CanExecute メンバーが見つかりません |
 | PSG2004 | 監視対象のプロパティが見つかりません |
-| PSG3002 | `AsyncDelegateCommand` が見つかりません。**`MvvmAIO.Prism.Prism.SourceGenerators`** を使用し、Prism.Core 8.1.97 では **`MvvmAIO.Prism.Bcl.Commands`** を追加するか、Prism 9+ にアップグレードしてください |
+| PSG3002 | `AsyncDelegateCommand` が見つかりません。**`MvvmAIO.Prism.SourceGenerators`** を使用し、Prism.Core 8.1.97 では **`MvvmAIO.Prism.Bcl.Commands`** を追加するか、Prism 9+ にアップグレードしてください |
 
 ## インストール
 
 ```xml
-<PackageReference Include="MvvmAIO.Prism.Prism.SourceGenerators" Version="0.2.0" />
+<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.2.0" />
 ```
 
 または:
 
 ```bash
-dotnet add package MvvmAIO.Prism.Prism.SourceGenerators
+dotnet add package MvvmAIO.Prism.SourceGenerators
 ```
 
 ## ビルド
@@ -276,7 +276,7 @@ dotnet run --project build/_build.csproj -- --target Ci --configuration Release
 # NuGet パッケージを作成（必要に応じてバージョン上書き）
 dotnet run --project build/_build.csproj -- --target Pack --configuration Release --version 0.2.0
 
-# NuGet へ公開（MvvmAIO.Prism.Prism.SourceGenerators + MvvmAIO.Prism.Bcl.Commands）
+# NuGet へ公開（MvvmAIO.Prism.SourceGenerators + MvvmAIO.Prism.Bcl.Commands）
 dotnet run --project build/_build.csproj -- --target Publish --configuration Release --version 0.2.0 --nuget-api-key <NUGET_API_KEY>
 ```
 

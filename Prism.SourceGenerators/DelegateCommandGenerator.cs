@@ -17,7 +17,7 @@ namespace Prism.SourceGenerators;
 /// <para>
 /// For synchronous methods (<c>void</c>), generates <c>DelegateCommand</c> or <c>DelegateCommand&lt;T&gt;</c>.
 /// For asynchronous methods (<c>Task</c>), generates <c>AsyncDelegateCommand</c> or <c>AsyncDelegateCommand&lt;T&gt;</c>.
-/// For Prism versions prior to 9.0, use NuGet <c>MvvmAIO.Prism.Prism.SourceGenerators</c> and install <c>MvvmAIO.Prism.Bcl.Commands</c> manually for Prism.Core 8.1.97 (see diagnostic PSG3002).
+/// For Prism versions prior to 9.0, use NuGet <c>MvvmAIO.Prism.SourceGenerators</c> and install <c>MvvmAIO.Prism.Bcl.Commands</c> manually for Prism.Core 8.1.97 (see diagnostic PSG3002).
 /// </para>
 /// </summary>
 [Generator(LanguageNames.CSharp)]
@@ -84,7 +84,7 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
                 context.ReportDiagnostic(Diagnostic.Create(
                     DiagnosticDescriptors.AsyncDelegateCommandPackageRequired,
                     Location.None,
-                    "MvvmAIO.Prism.Prism.SourceGenerators"));
+                    "MvvmAIO.Prism.SourceGenerators"));
             }
         });
     }

@@ -26,7 +26,7 @@
   <PropertyGroup>
     <MvvmAIOPrismSourceGeneratorsImportAnalyzers>false</MvvmAIOPrismSourceGeneratorsImportAnalyzers>
   </PropertyGroup>
-  <Import Project="..\Prism.SourceGenerators.Package\build\MvvmAIO.Prism.Prism.SourceGenerators.targets" />
+  <Import Project="..\Prism.SourceGenerators.Package\build\MvvmAIO.Prism.SourceGenerators.targets" />
 
 </Project>
 

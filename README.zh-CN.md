@@ -21,7 +21,7 @@ Prism.SourceGenerators.Roslyn4001/             # Roslyn 4.0.1
 Prism.SourceGenerators.Roslyn4031/             # Roslyn 4.3.1
 Prism.SourceGenerators.Roslyn4120/             # Roslyn 4.12.0
 Prism.SourceGenerators.Roslyn5000/             # Roslyn 5.0.0
-Prism.Core/                                    # MvvmAIO.Prism.Core（特性），随 MvvmAIO.Prism.Prism.SourceGenerators 打包
+Prism.Core/                                    # MvvmAIO.Prism.Core（特性），随 MvvmAIO.Prism.SourceGenerators 打包
 Prism.Bcl.Commands/                            # MvvmAIO.Prism.Bcl.Commands（Prism 8 AsyncDelegateCommand 包，需手动安装）
 Prism.SourceGenerators.Samples.Prism9/         # Avalonia 12 示例（Prism 9.0，原生 AsyncDelegateCommand）
 Prism.SourceGenerators.Samples.Prism8/         # Avalonia 12 示例（Prism 8.1.97；与 NuGet 包相同的 MSBuild 程序集选择）
@@ -119,7 +119,7 @@ public partial class MainViewModel : BindableBase
 
 - **同步方法**（`void`）生成 `DelegateCommand` / `DelegateCommand<T>`
 - **异步方法**（`Task`）生成 `AsyncDelegateCommand` / `AsyncDelegateCommand<T>`
-- 对于 Prism &lt; 9.0，请使用 NuGet **`MvvmAIO.Prism.Prism.SourceGenerators`**：它会添加 **`MvvmAIO.Prism.Core`**，用于提供生成器特性定义。若使用 Prism.Core 8.1.97 的异步命令，请手动安装 **`MvvmAIO.Prism.Bcl.Commands`**，以便存在 `AsyncDelegateCommand`。若使用异步命令却缺少上述程序集，将报告 **PSG3002**。
+- 对于 Prism &lt; 9.0，请使用 NuGet **`MvvmAIO.Prism.SourceGenerators`**：它会添加 **`MvvmAIO.Prism.Core`**，用于提供生成器特性定义。若使用 Prism.Core 8.1.97 的异步命令，请手动安装 **`MvvmAIO.Prism.Bcl.Commands`**，以便存在 `AsyncDelegateCommand`。若使用异步命令却缺少上述程序集，将报告 **PSG3002**。
 - **C# 14+**：Command 属性使用 `field` 关键字（无需单独后备字段）
 - **C# 13 及更早版本**：Command 属性使用传统后备字段
 
@@ -240,18 +240,18 @@ public partial class SimpleViewModel
 | PSG2002 | Catch 处理程序签名不兼容 |
 | PSG2003 | 未找到 CanExecute 成员 |
 | PSG2004 | 未找到被观察的属性 |
-| PSG3002 | 未找到 `AsyncDelegateCommand`；请安装 **`MvvmAIO.Prism.Prism.SourceGenerators`**，且在 Prism.Core 8.1.97 上安装 **`MvvmAIO.Prism.Bcl.Commands`**（或升级到 Prism 9+） |
+| PSG3002 | 未找到 `AsyncDelegateCommand`；请安装 **`MvvmAIO.Prism.SourceGenerators`**，且在 Prism.Core 8.1.97 上安装 **`MvvmAIO.Prism.Bcl.Commands`**（或升级到 Prism 9+） |
 
 ## 安装
 
 ```xml
-<PackageReference Include="MvvmAIO.Prism.Prism.SourceGenerators" Version="0.2.0" />
+<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.2.0" />
 ```
 
 或：
 
 ```bash
-dotnet add package MvvmAIO.Prism.Prism.SourceGenerators
+dotnet add package MvvmAIO.Prism.SourceGenerators
 ```
 
 ## 构建
@@ -276,7 +276,7 @@ dotnet run --project build/_build.csproj -- --target Ci --configuration Release
 # 打包 NuGet（可选覆盖版本号）
 dotnet run --project build/_build.csproj -- --target Pack --configuration Release --version 0.2.0
 
-# 发布 NuGet（MvvmAIO.Prism.Prism.SourceGenerators + MvvmAIO.Prism.Bcl.Commands）
+# 发布 NuGet（MvvmAIO.Prism.SourceGenerators + MvvmAIO.Prism.Bcl.Commands）
 dotnet run --project build/_build.csproj -- --target Publish --configuration Release --version 0.2.0 --nuget-api-key <NUGET_API_KEY>
 ```
 
