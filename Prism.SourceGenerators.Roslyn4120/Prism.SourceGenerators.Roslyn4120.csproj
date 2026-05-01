@@ -3,4 +3,9 @@
   <Import Project="..\Prism.SourceGenerators\Prism.SourceGenerators.props" />
   <Import Project="..\Prism.SourceGenerators\Prism.SourceGenerators.projitems" Label="Shared" />
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Prism.SourceGenerators.Tests" />
+    <InternalsVisibleTo Include="Prism.SourceGenerators.Integration.Tests" />
+  </ItemGroup>
+
 </Project>

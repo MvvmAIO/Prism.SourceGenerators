@@ -1,4 +1,7 @@
+using System.Globalization;
 using System.Linq;
+using Microsoft.CodeAnalysis;
+using Prism.SourceGenerators.Diagnostics;
 using Xunit;
 
 namespace Prism.SourceGenerators.Tests;
@@ -114,5 +117,36 @@ public sealed class DiagnosticTests
         Assert.True(
             containsExpectedDiagnostic,
             $"Expected diagnostic '{diagnosticId}' was not reported. Actual diagnostics: {string.Join(", ", output.Diagnostics.Select(d => d.Id))}");
+    }
+
+    [Fact]
+    public void PSG3002_message_matches_descriptor_format_with_package_ids()
+    {
+        const string source = """
+            namespace Demo;
+
+            public partial class Vm : Prism.Mvvm.BindableBase
+            {
+                [DelegateCommand]
+                private async System.Threading.Tasks.Task LoadAsync()
+                {
+                    await System.Threading.Tasks.Task.CompletedTask;
+                }
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source, hasAsyncDelegateCommand: false);
+
+        Diagnostic[] psg3002 = output.Diagnostics.Where(static d => d.Id == "PSG3002").ToArray();
+        Assert.NotEmpty(psg3002);
+
+        LocalizableString format = DiagnosticDescriptors.AsyncDelegateCommandPackageRequired.MessageFormat;
+        string expected = string.Format(
+            CultureInfo.InvariantCulture,
+            format.ToString(CultureInfo.InvariantCulture),
+            "MvvmAIO.Prism.Prism.SourceGenerators");
+
+        Assert.All(psg3002, d =>
+            Assert.Equal(expected, d.GetMessage(CultureInfo.InvariantCulture)));
     }
 }

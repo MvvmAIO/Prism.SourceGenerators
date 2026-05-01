@@ -127,10 +127,10 @@ internal static class DiagnosticDescriptors
     public static readonly DiagnosticDescriptor AsyncDelegateCommandPackageRequired = new(
         id: "PSG3002",
         title: "AsyncDelegateCommand package required for Prism prior to 9.0",
-        messageFormat: "Prism.Commands.AsyncDelegateCommand was not found but async commands are used; reference NuGet package '{0}' so MvvmAIO.Prism.Core / MvvmAIO.Prism.Core.Prism8 are applied (Prism.Core 8.1.97 — remove when upgrading to Prism 9+)",
+        messageFormat: "Prism.Commands.AsyncDelegateCommand was not found but async commands are used; install NuGet '{0}' and, for Prism.Core 8.1.97, install 'MvvmAIO.Prism.Bcl.Commands'",
         category: Category,
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true,
-        description: "Use the MvvmAIO.Prism.SourceGenerators NuGet package (not a project reference to the generator alone) so MSBuild adds MvvmAIO.Prism.Core and, for Prism.Core 8.1.97, MvvmAIO.Prism.Core.Prism8. Alternatively upgrade to Prism 9+.",
+        description: "Use MvvmAIO.Prism.Prism.SourceGenerators for analyzer + attributes, and install MvvmAIO.Prism.Bcl.Commands manually when targeting Prism.Core 8.1.97. Alternatively upgrade to Prism 9+.",
         helpLinkUri: HelpLink);
 }

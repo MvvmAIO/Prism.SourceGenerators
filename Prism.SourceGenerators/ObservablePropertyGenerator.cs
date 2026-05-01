@@ -14,7 +14,7 @@ namespace Prism.SourceGenerators;
 /// <summary>
 /// A source generator that generates observable properties for classes inheriting from <c>Prism.Mvvm.BindableBase</c>.
 /// <para>
-/// Attributes are supplied by the <c>MvvmAIO.Prism.Core</c> assembly (referenced by the <c>MvvmAIO.Prism.SourceGenerators</c> NuGet package).
+/// Attributes are supplied by the <c>MvvmAIO.Prism.Core</c> assembly (referenced by the <c>MvvmAIO.Prism.Prism.SourceGenerators</c> NuGet package).
 /// Supports two usage modes:
 /// <list type="bullet">
 /// <item><b>Field target</b> (all C# versions): Apply <c>[ObservableProperty]</c> to a private field to generate
@@ -331,3 +331,4 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
         return char.ToUpperInvariant(fieldName[0]) + fieldName.Substring(1);
     }
 }
+

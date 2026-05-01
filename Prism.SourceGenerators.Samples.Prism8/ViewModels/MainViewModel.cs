@@ -11,7 +11,7 @@ namespace Prism.SourceGenerators.Samples.Prism8.ViewModels;
 /// Demonstrates [DelegateCommand], [AsyncDelegateCommand], [ObservesProperty],
 /// [NotifyPropertyChangedFor], and OnChanged partial methods.
 /// AsyncDelegateCommand is NOT available in Prism.Core 8.1.97;
-/// MvvmAIO.Prism.Core.Prism8 supplies Prism.Commands.AsyncDelegateCommand for Prism.Core 8.1.97 (via package targets in this repo).
+/// MvvmAIO.Prism.Bcl.Commands supplies Prism.Commands.AsyncDelegateCommand for Prism.Core 8.1.97 (via package targets in this repo).
 /// </summary>
 public partial class MainViewModel : BindableBase
 {
@@ -95,7 +95,7 @@ public partial class MainViewModel : BindableBase
     private async Task LoadDataAsync()
     {
         await Task.Delay(500);
-        Title = "Data loaded! (Prism 8.1.97 MvvmAIO.Prism.Core.Prism8)";
+        Title = "Data loaded! (Prism 8.1.97 MvvmAIO.Prism.Bcl.Commands)";
     }
 
     // --- [DelegateCommand] with CanExecute + ObservesProperty ---
@@ -109,14 +109,14 @@ public partial class MainViewModel : BindableBase
 
     private bool CanToggle() => Counter > 0;
 
-    // --- [AsyncDelegateCommand] with advanced features (MvvmAIO.Prism.Core.Prism8) ---
+    // --- [AsyncDelegateCommand] with advanced features (MvvmAIO.Prism.Bcl.Commands) ---
 
     [AsyncDelegateCommand(EnableParallelExecution = true)]
     private async Task FetchDataAsync()
     {
         StatusMessage = "Fetching...";
         await Task.Delay(1000);
-        StatusMessage = "Fetch complete! (parallel execution enabled, MvvmAIO.Prism.Core.Prism8)";
+        StatusMessage = "Fetch complete! (parallel execution enabled, MvvmAIO.Prism.Bcl.Commands)";
     }
 
     [AsyncDelegateCommand(
@@ -127,7 +127,7 @@ public partial class MainViewModel : BindableBase
     {
         StatusMessage = "Saving...";
         await Task.Delay(800);
-        StatusMessage = $"Saved! Counter={Counter}, IsActive={IsActive} (MvvmAIO.Prism.Core.Prism8)";
+        StatusMessage = $"Saved! Counter={Counter}, IsActive={IsActive} (MvvmAIO.Prism.Bcl.Commands)";
     }
 
     private bool CanSave() => Counter > 0 && IsActive;
@@ -139,3 +139,4 @@ public partial class MainViewModel : BindableBase
 }
 
 public sealed record NavigationItem(string Key, string Title, string Description);
+

@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+    <AssemblyName>MvvmAIO.Prism.Bcl.Commands</AssemblyName>
+    <RootNamespace>Prism</RootNamespace>
+    <LangVersion>14.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+
+    <PackageId>MvvmAIO.Prism.Bcl.Commands</PackageId>
+    <Version>0.2.0</Version>
+    <Authors>MvvmAIO;Skymly;wys0610</Authors>
+    <Description>Prism 8 compatibility command library for AsyncDelegateCommand and IAsyncCommand. Install this package manually when using Prism.Core 8.1.97 with MvvmAIO.Prism.Prism.SourceGenerators.</Description>
+    <PackageTags>prism;mvvm;commands;asyncdelegatecommand;prism8</PackageTags>
+    <PackageProjectUrl>https://github.com/MvvmAIO/Prism.SourceGenerators</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/MvvmAIO/Prism.SourceGenerators</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="all" />
+    <PackageReference Include="Prism.Core" Version="8.1.97" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md" Pack="true" PackagePath="\" Visible="false" />
+    <None Include="..\CHANGELOG.md" Pack="true" PackagePath="\" Visible="false" />
+    <None Include="..\LICENSE.txt" Pack="true" PackagePath="\" Visible="false" />
+  </ItemGroup>
+
+</Project>
+

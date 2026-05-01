@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Prism.SourceGenerators.Diagnostics;
+using Prism.SourceGenerators.Extensions;
 using Prism.SourceGenerators.Helpers;
 using Prism.SourceGenerators.Models;
 
@@ -16,8 +17,7 @@ namespace Prism.SourceGenerators;
 /// <para>
 /// For synchronous methods (<c>void</c>), generates <c>DelegateCommand</c> or <c>DelegateCommand&lt;T&gt;</c>.
 /// For asynchronous methods (<c>Task</c>), generates <c>AsyncDelegateCommand</c> or <c>AsyncDelegateCommand&lt;T&gt;</c>.
-/// For Prism versions prior to 9.0, consume the <c>MvvmAIO.Prism.SourceGenerators</c> NuGet package so MSBuild adds
-/// <c>MvvmAIO.Prism.Core.Prism8</c> when <c>Prism.Core</c> 8.1.97 is referenced (see diagnostic PSG3002).
+/// For Prism versions prior to 9.0, use NuGet <c>MvvmAIO.Prism.Prism.SourceGenerators</c> and install <c>MvvmAIO.Prism.Bcl.Commands</c> manually for Prism.Core 8.1.97 (see diagnostic PSG3002).
 /// </para>
 /// </summary>
 [Generator(LanguageNames.CSharp)]
@@ -58,7 +58,7 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
 
         RegisterDiagnosticsAndCommands(context, asyncCommandInfos);
 
-        // Prior to Prism 9: AsyncDelegateCommand must come from MvvmAIO.Prism.Core.Prism8 via the NuGet package (PSG3002).
+        // Prior to Prism 9: AsyncDelegateCommand must come from MvvmAIO.Prism.Bcl.Commands (PSG3002).
         IncrementalValueProvider<bool> needsPolyfillFromDelegate = delegateCommandInfos
             .Where(static item => item.Value is not null && !item.HasBlockingDiagnostics)
             .Select(static (item, _) => item.Value!)
@@ -84,7 +84,7 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
                 context.ReportDiagnostic(Diagnostic.Create(
                     DiagnosticDescriptors.AsyncDelegateCommandPackageRequired,
                     Location.None,
-                    "MvvmAIO.Prism.SourceGenerators"));
+                    "MvvmAIO.Prism.Prism.SourceGenerators"));
             }
         });
     }
@@ -132,7 +132,7 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
 
         bool isAsync = IsAsyncMethod(methodSymbol, compilation);
         ImmutableArray<DiagnosticInfo>.Builder diagnostics = ImmutableArray.CreateBuilder<DiagnosticInfo>();
-        if (!IsValidDelegateCommandMethodSignature(methodSymbol, isAsync))
+        if (!IsValidDelegateCommandMethodSignature(methodSymbol, isAsync, compilation))
         {
             diagnostics.Add(DiagnosticInfo.Create(
                 DiagnosticDescriptors.InvalidDelegateCommandMethodSignature,
@@ -163,8 +163,7 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
 
         ImmutableArray<string> observesProperties = CollectObservesProperties(methodSymbol);
 
-        bool hasAsyncDelegateCommand = compilation
-            .GetTypeByMetadataName("Prism.Commands.AsyncDelegateCommand") is not null;
+        bool hasAsyncDelegateCommand = HasConsumerVisibleAsyncDelegateCommandTypes(compilation);
 
         HierarchyInfo hierarchy = HierarchyInfo.From(containingType);
 
@@ -226,8 +225,7 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
         string methodName = methodSymbol.Name;
         ImmutableArray<string> observesProperties = CollectObservesProperties(methodSymbol);
         Compilation compilation = context.SemanticModel.Compilation;
-        bool hasAsyncDelegateCommand = compilation
-            .GetTypeByMetadataName("Prism.Commands.AsyncDelegateCommand") is not null;
+        bool hasAsyncDelegateCommand = HasConsumerVisibleAsyncDelegateCommandTypes(compilation);
         HierarchyInfo hierarchy = HierarchyInfo.From(containingType);
         bool useFieldKeyword = SupportsFieldKeyword(context);
 
@@ -248,7 +246,7 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
             bool enableParallelExecution = false;
             ImmutableArray<DiagnosticInfo>.Builder diagnostics = ImmutableArray.CreateBuilder<DiagnosticInfo>();
 
-            if (!IsValidAsyncDelegateCommandMethodSignature(methodSymbol))
+            if (!IsValidAsyncDelegateCommandMethodSignature(methodSymbol, compilation))
             {
                 diagnostics.Add(DiagnosticInfo.Create(
                     DiagnosticDescriptors.InvalidAsyncDelegateCommandMethodSignature,
@@ -434,14 +432,14 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
         return type.ToDisplayString() == "System.Threading.CancellationToken";
     }
 
-    private static bool IsValidDelegateCommandMethodSignature(IMethodSymbol methodSymbol, bool isAsync)
+    private static bool IsValidDelegateCommandMethodSignature(IMethodSymbol methodSymbol, bool isAsync, Compilation compilation)
     {
         if (!isAsync)
         {
             return methodSymbol.ReturnsVoid && methodSymbol.Parameters.Length <= 1;
         }
 
-        if (!IsTaskReturnType(methodSymbol.ReturnType))
+        if (!IsNonGenericTaskReturnType(methodSymbol.ReturnType, compilation))
             return false;
 
         if (methodSymbol.Parameters.Length == 0)
@@ -453,9 +451,9 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
         return methodSymbol.Parameters.Length == 2 && IsCancellationToken(methodSymbol.Parameters[1].Type);
     }
 
-    private static bool IsValidAsyncDelegateCommandMethodSignature(IMethodSymbol methodSymbol)
+    private static bool IsValidAsyncDelegateCommandMethodSignature(IMethodSymbol methodSymbol, Compilation compilation)
     {
-        if (!IsTaskReturnType(methodSymbol.ReturnType))
+        if (!IsNonGenericTaskReturnType(methodSymbol.ReturnType, compilation))
             return false;
 
         if (methodSymbol.Parameters.Length == 0)
@@ -467,12 +465,14 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
         return methodSymbol.Parameters.Length == 2 && IsCancellationToken(methodSymbol.Parameters[1].Type);
     }
 
-    private static bool IsTaskReturnType(ITypeSymbol returnType)
+    private static bool IsNonGenericTaskReturnType(ITypeSymbol returnType, Compilation compilation)
     {
-        if (returnType is not INamedTypeSymbol namedType)
-            return false;
+        INamedTypeSymbol? expectedTask = compilation.GetTypeByMetadataName("System.Threading.Tasks.Task");
 
-        return namedType.ToDisplayString() == "System.Threading.Tasks.Task";
+        return expectedTask is not null
+            && returnType is INamedTypeSymbol namedReturn
+            && !namedReturn.IsGenericType
+            && SymbolEqualityComparer.Default.Equals(namedReturn.OriginalDefinition, expectedTask);
     }
 
     private static bool HasMember(INamedTypeSymbol containingType, string memberName)
@@ -843,4 +843,15 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
 
         return sb.ToString();
     }
+
+    /// <summary>
+    /// Prism assemblies may expose <c>AsyncDelegateCommand</c> metadata that is not callable from user code.
+    /// Require both arity forms to be accessible from the compilation assembly (matches Prism 9 + MvvmAIO.Prism.Bcl.Commands).
+    /// </summary>
+    private static bool HasConsumerVisibleAsyncDelegateCommandTypes(Compilation compilation)
+    {
+        return compilation.HasAccessibleTypeWithMetadataName("Prism.Commands.AsyncDelegateCommand")
+            && compilation.HasAccessibleTypeWithMetadataName("Prism.Commands.AsyncDelegateCommand`1");
+    }
 }
+

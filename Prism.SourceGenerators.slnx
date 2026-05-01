@@ -13,9 +13,10 @@
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="Prism.SourceGenerators.Tests/Prism.SourceGenerators.Tests.csproj" />
+    <Project Path="Prism.SourceGenerators.Integration.Tests/Prism.SourceGenerators.Integration.Tests.csproj" />
   </Folder>
+  <Project Path="Prism.Bcl.Commands/Prism.Bcl.Commands.csproj" Id="202acabf-c79b-4f1e-a667-99df98caa0e3" />
   <Project Path="Prism.Core/Prism.SourceGenerators.Core.csproj" Id="61ca3f07-3b9e-4fdf-9d20-4b92324b48d5" />
-  <Project Path="Prism.SourceGenerators.Core.Prism8/Prism.SourceGenerators.Core.Prism8.csproj" Id="671ef3fd-380c-43ab-b457-090b9134d294" />
   <Project Path="Prism.SourceGenerators.Package/Prism.SourceGenerators.Package.csproj" />
   <Project Path="Prism.SourceGenerators.Roslyn4001/Prism.SourceGenerators.Roslyn4001.csproj" />
   <Project Path="Prism.SourceGenerators.Roslyn4031/Prism.SourceGenerators.Roslyn4031.csproj" />

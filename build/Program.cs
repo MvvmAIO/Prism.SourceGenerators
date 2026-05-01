@@ -33,7 +33,7 @@ sealed class Build : NukeBuild
     AbsolutePath Root => RootDirectory;
     AbsolutePath SolutionFile => Root / "Prism.SourceGenerators.slnx";
     AbsolutePath PackageProject => Root / "Prism.SourceGenerators.Package" / "Prism.SourceGenerators.Package.csproj";
-    AbsolutePath TestsProject => Root / "Prism.SourceGenerators.Tests" / "Prism.SourceGenerators.Tests.csproj";
+    AbsolutePath BclCommandsProject => Root / "Prism.Bcl.Commands" / "Prism.Bcl.Commands.csproj";
     AbsolutePath TestResultsDirectory => Root / "TestResults";
 
     public static int Main() => Execute<Build>(x => x.Ci);
@@ -73,7 +73,7 @@ sealed class Build : NukeBuild
         .Executes(() =>
         {
             DotNetTest(s => s
-                .SetProjectFile(TestsProject)
+                .SetProjectFile(SolutionFile)
                 .SetConfiguration(Configuration)
                 .EnableNoBuild()
                 .SetResultsDirectory(TestResultsDirectory)
@@ -99,6 +99,22 @@ sealed class Build : NukeBuild
 
                 return s;
             });
+
+            DotNetPack(s =>
+            {
+                s = s
+                    .SetProject(BclCommandsProject)
+                    .SetConfiguration(Configuration)
+                    .EnableNoBuild()
+                    .SetProperty("ContinuousIntegrationBuild", "true");
+
+                if (!string.IsNullOrWhiteSpace(Version))
+                {
+                    s = s.SetVersion(Version);
+                }
+
+                return s;
+            });
         });
 
     Target Publish => _ => _
@@ -112,8 +128,15 @@ sealed class Build : NukeBuild
                 .SetApiKey(NuGetApiKey)
                 .SetSource("https://api.nuget.org/v3/index.json")
                 .EnableSkipDuplicate());
+
+            DotNetNuGetPush(s => s
+                .SetTargetPath(Root / "Prism.Bcl.Commands" / "bin" / Configuration / "*.nupkg")
+                .SetApiKey(NuGetApiKey)
+                .SetSource("https://api.nuget.org/v3/index.json")
+                .EnableSkipDuplicate());
         });
 
     Target Ci => _ => _
         .DependsOn(Test);
 }
+

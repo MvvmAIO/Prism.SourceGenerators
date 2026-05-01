@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <!-- Set to false when referencing the generator via ProjectReference (e.g. samples) and importing this file only for MvvmAIO.Prism.Core libs. -->
+    <!-- Set to false when referencing the generator via ProjectReference (e.g. samples). -->
     <MvvmAIOPrismSourceGeneratorsImportAnalyzers Condition="'$(MvvmAIOPrismSourceGeneratorsImportAnalyzers)' == ''">true</MvvmAIOPrismSourceGeneratorsImportAnalyzers>
   </PropertyGroup>
 
@@ -28,41 +28,16 @@
     <MvvmAIOPrismSourceGeneratorsAnalyzerAdded>true</MvvmAIOPrismSourceGeneratorsAnalyzerAdded>
   </PropertyGroup>
 
-  <!--
-    Single-package compile support: ship MvvmAIO.Prism.Core (+ Prism8 polyfill inside the same nupkg).
-    When the graph resolves Prism.Core 8.1.97, add MvvmAIO.Prism.Core.Prism8; otherwise only MvvmAIO.Prism.Core.
-    Repo development: targets live under Prism.SourceGenerators.Package/build/ — resolve DLLs from sibling project outputs.
-  -->
-  <Target Name="_MvvmAIO_AddMvvmPrismCoreReferences" BeforeTargets="ResolveAssemblyReferences" DependsOnTargets="ResolvePackageAssets">
+  <!-- SourceGenerators package carries MvvmAIO.Prism.Core only. -->
+  <Target Name="_MvvmAIO_AddMvvmPrismCoreReference" BeforeTargets="ResolveAssemblyReferences">
     <PropertyGroup>
       <_MvvmAIO_FromRepo Condition="Exists('$(MSBuildThisFileDirectory)..\..\Prism.Core\Prism.SourceGenerators.Core.csproj')">true</_MvvmAIO_FromRepo>
       <_MvvmAIO_PrismCoreLibRoot Condition="'$(_MvvmAIO_FromRepo)' == 'true'">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..\Prism.Core\bin\$(Configuration)\netstandard2.0'))</_MvvmAIO_PrismCoreLibRoot>
-      <_MvvmAIO_Prism8LibRoot Condition="'$(_MvvmAIO_FromRepo)' == 'true'">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..\Prism.SourceGenerators.Core.Prism8\bin\$(Configuration)\netstandard2.0'))</_MvvmAIO_Prism8LibRoot>
       <_MvvmAIO_PrismCoreLibRoot Condition="'$(_MvvmAIO_FromRepo)' != 'true'">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\lib\netstandard2.0'))</_MvvmAIO_PrismCoreLibRoot>
-      <_MvvmAIO_Prism8LibRoot Condition="'$(_MvvmAIO_FromRepo)' != 'true'">$(_MvvmAIO_PrismCoreLibRoot)</_MvvmAIO_Prism8LibRoot>
-      <_MvvmAIO_UsePrism8Polyfill>false</_MvvmAIO_UsePrism8Polyfill>
     </PropertyGroup>
 
     <ItemGroup>
-      <_MvvmAIO_PrismCorePkg Include="@(PackageReference)" Condition="'%(Identity)' == 'Prism.Core'" />
-      <_MvvmAIO_PrismCorePV Include="@(PackageVersion)" Condition="'%(Identity)' == 'Prism.Core'" />
-      <_MvvmAIO_PrismCoreRef Include="@(ReferencePath)" Condition="'%(NuGetPackageId)' == 'Prism.Core'" />
-    </ItemGroup>
-
-    <PropertyGroup>
-      <_MvvmAIO_PrismVerDeclared>@(_MvvmAIO_PrismCorePkg->'%(Version)')</_MvvmAIO_PrismVerDeclared>
-      <_MvvmAIO_PrismVerDeclared Condition="'$(_MvvmAIO_PrismVerDeclared)' == ''">@(_MvvmAIO_PrismCorePV->'%(Version)')</_MvvmAIO_PrismVerDeclared>
-      <_MvvmAIO_PrismVerResolved>@(_MvvmAIO_PrismCoreRef->'%(NuGetPackageVersion)')</_MvvmAIO_PrismVerResolved>
-    </PropertyGroup>
-
-    <PropertyGroup>
-      <_MvvmAIO_UsePrism8Polyfill Condition="$([System.String]::new('$(_MvvmAIO_PrismVerResolved)').StartsWith('8.1.97', System.StringComparison.OrdinalIgnoreCase))">true</_MvvmAIO_UsePrism8Polyfill>
-      <_MvvmAIO_UsePrism8Polyfill Condition="'$(_MvvmAIO_UsePrism8Polyfill)' != 'true' and $([System.String]::new('$(_MvvmAIO_PrismVerDeclared)').StartsWith('8.1.97', System.StringComparison.OrdinalIgnoreCase))">true</_MvvmAIO_UsePrism8Polyfill>
-      <_MvvmAIO_UsePrism8Polyfill Condition="'$(_MvvmAIO_UsePrism8Polyfill)' != 'true' and $([System.String]::new('$(_MvvmAIO_PrismVerDeclared)').StartsWith('[8.1.97', System.StringComparison.OrdinalIgnoreCase))">true</_MvvmAIO_UsePrism8Polyfill>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <_MvvmAIO_ExistingMvvm Include="@(ReferencePath)" Condition="'%(Filename)' == 'MvvmAIO.Prism.Core' or '%(Filename)' == 'MvvmAIO.Prism.Core.Prism8'" />
+      <_MvvmAIO_ExistingMvvm Include="@(ReferencePath)" Condition="'%(Filename)' == 'MvvmAIO.Prism.Core'" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -72,13 +47,6 @@
     <ItemGroup Condition="'$(_MvvmAIO_SkipAutoRefs)' != 'true' and Exists('$(_MvvmAIO_PrismCoreLibRoot)\MvvmAIO.Prism.Core.dll')">
       <Reference Include="MvvmAIO.Prism.Core">
         <HintPath>$(_MvvmAIO_PrismCoreLibRoot)\MvvmAIO.Prism.Core.dll</HintPath>
-        <Private>true</Private>
-      </Reference>
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(_MvvmAIO_SkipAutoRefs)' != 'true' and '$(_MvvmAIO_UsePrism8Polyfill)' == 'true' and Exists('$(_MvvmAIO_Prism8LibRoot)\MvvmAIO.Prism.Core.Prism8.dll')">
-      <Reference Include="MvvmAIO.Prism.Core.Prism8">
-        <HintPath>$(_MvvmAIO_Prism8LibRoot)\MvvmAIO.Prism.Core.Prism8.dll</HintPath>
         <Private>true</Private>
       </Reference>
     </ItemGroup>

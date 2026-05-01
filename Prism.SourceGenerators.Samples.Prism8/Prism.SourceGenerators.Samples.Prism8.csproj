@@ -14,7 +14,7 @@
     <PackageReference Include="Prism.DryIoc.Avalonia" Version="8.1.97.11073" />
     <PackageReference Include="Tmds.DBus.Protocol" Version="0.92.0" />
     <ProjectReference Include="..\Prism.Core\Prism.SourceGenerators.Core.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\Prism.SourceGenerators.Core.Prism8\Prism.SourceGenerators.Core.Prism8.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Prism.Bcl.Commands\Prism.Bcl.Commands.csproj" />
     <ProjectReference Include="..\Prism.SourceGenerators.Roslyn4120\Prism.SourceGenerators.Roslyn4120.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <PackageReference Include="Avalonia" Version="11.0.7" />
     <PackageReference Include="Avalonia.Desktop" Version="11.0.7" />
@@ -26,6 +26,8 @@
   <PropertyGroup>
     <MvvmAIOPrismSourceGeneratorsImportAnalyzers>false</MvvmAIOPrismSourceGeneratorsImportAnalyzers>
   </PropertyGroup>
-  <Import Project="..\Prism.SourceGenerators.Package\build\MvvmAIO.Prism.SourceGenerators.targets" />
+  <Import Project="..\Prism.SourceGenerators.Package\build\MvvmAIO.Prism.Prism.SourceGenerators.targets" />
 
 </Project>
+
+

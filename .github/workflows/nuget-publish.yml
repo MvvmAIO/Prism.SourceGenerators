@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Package version (e.g. 0.1.7)"
+        description: "Package version (e.g. 0.2.0)"
         required: true
 
 permissions:
@@ -68,6 +68,7 @@ jobs:
           name: nuget-packages
           path: |
             Prism.SourceGenerators.Package/bin/Release/*.nupkg
+            Prism.Bcl.Commands/bin/Release/*.nupkg
           if-no-files-found: warn
       - name: Write publish summary
         if: always()
@@ -86,3 +87,4 @@ jobs:
             echo "- \`nuget-publish-log\` (full publish output)"
             echo "- \`nuget-packages\` (generated .nupkg files, if any)"
           } >> "$GITHUB_STEP_SUMMARY"
+
