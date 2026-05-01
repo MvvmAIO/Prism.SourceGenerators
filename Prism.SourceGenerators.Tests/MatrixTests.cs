@@ -278,4 +278,120 @@ public sealed class MatrixTests
         Assert.Contains(output.Diagnostics, d => d.Id == "PSG3002");
         Assert.DoesNotContain(output.GeneratedSources, s => s.HintName == "AsyncDelegateCommand.Polyfill.g.cs");
     }
+
+    public static TheoryData<string, string, string, string> TypeShapeMatrix => new()
+    {
+        {
+            "nested",
+            """
+            namespace Demo;
+
+            public partial class Outer
+            {
+                public partial class Vm : Prism.Mvvm.BindableBase
+                {
+                    [ObservableProperty]
+                    private int _count;
+
+                    [DelegateCommand]
+                    private void Save()
+                    {
+                    }
+                }
+            }
+            """,
+            "partial class Vm",
+            "public int Count"
+        },
+        {
+            "generic",
+            """
+            namespace Demo;
+
+            public partial class Vm<T> : Prism.Mvvm.BindableBase
+            {
+                [ObservableProperty]
+                private T? _value;
+
+                [DelegateCommand]
+                private void Save(T? value)
+                {
+                }
+            }
+            """,
+            "partial class Vm<T>",
+            "public T Value"
+        },
+        {
+            "abstract",
+            """
+            namespace Demo;
+
+            public abstract partial class Vm : Prism.Mvvm.BindableBase
+            {
+                [ObservableProperty]
+                private string _name = "";
+
+                [DelegateCommand]
+                private void Save()
+                {
+                }
+            }
+            """,
+            "partial class Vm",
+            "public string Name"
+        },
+        {
+            "inheritance",
+            """
+            namespace Demo;
+
+            public partial class BaseVm : Prism.Mvvm.BindableBase
+            {
+                protected bool CanSave()
+                {
+                    return true;
+                }
+            }
+
+            public partial class Vm : BaseVm
+            {
+                [ObservableProperty]
+                private int _count;
+
+                [DelegateCommand(CanExecute = nameof(CanSave))]
+                private void Save()
+                {
+                }
+            }
+            """,
+            "partial class Vm",
+            "public int Count"
+        }
+    };
+
+    [Theory]
+    [MemberData(nameof(TypeShapeMatrix))]
+    public void Generation_supports_type_shape_matrix(
+        string scenario,
+        string source,
+        string expectedTypeDeclarationFragment,
+        string expectedPropertyFragment)
+    {
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source, languageVersion: LanguageVersion.Preview);
+
+        Assert.True(
+            output.Diagnostics.All(static d => !d.Id.StartsWith("PSG", System.StringComparison.Ordinal)),
+            $"Scenario '{scenario}' produced diagnostics: {string.Join(", ", output.Diagnostics.Select(d => $"{d.Id}: {d.GetMessage()}"))}");
+
+        GeneratedSource commandSource = Assert.Single(
+            output.GeneratedSources.Where(s => s.HintName.EndsWith(".SaveCommand.g.cs")));
+        Assert.Contains(expectedTypeDeclarationFragment, commandSource.Source);
+        Assert.Contains("Save", commandSource.Source);
+
+        GeneratedSource propertySource = Assert.Single(
+            output.GeneratedSources.Where(s => s.HintName.EndsWith(".Count.g.cs") || s.HintName.EndsWith(".Value.g.cs") || s.HintName.EndsWith(".Name.g.cs")));
+        Assert.Contains(expectedTypeDeclarationFragment, propertySource.Source);
+        Assert.Contains(expectedPropertyFragment, propertySource.Source);
+    }
 }
