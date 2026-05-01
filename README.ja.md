@@ -21,8 +21,10 @@ Prism.SourceGenerators.Roslyn4001/             # Roslyn 4.0.1
 Prism.SourceGenerators.Roslyn4031/             # Roslyn 4.3.1
 Prism.SourceGenerators.Roslyn4120/             # Roslyn 4.12.0
 Prism.SourceGenerators.Roslyn5000/             # Roslyn 5.0.0
+Prism.Core/                                    # MvvmAIO.Prism.Core（属性）、MvvmAIO.Prism.SourceGenerators に同梱
+Prism.SourceGenerators.Core.Prism8/           # MvvmAIO.Prism.Core.Prism8（Prism 8 AsyncDelegateCommand）、Prism.Core 8.1.97 時に選択
 Prism.SourceGenerators.Samples.Prism9/         # Avalonia 12 サンプル（Prism 9.0、ネイティブ AsyncDelegateCommand）
-Prism.SourceGenerators.Samples.Prism8/         # Avalonia 12 サンプル（Prism 8.x、ポリフィル AsyncDelegateCommand）
+Prism.SourceGenerators.Samples.Prism8/         # Avalonia 12 サンプル（Prism 8.1.97、NuGet と同じ MSBuild のアセンブリ選択）
 ```
 
 ## ジェネレーター
@@ -117,7 +119,7 @@ public partial class MainViewModel : BindableBase
 
 - **同期メソッド**（`void`）は `DelegateCommand` / `DelegateCommand<T>` を生成
 - **非同期メソッド**（`Task`）は `AsyncDelegateCommand` / `AsyncDelegateCommand<T>` を生成
-- Prism < 9.0（`AsyncDelegateCommand` が未搭載）の場合、ポリフィルが自動生成されます
+- Prism &lt; 9.0 の場合、NuGet **`MvvmAIO.Prism.SourceGenerators`** を使用してください。**`MvvmAIO.Prism.Core`** を追加し、**`Prism.Core` 8.1.97** を参照しているときは **`MvvmAIO.Prism.Core.Prism8`** も追加され、`AsyncDelegateCommand` が解決されます。非同期コマンド使用時にこれらのアセンブリがない場合は **PSG3002** が報告されます。
 - **C# 14+**：Command プロパティは `field` キーワードを使用（個別のバッキングフィールド不要）
 - **C# 13 以前**：Command プロパティは従来のバッキングフィールドを使用
 
@@ -157,8 +159,8 @@ public DelegateCommand IncrementCommand => _incrementCommand ??= new DelegateCom
 
 ### `[AsyncDelegateCommand]`
 
-非同期メソッド専用の属性で、Prism 9.0+ の高度な機能をサポートします。
-フルーエント構成をサポート：`EnableParallelExecution`、`CancelAfter`、`Catch`、`CancellationTokenSourceFactory`。
+非同期メソッド専用の属性で、Prism と同等の高度な機能を提供します。
+Prism 9 以上ではフレームワーク実装を使用し、Prism 8.1.97 では **`MvvmAIO.Prism.SourceGenerators`** パッケージが **`MvvmAIO.Prism.Core.Prism8`** を適用し、同じ Fluent 構成が使えます：`EnableParallelExecution`、`CancelAfter`、`Catch`、`CancellationTokenSourceFactory`、`ObservesCanExecute`。
 
 ```csharp
 using Prism.SourceGenerators;
@@ -238,12 +240,12 @@ public partial class SimpleViewModel
 | PSG2002 | Catch ハンドラーのシグネチャに互換性がありません |
 | PSG2003 | CanExecute メンバーが見つかりません |
 | PSG2004 | 監視対象のプロパティが見つかりません |
-| PSG3001 | AsyncDelegateCommand polyfill を使用中です（Prism < 9.0） |
+| PSG3002 | `AsyncDelegateCommand` が見つかりません。Prism.Core 8.1.97 では **`MvvmAIO.Prism.SourceGenerators`**（NuGet）を使うか、Prism 9+ にアップグレードしてください |
 
 ## インストール
 
 ```xml
-<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.1.2" />
+<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.1.6" />
 ```
 
 または:
@@ -272,10 +274,10 @@ dotnet build Prism.SourceGenerators.slnx
 dotnet run --project build/_build.csproj -- --target Ci --configuration Release
 
 # NuGet パッケージを作成（必要に応じてバージョン上書き）
-dotnet run --project build/_build.csproj -- --target Pack --configuration Release --version 0.1.2
+dotnet run --project build/_build.csproj -- --target Pack --configuration Release --version 0.1.6
 
-# NuGet へ公開
-dotnet run --project build/_build.csproj -- --target Publish --configuration Release --version 0.1.2 --nuget-api-key <NUGET_API_KEY>
+# NuGet へ公開（MvvmAIO.Prism.SourceGenerators、MvvmAIO.Prism.Core アセンブリ同梱）
+dotnet run --project build/_build.csproj -- --target Publish --configuration Release --version 0.1.6 --nuget-api-key <NUGET_API_KEY>
 ```
 
 ## 要件

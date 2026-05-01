@@ -7,11 +7,11 @@ using Prism.SourceGenerators;
 namespace Prism.SourceGenerators.Samples.Prism8.ViewModels;
 
 /// <summary>
-/// Prism 8.0 sample ViewModel.
+/// Prism 8.1.97 sample ViewModel.
 /// Demonstrates [DelegateCommand], [AsyncDelegateCommand], [ObservesProperty],
 /// [NotifyPropertyChangedFor], and OnChanged partial methods.
-/// AsyncDelegateCommand is NOT available in Prism.Core 8.1.97,
-/// so the source generator will automatically generate a polyfill.
+/// AsyncDelegateCommand is NOT available in Prism.Core 8.1.97;
+/// MvvmAIO.Prism.Core.Prism8 supplies Prism.Commands.AsyncDelegateCommand for Prism.Core 8.1.97 (via package targets in this repo).
 /// </summary>
 public partial class MainViewModel : BindableBase
 {
@@ -42,7 +42,7 @@ public partial class MainViewModel : BindableBase
     public string FullName => $"{FirstName} {LastName}";
 
     [ObservableProperty]
-    private string _title = "Hello Prism 8.0 Source Generators!";
+    private string _title = "Hello Prism 8.1.97 Source Generators!";
 
     [ObservableProperty]
     private int _counter;
@@ -95,7 +95,7 @@ public partial class MainViewModel : BindableBase
     private async Task LoadDataAsync()
     {
         await Task.Delay(500);
-        Title = "Data loaded! (Prism 8.0 polyfill AsyncDelegateCommand)";
+        Title = "Data loaded! (Prism 8.1.97 MvvmAIO.Prism.Core.Prism8)";
     }
 
     // --- [DelegateCommand] with CanExecute + ObservesProperty ---
@@ -109,14 +109,14 @@ public partial class MainViewModel : BindableBase
 
     private bool CanToggle() => Counter > 0;
 
-    // --- [AsyncDelegateCommand] with advanced features (polyfill) ---
+    // --- [AsyncDelegateCommand] with advanced features (MvvmAIO.Prism.Core.Prism8) ---
 
     [AsyncDelegateCommand(EnableParallelExecution = true)]
     private async Task FetchDataAsync()
     {
         StatusMessage = "Fetching...";
         await Task.Delay(1000);
-        StatusMessage = "Fetch complete! (parallel execution enabled, polyfill)";
+        StatusMessage = "Fetch complete! (parallel execution enabled, MvvmAIO.Prism.Core.Prism8)";
     }
 
     [AsyncDelegateCommand(
@@ -127,7 +127,7 @@ public partial class MainViewModel : BindableBase
     {
         StatusMessage = "Saving...";
         await Task.Delay(800);
-        StatusMessage = $"Saved! Counter={Counter}, IsActive={IsActive} (polyfill)";
+        StatusMessage = $"Saved! Counter={Counter}, IsActive={IsActive} (MvvmAIO.Prism.Core.Prism8)";
     }
 
     private bool CanSave() => Counter > 0 && IsActive;

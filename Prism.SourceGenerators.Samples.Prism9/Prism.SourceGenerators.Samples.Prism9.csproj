@@ -11,12 +11,22 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Polyfill" Version="10.3.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Prism.DryIoc.Avalonia" Version="9.0.537.11130" />
+    <ProjectReference Include="..\Prism.Core\Prism.SourceGenerators.Core.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\Prism.SourceGenerators.Roslyn4120\Prism.SourceGenerators.Roslyn4120.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <PackageReference Include="Avalonia" Version="11.3.14" />
     <PackageReference Include="Avalonia.Desktop" Version="11.3.14" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.14" />
     <PackageReference Include="Prism.Core" Version="9.0.537" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <MvvmAIOPrismSourceGeneratorsImportAnalyzers>false</MvvmAIOPrismSourceGeneratorsImportAnalyzers>
+  </PropertyGroup>
+  <Import Project="..\Prism.SourceGenerators.Package\build\MvvmAIO.Prism.SourceGenerators.targets" />
 
 </Project>

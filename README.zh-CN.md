@@ -21,8 +21,10 @@ Prism.SourceGenerators.Roslyn4001/             # Roslyn 4.0.1
 Prism.SourceGenerators.Roslyn4031/             # Roslyn 4.3.1
 Prism.SourceGenerators.Roslyn4120/             # Roslyn 4.12.0
 Prism.SourceGenerators.Roslyn5000/             # Roslyn 5.0.0
+Prism.Core/                                    # MvvmAIO.Prism.Core（特性），随 MvvmAIO.Prism.SourceGenerators 打包
+Prism.SourceGenerators.Core.Prism8/           # MvvmAIO.Prism.Core.Prism8（Prism 8 AsyncDelegateCommand），在 Prism.Core 8.1.97 时选用
 Prism.SourceGenerators.Samples.Prism9/         # Avalonia 12 示例（Prism 9.0，原生 AsyncDelegateCommand）
-Prism.SourceGenerators.Samples.Prism8/         # Avalonia 12 示例（Prism 8.x，polyfill AsyncDelegateCommand）
+Prism.SourceGenerators.Samples.Prism8/         # Avalonia 12 示例（Prism 8.1.97；与 NuGet 包相同的 MSBuild 程序集选择）
 ```
 
 ## 生成器
@@ -117,7 +119,7 @@ public partial class MainViewModel : BindableBase
 
 - **同步方法**（`void`）生成 `DelegateCommand` / `DelegateCommand<T>`
 - **异步方法**（`Task`）生成 `AsyncDelegateCommand` / `AsyncDelegateCommand<T>`
-- 对于 Prism < 9.0（不包含 `AsyncDelegateCommand`），自动生成 polyfill
+- 对于 Prism &lt; 9.0，请使用 NuGet **`MvvmAIO.Prism.SourceGenerators`**：它会添加 **`MvvmAIO.Prism.Core`**，并在引用 **`Prism.Core` 8.1.97** 时添加 **`MvvmAIO.Prism.Core.Prism8`**，以便存在 `AsyncDelegateCommand`。若使用异步命令却缺少上述程序集，将报告 **PSG3002**。
 - **C# 14+**：Command 属性使用 `field` 关键字（无需单独后备字段）
 - **C# 13 及更早版本**：Command 属性使用传统后备字段
 
@@ -157,8 +159,8 @@ public DelegateCommand IncrementCommand => _incrementCommand ??= new DelegateCom
 
 ### `[AsyncDelegateCommand]`
 
-专用于异步方法的特性，支持 Prism 9.0+ 高级功能。
-支持流式配置：`EnableParallelExecution`、`CancelAfter`、`Catch`、`CancellationTokenSourceFactory`。
+专用于异步方法的特性，提供与 Prism 一致的进阶能力。
+在 Prism 9+ 上使用框架内置类型；在 Prism 8.1.97 上，**`MvvmAIO.Prism.SourceGenerators`** 包会应用 **`MvvmAIO.Prism.Core.Prism8`**，以获得相同的链式配置：`EnableParallelExecution`、`CancelAfter`、`Catch`、`CancellationTokenSourceFactory`、`ObservesCanExecute`。
 
 ```csharp
 using Prism.SourceGenerators;
@@ -238,12 +240,12 @@ public partial class SimpleViewModel
 | PSG2002 | Catch 处理程序签名不兼容 |
 | PSG2003 | 未找到 CanExecute 成员 |
 | PSG2004 | 未找到被观察的属性 |
-| PSG3001 | 正在使用 AsyncDelegateCommand polyfill（Prism < 9.0） |
+| PSG3002 | 未找到 `AsyncDelegateCommand`；在 Prism.Core 8.1.97 上请使用 **`MvvmAIO.Prism.SourceGenerators`**（NuGet）（或升级到 Prism 9+） |
 
 ## 安装
 
 ```xml
-<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.1.2" />
+<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.1.6" />
 ```
 
 或：
@@ -272,10 +274,10 @@ dotnet build Prism.SourceGenerators.slnx
 dotnet run --project build/_build.csproj -- --target Ci --configuration Release
 
 # 打包 NuGet（可选覆盖版本号）
-dotnet run --project build/_build.csproj -- --target Pack --configuration Release --version 0.1.2
+dotnet run --project build/_build.csproj -- --target Pack --configuration Release --version 0.1.6
 
-# 发布 NuGet
-dotnet run --project build/_build.csproj -- --target Publish --configuration Release --version 0.1.2 --nuget-api-key <NUGET_API_KEY>
+# 发布 NuGet（MvvmAIO.Prism.SourceGenerators，内含 MvvmAIO.Prism.Core 程序集）
+dotnet run --project build/_build.csproj -- --target Publish --configuration Release --version 0.1.6 --nuget-api-key <NUGET_API_KEY>
 ```
 
 ## 要求

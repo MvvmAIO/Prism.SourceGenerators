@@ -1,0 +1,10 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<AssemblyName>MvvmAIO.Prism.Core</AssemblyName>
+		<RootNamespace>Prism</RootNamespace>
+		<LangVersion>14.0</LangVersion>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+</Project>

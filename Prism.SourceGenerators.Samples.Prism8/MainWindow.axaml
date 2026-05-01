@@ -1,13 +1,13 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="Prism.SourceGenerators.Samples.Prism8.MainWindow"
-        Title="Prism 8.0 - Prism.DryIoc.Avalonia Sample"
+        Title="Prism 8.1.97 - Prism.DryIoc.Avalonia Sample"
         Height="560"
         Width="960">
   <Grid ColumnDefinitions="220,*">
     <Border Grid.Column="0" Background="#1F2937" Padding="12">
       <StackPanel Spacing="12">
-        <TextBlock Text="Prism 8 Navigation" FontSize="16" FontWeight="Bold" Foreground="White" />
+        <TextBlock Text="Prism 8.1.97 Navigation" FontSize="16" FontWeight="Bold" Foreground="White" />
         <ListBox ItemsSource="{Binding NavigationItems}" SelectedItem="{Binding SelectedNavigationItem}">
           <ListBox.ItemTemplate>
             <DataTemplate>

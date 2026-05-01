@@ -21,8 +21,10 @@ Prism.SourceGenerators.Roslyn4001/             # Roslyn 4.0.1
 Prism.SourceGenerators.Roslyn4031/             # Roslyn 4.3.1
 Prism.SourceGenerators.Roslyn4120/             # Roslyn 4.12.0
 Prism.SourceGenerators.Roslyn5000/             # Roslyn 5.0.0
+Prism.Core/                                    # MvvmAIO.Prism.Core (attributes), bundled in MvvmAIO.Prism.SourceGenerators
+Prism.SourceGenerators.Core.Prism8/           # MvvmAIO.Prism.Core.Prism8 (Prism 8 AsyncDelegateCommand), bundled when Prism.Core 8.1.97
 Prism.SourceGenerators.Samples.Prism9/         # Avalonia 12 sample (Prism 9.0, native AsyncDelegateCommand)
-Prism.SourceGenerators.Samples.Prism8/         # Avalonia 12 sample (Prism 8.x, polyfill AsyncDelegateCommand)
+Prism.SourceGenerators.Samples.Prism8/         # Avalonia 12 sample (Prism 8.1.97; same MSBuild lib selection as the NuGet package)
 ```
 
 ## Generators
@@ -117,7 +119,7 @@ Generates `DelegateCommand` or `AsyncDelegateCommand` properties from methods.
 
 - **Synchronous methods** (`void`) generate `DelegateCommand` / `DelegateCommand<T>`
 - **Async methods** (`Task`) generate `AsyncDelegateCommand` / `AsyncDelegateCommand<T>`
-- For Prism < 9.0 (which lacks `AsyncDelegateCommand`), a polyfill is generated automatically
+- For Prism &lt; 9.0, use NuGet **`MvvmAIO.Prism.SourceGenerators`**, which adds **`MvvmAIO.Prism.Core`** and, when **`Prism.Core` 8.1.97** is referenced, **`MvvmAIO.Prism.Core.Prism8`** so `AsyncDelegateCommand` exists. If those assemblies are missing while async commands are used, **PSG3002** is reported.
 - **C# 14+**: Command properties use the `field` keyword (no separate backing field)
 - **C# 13 and earlier**: Command properties use a traditional backing field
 
@@ -157,8 +159,8 @@ public DelegateCommand IncrementCommand => _incrementCommand ??= new DelegateCom
 
 ### `[AsyncDelegateCommand]`
 
-Dedicated attribute for async methods with advanced Prism 9.0+ features.
-Supports fluent configuration: `EnableParallelExecution`, `CancelAfter`, `Catch`, `CancellationTokenSourceFactory`.
+Dedicated attribute for async methods with advanced Prism-style features.
+On Prism 9+, uses the framework types; on Prism 8.1.97, the **`MvvmAIO.Prism.SourceGenerators`** package applies **`MvvmAIO.Prism.Core.Prism8`** for the same fluent surface: `EnableParallelExecution`, `CancelAfter`, `Catch`, `CancellationTokenSourceFactory`, and `ObservesCanExecute`.
 
 ```csharp
 using Prism.SourceGenerators;
@@ -238,12 +240,12 @@ If the class already inherits from `BindableBase` or a base class that implement
 | PSG2002 | Catch handler signature is not compatible |
 | PSG2003 | CanExecute member was not found |
 | PSG2004 | Observed property was not found |
-| PSG3001 | AsyncDelegateCommand polyfill is active (Prism < 9.0) |
+| PSG3002 | `AsyncDelegateCommand` not found; use **`MvvmAIO.Prism.SourceGenerators`** (NuGet) on Prism.Core 8.1.97 (or upgrade to Prism 9+) |
 
 ## Installation
 
 ```xml
-<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.1.2" />
+<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.1.6" />
 ```
 
 Or:
@@ -272,10 +274,10 @@ Common commands:
 dotnet run --project build/_build.csproj -- --target Ci --configuration Release
 
 # Pack NuGet package (optionally override version)
-dotnet run --project build/_build.csproj -- --target Pack --configuration Release --version 0.1.2
+dotnet run --project build/_build.csproj -- --target Pack --configuration Release --version 0.1.6
 
-# Publish NuGet package
-dotnet run --project build/_build.csproj -- --target Publish --configuration Release --version 0.1.2 --nuget-api-key <NUGET_API_KEY>
+# Publish NuGet package (MvvmAIO.Prism.SourceGenerators, includes MvvmAIO.Prism.Core assemblies)
+dotnet run --project build/_build.csproj -- --target Publish --configuration Release --version 0.1.6 --nuget-api-key <NUGET_API_KEY>
 ```
 
 ## Requirements

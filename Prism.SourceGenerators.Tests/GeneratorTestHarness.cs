@@ -166,9 +166,17 @@ internal static class GeneratorTestHarness
             throw new InvalidOperationException("TRUSTED_PLATFORM_ASSEMBLIES is unavailable.");
         }
 
-        return trustedPlatformAssemblies
+        IEnumerable<MetadataReference> platform = trustedPlatformAssemblies
             .Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
             .Select(static path => MetadataReference.CreateFromFile(path));
+
+        string mvvmCore = Path.Combine(AppContext.BaseDirectory, "MvvmAIO.Prism.Core.dll");
+        if (!File.Exists(mvvmCore))
+        {
+            throw new InvalidOperationException($"Required test reference not found: {mvvmCore}");
+        }
+
+        return platform.Append(MetadataReference.CreateFromFile(mvvmCore));
     }
 }
 

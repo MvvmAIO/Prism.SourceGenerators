@@ -124,13 +124,13 @@ internal static class DiagnosticDescriptors
         description: "The property name passed to [ObservesProperty] should exist on the containing type or one of its base types.",
         helpLinkUri: HelpLink);
 
-    public static readonly DiagnosticDescriptor AsyncDelegateCommandPolyfillInUse = new(
-        id: "PSG3001",
-        title: "AsyncDelegateCommand polyfill is being used",
-        messageFormat: "Prism.Commands.AsyncDelegateCommand was not found; generating polyfill for method '{0}'",
+    public static readonly DiagnosticDescriptor AsyncDelegateCommandPackageRequired = new(
+        id: "PSG3002",
+        title: "AsyncDelegateCommand package required for Prism prior to 9.0",
+        messageFormat: "Prism.Commands.AsyncDelegateCommand was not found but async commands are used; reference NuGet package '{0}' so MvvmAIO.Prism.Core / MvvmAIO.Prism.Core.Prism8 are applied (Prism.Core 8.1.97 — remove when upgrading to Prism 9+)",
         category: Category,
-        defaultSeverity: DiagnosticSeverity.Info,
+        defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true,
-        description: "When Prism < 9 is referenced, the generator emits a compatibility AsyncDelegateCommand polyfill.",
+        description: "Use the MvvmAIO.Prism.SourceGenerators NuGet package (not a project reference to the generator alone) so MSBuild adds MvvmAIO.Prism.Core and, for Prism.Core 8.1.97, MvvmAIO.Prism.Core.Prism8. Alternatively upgrade to Prism 9+.",
         helpLinkUri: HelpLink);
 }

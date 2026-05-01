@@ -8,11 +8,11 @@ public sealed class MatrixTests
 {
     public static TheoryData<LanguageVersion, bool, bool, bool> DelegateCommandMatrix => new()
     {
-        // languageVersion, hasAsyncDelegateCommand, expectFieldKeyword, expectPolyfill
+        // languageVersion, hasAsyncDelegateCommand, expectFieldKeyword, expectPackageDiagnostic (PSG3002)
         { LanguageVersion.CSharp12, true,  false, false },
         { LanguageVersion.Preview,  true,  true,  false },
-        { LanguageVersion.CSharp12, false, false, true  },
-        { LanguageVersion.Preview,  false, true,  true  }
+        { LanguageVersion.CSharp12, false, false, true },
+        { LanguageVersion.Preview,  false, true,  true }
     };
 
     [Theory]
@@ -21,7 +21,7 @@ public sealed class MatrixTests
         LanguageVersion languageVersion,
         bool hasAsyncDelegateCommand,
         bool expectFieldKeyword,
-        bool expectPolyfill)
+        bool expectPackageDiagnostic)
     {
         const string source = """
             namespace Demo;
@@ -55,8 +55,8 @@ public sealed class MatrixTests
             Assert.Contains("=> _loadCommand ??= new global::Prism.Commands.AsyncDelegateCommand(LoadAsync);", commandSource.Source);
         }
 
-        bool hasPolyfill = output.GeneratedSources.Any(s => s.HintName == "AsyncDelegateCommand.Polyfill.g.cs");
-        Assert.Equal(expectPolyfill, hasPolyfill);
+        Assert.False(output.GeneratedSources.Any(s => s.HintName == "AsyncDelegateCommand.Polyfill.g.cs"));
+        Assert.Equal(expectPackageDiagnostic, output.Diagnostics.Any(d => d.Id == "PSG3002"));
     }
 
     public static TheoryData<LanguageVersion, bool> ObservablePropertyMatrix => new()
@@ -255,7 +255,7 @@ public sealed class MatrixTests
     }
 
     [Fact]
-    public void AsyncDelegateCommand_reports_info_when_polyfill_is_generated()
+    public void AsyncDelegateCommand_reports_package_required_when_prism_async_command_missing()
     {
         const string source = """
             namespace Demo;
@@ -275,7 +275,7 @@ public sealed class MatrixTests
             languageVersion: LanguageVersion.Preview,
             hasAsyncDelegateCommand: false);
 
-        Assert.Contains(output.Diagnostics, d => d.Id == "PSG3001");
-        Assert.Contains(output.GeneratedSources, s => s.HintName == "AsyncDelegateCommand.Polyfill.g.cs");
+        Assert.Contains(output.Diagnostics, d => d.Id == "PSG3002");
+        Assert.DoesNotContain(output.GeneratedSources, s => s.HintName == "AsyncDelegateCommand.Polyfill.g.cs");
     }
 }
