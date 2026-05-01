@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Package version (e.g. 0.1.6)"
+        description: "Package version (e.g. 0.1.7)"
         required: true
 
 permissions:

@@ -245,7 +245,7 @@ If the class already inherits from `BindableBase` or a base class that implement
 ## Installation
 
 ```xml
-<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.1.6" />
+<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.1.7" />
 ```
 
 Or:
@@ -274,10 +274,10 @@ Common commands:
 dotnet run --project build/_build.csproj -- --target Ci --configuration Release
 
 # Pack NuGet package (optionally override version)
-dotnet run --project build/_build.csproj -- --target Pack --configuration Release --version 0.1.6
+dotnet run --project build/_build.csproj -- --target Pack --configuration Release --version 0.1.7
 
 # Publish NuGet package (MvvmAIO.Prism.SourceGenerators, includes MvvmAIO.Prism.Core assemblies)
-dotnet run --project build/_build.csproj -- --target Publish --configuration Release --version 0.1.6 --nuget-api-key <NUGET_API_KEY>
+dotnet run --project build/_build.csproj -- --target Publish --configuration Release --version 0.1.7 --nuget-api-key <NUGET_API_KEY>
 ```
 
 ## Requirements

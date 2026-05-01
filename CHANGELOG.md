@@ -4,6 +4,11 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## [0.1.7] - 2026-05-01
+
+### Fixed
+- **MSB4086** loading WPF/other projects in the IDE when `CscToolPath` / compiler file version is not available yet: Roslyn-folder conditions in **`MvvmAIO.Prism.SourceGenerators.targets`** now require non-empty major (and minor where `<=` is used) before numeric comparison, so design-time evaluation falls back to **roslyn4.12**.
+
 ## [0.1.6] - 2026-05-01
 
 ### Changed

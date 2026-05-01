@@ -245,7 +245,7 @@ public partial class SimpleViewModel
 ## 安装
 
 ```xml
-<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.1.6" />
+<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.1.7" />
 ```
 
 或：
@@ -274,10 +274,10 @@ dotnet build Prism.SourceGenerators.slnx
 dotnet run --project build/_build.csproj -- --target Ci --configuration Release
 
 # 打包 NuGet（可选覆盖版本号）
-dotnet run --project build/_build.csproj -- --target Pack --configuration Release --version 0.1.6
+dotnet run --project build/_build.csproj -- --target Pack --configuration Release --version 0.1.7
 
 # 发布 NuGet（MvvmAIO.Prism.SourceGenerators，内含 MvvmAIO.Prism.Core 程序集）
-dotnet run --project build/_build.csproj -- --target Publish --configuration Release --version 0.1.6 --nuget-api-key <NUGET_API_KEY>
+dotnet run --project build/_build.csproj -- --target Publish --configuration Release --version 0.1.7 --nuget-api-key <NUGET_API_KEY>
 ```
 
 ## 要求
