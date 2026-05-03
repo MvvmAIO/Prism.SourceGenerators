@@ -296,6 +296,8 @@ public partial class SimpleViewModel
 | PSG2005 | `[NotifyCanExecuteChangedFor]` 引用的命令未找到 |
 | PSG3002 | 未找到 `AsyncDelegateCommand`；请安装 **`MvvmAIO.Prism.SourceGenerators`**，且在 Prism.Core 8.1.97 上安装 **`MvvmAIO.Prism.Bcl.Commands`**（或升级到 Prism 9+） |
 
+> **快速修复：** PSG0001–PSG0004 都提供 IDE 代码修复，会自动插入缺失的 `partial` 修饰符（在波浪线处按 Ctrl+. / Alt+Enter，或使用"修复文档/项目/解决方案中的所有问题"在整个代码库中批量应用）。
+
 ## 安装
 
 ```xml

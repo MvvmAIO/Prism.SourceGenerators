@@ -29,6 +29,13 @@
     <DefineConstants Condition="$([MSBuild]::VersionGreaterThanOrEquals($(PrismSourceGeneratorRoslynVersion), 5.0.0))">$(DefineConstants);ROSLYN_5_0_0_OR_GREATER</DefineConstants>
 
     <NoWarn Condition="$([MSBuild]::VersionLessThan($(PrismSourceGeneratorRoslynVersion), 5.0.0))">$(NoWarn);RS2003</NoWarn>
+
+    <!--
+      RS1038: "Compiler extension assemblies should not depend on Workspaces". Suppressed because we
+      bundle a CodeFixProvider in the same DLL as the analyzer + generator. The host (VS / dotnet IDE)
+      always loads Workspaces alongside, so this is safe in practice.
+    -->
+    <NoWarn>$(NoWarn);RS1038</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -37,6 +44,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(PrismSourceGeneratorRoslynVersion)" PrivateAssets="all" Pack="false" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(PrismSourceGeneratorRoslynVersion)" PrivateAssets="all" Pack="false" />
     <PackageReference Include="Polyfill" Version="10.3.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
