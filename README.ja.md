@@ -21,7 +21,7 @@ Prism.SourceGenerators.Roslyn4001/             # Roslyn 4.0.1
 Prism.SourceGenerators.Roslyn4031/             # Roslyn 4.3.1
 Prism.SourceGenerators.Roslyn4120/             # Roslyn 4.12.0
 Prism.SourceGenerators.Roslyn5000/             # Roslyn 5.0.0
-Prism.Core/                                    # MvvmAIO.Prism.Core（属性）、MvvmAIO.Prism.SourceGenerators に同梱
+Prism.SourceGenerators.Core/                   # MvvmAIO.Prism.Core（属性）、MvvmAIO.Prism.SourceGenerators に同梱
 Prism.Bcl.Commands/                            # MvvmAIO.Prism.Bcl.Commands（Prism 8 AsyncDelegateCommand パッケージ、手動インストール）
 Prism.SourceGenerators.Samples.Prism9/         # Avalonia 12 サンプル（Prism 9.0、ネイティブ AsyncDelegateCommand）
 Prism.SourceGenerators.Samples.Prism8/         # Avalonia 12 サンプル（Prism 8.1.97、NuGet と同じ MSBuild のアセンブリ選択）
@@ -35,7 +35,7 @@ Prism.SourceGenerators.Samples.Prism8/         # Avalonia 12 サンプル（Pris
 
 #### フィールドターゲット（すべての C# バージョン）
 
-プライベートフィールドに `[ObservableProperty]` を付与すると、setter で `SetProperty` を呼び出すパブリックプロパティが生成されます。
+プライベートフィールドに `[ObservableProperty]` を付与すると、setter で `SetProperty` を呼び出すプロパティが生成されます。**既定**は **`public`** です。`ObservablePropertyAccess` を渡すと `internal`、`protected`、`private`、`protected internal`、`private protected` を指定できます。
 
 ```csharp
 // C# 12 以前
@@ -46,9 +46,14 @@ public partial class MainViewModel : BindableBase
     [ObservableProperty]
     private string _title = "Hello";
 
-    // 生成: public string Title { get => _title; set => SetProperty(ref _title, value); }
+    [ObservableProperty(ObservablePropertyAccess.Internal)]
+    private int _count;
+
+    // 生成: OnTitleChanging* の後に BindableBase.SetProperty(ref _title, value, () => { OnTitleChanged*; }) など。
 }
 ```
+
+**パーシャルプロパティ** ターゲットでは、プロパティ宣言の修飾子が使われます。`ObservablePropertyAccess` 引数は無視されます。
 
 #### パーシャルプロパティターゲット（C# 13+ `field` キーワード）
 

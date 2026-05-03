@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Prism.Core\Prism.SourceGenerators.Core.csproj" />
+    <ProjectReference Include="..\Prism.SourceGenerators.Core\Prism.SourceGenerators.Core.csproj" />
     <ProjectReference Include="..\Prism.SourceGenerators.Roslyn4120\Prism.SourceGenerators.Roslyn4120.csproj" />
     <!-- Build order only: must NOT copy MvvmAIO.Prism.Bcl.Commands next to Prism.dll or Roslyn resolves AsyncDelegateCommand when testing "without BCL". -->
     <ProjectReference Include="..\Prism.Bcl.Commands\Prism.Bcl.Commands.csproj">

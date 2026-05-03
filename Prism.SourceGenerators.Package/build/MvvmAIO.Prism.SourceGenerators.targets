@@ -31,8 +31,8 @@
   <!-- SourceGenerators package carries MvvmAIO.Prism.Core only. -->
   <Target Name="_MvvmAIO_AddMvvmPrismCoreReference" BeforeTargets="ResolveAssemblyReferences">
     <PropertyGroup>
-      <_MvvmAIO_FromRepo Condition="Exists('$(MSBuildThisFileDirectory)..\..\Prism.Core\Prism.SourceGenerators.Core.csproj')">true</_MvvmAIO_FromRepo>
-      <_MvvmAIO_PrismCoreLibRoot Condition="'$(_MvvmAIO_FromRepo)' == 'true'">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..\Prism.Core\bin\$(Configuration)\netstandard2.0'))</_MvvmAIO_PrismCoreLibRoot>
+      <_MvvmAIO_FromRepo Condition="Exists('$(MSBuildThisFileDirectory)..\..\Prism.SourceGenerators.Core\Prism.SourceGenerators.Core.csproj')">true</_MvvmAIO_FromRepo>
+      <_MvvmAIO_PrismCoreLibRoot Condition="'$(_MvvmAIO_FromRepo)' == 'true'">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..\Prism.SourceGenerators.Core\bin\$(Configuration)\netstandard2.0'))</_MvvmAIO_PrismCoreLibRoot>
       <_MvvmAIO_PrismCoreLibRoot Condition="'$(_MvvmAIO_FromRepo)' != 'true'">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\lib\netstandard2.0'))</_MvvmAIO_PrismCoreLibRoot>
     </PropertyGroup>
 

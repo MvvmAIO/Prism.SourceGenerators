@@ -25,7 +25,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="all" />
-    <ProjectReference Include="..\Prism.Core\Prism.SourceGenerators.Core.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    <ProjectReference Include="..\Prism.SourceGenerators.Core\Prism.SourceGenerators.Core.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
     <ProjectReference Include="..\Prism.SourceGenerators.Roslyn4001\Prism.SourceGenerators.Roslyn4001.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\Prism.SourceGenerators.Roslyn4031\Prism.SourceGenerators.Roslyn4031.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\Prism.SourceGenerators.Roslyn4120\Prism.SourceGenerators.Roslyn4120.csproj" ReferenceOutputAssembly="false" />
@@ -40,7 +40,7 @@
     <None Include="build\MvvmAIO.Prism.SourceGenerators.props" Pack="true" PackagePath="buildTransitive/" Visible="false" />
     <None Include="build\MvvmAIO.Prism.SourceGenerators.targets" Pack="true" PackagePath="build/" Visible="false" />
     <None Include="build\MvvmAIO.Prism.SourceGenerators.targets" Pack="true" PackagePath="buildTransitive/" Visible="false" />
-    <None Include="..\Prism.Core\bin\$(Configuration)\netstandard2.0\MvvmAIO.Prism.Core.dll" Pack="true" PackagePath="lib/netstandard2.0/" Visible="false" />
+    <None Include="..\Prism.SourceGenerators.Core\bin\$(Configuration)\netstandard2.0\MvvmAIO.Prism.Core.dll" Pack="true" PackagePath="lib/netstandard2.0/" Visible="false" />
     <None Include="..\Prism.SourceGenerators.Roslyn4001\bin\$(Configuration)\netstandard2.0\Prism.SourceGenerators.dll" Pack="true" PackagePath="analyzers/dotnet/roslyn4.0/cs" Visible="false" />
     <None Include="..\Prism.SourceGenerators.Roslyn4031\bin\$(Configuration)\netstandard2.0\Prism.SourceGenerators.dll" Pack="true" PackagePath="analyzers/dotnet/roslyn4.3/cs" Visible="false" />
     <None Include="..\Prism.SourceGenerators.Roslyn4120\bin\$(Configuration)\netstandard2.0\Prism.SourceGenerators.dll" Pack="true" PackagePath="analyzers/dotnet/roslyn4.12/cs" Visible="false" />
@@ -50,7 +50,7 @@
   <!-- dotnet pack with /p:NoBuild=true skips compiling dependencies; ensure packed DLLs exist (NU5019). -->
   <Target Name="BuildInputsBeforeNuspec" BeforeTargets="GenerateNuspec">
     <ItemGroup>
-      <_PackInputProject Include="$(MSBuildThisFileDirectory)..\Prism.Core\Prism.SourceGenerators.Core.csproj" />
+      <_PackInputProject Include="$(MSBuildThisFileDirectory)..\Prism.SourceGenerators.Core\Prism.SourceGenerators.Core.csproj" />
       <_PackInputProject Include="$(MSBuildThisFileDirectory)..\Prism.SourceGenerators.Roslyn4001\Prism.SourceGenerators.Roslyn4001.csproj" />
       <_PackInputProject Include="$(MSBuildThisFileDirectory)..\Prism.SourceGenerators.Roslyn4031\Prism.SourceGenerators.Roslyn4031.csproj" />
       <_PackInputProject Include="$(MSBuildThisFileDirectory)..\Prism.SourceGenerators.Roslyn4120\Prism.SourceGenerators.Roslyn4120.csproj" />

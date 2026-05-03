@@ -21,7 +21,7 @@ Prism.SourceGenerators.Roslyn4001/             # Roslyn 4.0.1
 Prism.SourceGenerators.Roslyn4031/             # Roslyn 4.3.1
 Prism.SourceGenerators.Roslyn4120/             # Roslyn 4.12.0
 Prism.SourceGenerators.Roslyn5000/             # Roslyn 5.0.0
-Prism.Core/                                    # MvvmAIO.Prism.Core (attributes), bundled in MvvmAIO.Prism.SourceGenerators
+Prism.SourceGenerators.Core/                   # MvvmAIO.Prism.Core (attributes), bundled in MvvmAIO.Prism.SourceGenerators
 Prism.Bcl.Commands/                            # MvvmAIO.Prism.Bcl.Commands (Prism 8 AsyncDelegateCommand package, install manually)
 Prism.SourceGenerators.Samples.Prism9/         # Avalonia 12 sample (Prism 9.0, native AsyncDelegateCommand)
 Prism.SourceGenerators.Samples.Prism8/         # Avalonia 12 sample (Prism 8.1.97; same MSBuild lib selection as the NuGet package)
@@ -35,7 +35,7 @@ Generates observable properties for classes inheriting from `BindableBase`. Supp
 
 #### Field target (all C# versions)
 
-Annotate a private field with `[ObservableProperty]` to generate a public property that calls `SetProperty` in the setter.
+Annotate a private field with `[ObservableProperty]` to generate a property that calls `SetProperty` in the setter. By default the generated property is **`public`**. Pass **`ObservablePropertyAccess`** to choose another accessibility (`internal`, `protected`, `private`, `protected internal`, `private protected`).
 
 ```csharp
 // C# 12 or earlier
@@ -46,10 +46,15 @@ public partial class MainViewModel : BindableBase
     [ObservableProperty]
     private string _title = "Hello";
 
+    [ObservableProperty(ObservablePropertyAccess.Internal)]
+    private int _count;
+
     // Generated: setter calls OnTitleChanging*, then BindableBase.SetProperty(ref _title, value, () => { OnTitleChanged*; }),
     // then optional RaisePropertyChanged for [NotifyPropertyChangedFor] / command refresh attributes.
 }
 ```
+
+For **partial property** targets, the accessibility on the property declaration is used; the `ObservablePropertyAccess` argument is ignored.
 
 #### Partial property target (C# 13+ with `field` keyword)
 

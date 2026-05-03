@@ -21,7 +21,7 @@ Prism.SourceGenerators.Roslyn4001/             # Roslyn 4.0.1
 Prism.SourceGenerators.Roslyn4031/             # Roslyn 4.3.1
 Prism.SourceGenerators.Roslyn4120/             # Roslyn 4.12.0
 Prism.SourceGenerators.Roslyn5000/             # Roslyn 5.0.0
-Prism.Core/                                    # MvvmAIO.Prism.Core（特性），随 MvvmAIO.Prism.SourceGenerators 打包
+Prism.SourceGenerators.Core/                   # MvvmAIO.Prism.Core（特性），随 MvvmAIO.Prism.SourceGenerators 打包
 Prism.Bcl.Commands/                            # MvvmAIO.Prism.Bcl.Commands（Prism 8 AsyncDelegateCommand 包，需手动安装）
 Prism.SourceGenerators.Samples.Prism9/         # Avalonia 12 示例（Prism 9.0，原生 AsyncDelegateCommand）
 Prism.SourceGenerators.Samples.Prism8/         # Avalonia 12 示例（Prism 8.1.97；与 NuGet 包相同的 MSBuild 程序集选择）
@@ -35,7 +35,7 @@ Prism.SourceGenerators.Samples.Prism8/         # Avalonia 12 示例（Prism 8.1.
 
 #### 字段目标（所有 C# 版本）
 
-在私有字段上标注 `[ObservableProperty]`，生成调用 `SetProperty` 的公共属性。
+在私有字段上标注 `[ObservableProperty]`，生成调用 `SetProperty` 的属性；**默认**生成 **`public`**。可传入 **`ObservablePropertyAccess`** 指定为 `internal`、`protected`、`private`、`protected internal`、`private protected` 等。
 
 ```csharp
 // C# 12 或更早版本
@@ -46,9 +46,15 @@ public partial class MainViewModel : BindableBase
     [ObservableProperty]
     private string _title = "Hello";
 
-    // 生成：public string Title { get => _title; set => SetProperty(ref _title, value); }
+    [ObservableProperty(ObservablePropertyAccess.Internal)]
+    private int _count;
+
+    // 生成：setter 中 OnTitleChanging*、BindableBase.SetProperty(ref _title, value, () => { OnTitleChanged*; })，
+    // 以及可选的 [NotifyPropertyChangedFor] / 命令刷新等。
 }
 ```
+
+**部分属性**目标以属性声明上的访问修饰符为准；`ObservablePropertyAccess` 参数会被忽略。
 
 #### 部分属性目标（C# 13+ `field` 关键字）
 
