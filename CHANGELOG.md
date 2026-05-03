@@ -4,6 +4,10 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+### Changed
+- `[ObservableProperty]` generated setters now call `BindableBase.SetProperty(ref storage, value, onChanged)` (Prism overload with `Action?`) for the backing-field update and main `PropertyChanged` notification. `OnXxxChanging` still runs before the update; `OnXxxChanged` runs inside the `onChanged` callback so it executes before the main property notification, matching the previous ordering. `RaisePropertyChanged` for `[NotifyPropertyChangedFor]` targets and `RaiseCanExecuteChanged` calls still run afterward. This lets overrides of `SetProperty` observe or intercept updates consistently with hand-written Prism properties.
+- `[BindableBase]`-generated types now include the same `SetProperty<T>(ref T, T, Action?, string?)` overload as Prism's `BindableBase` so generated observable properties compile when not using the framework base class.
+
 ### Added
 - `[ObservableProperty]` now also emits `OnXxxChanging(value)` / `OnXxxChanging(oldValue, newValue)` `partial` method declarations alongside the existing `OnXxxChanged` overloads. The `Changing` hooks are invoked **before** the backing field is updated, the `Changed` hooks **after**.
 - New `[NotifyCanExecuteChangedFor(nameof(SaveCommand), ...)]` attribute (in **`MvvmAIO.Prism.Core`**) for use alongside `[ObservableProperty]`. The generated property setter calls `XxxCommand?.RaiseCanExecuteChanged()` for each named command after raising `PropertyChanged`. Names are validated against existing members or the generated command of a `[DelegateCommand]`/`[AsyncDelegateCommand]` method on the same type.

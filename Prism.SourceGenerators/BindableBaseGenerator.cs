@@ -194,6 +194,28 @@ public sealed class BindableBaseGenerator : IIncrementalGenerator
         sb.AppendLine($"{indent}    return true;");
         sb.AppendLine($"{indent}}}");
         sb.AppendLine();
+        sb.AppendLine($"{indent}/// <summary>");
+        sb.AppendLine($"{indent}/// Sets the property value, invokes <paramref name=\"onChanged\"/> after assignment, then raises <see cref=\"PropertyChanged\"/>.");
+        sb.AppendLine($"{indent}/// </summary>");
+        sb.AppendLine($"{indent}/// <typeparam name=\"T\">The type of the property.</typeparam>");
+        sb.AppendLine($"{indent}/// <param name=\"storage\">Reference to the backing field.</param>");
+        sb.AppendLine($"{indent}/// <param name=\"value\">The new value.</param>");
+        sb.AppendLine($"{indent}/// <param name=\"onChanged\">Optional callback invoked after the value is stored and before <see cref=\"PropertyChanged\"/>.</param>");
+        sb.AppendLine($"{indent}/// <param name=\"propertyName\">The property name (auto-filled by the compiler).</param>");
+        sb.AppendLine($"{indent}/// <returns><see langword=\"true\"/> if the value was changed; otherwise <see langword=\"false\"/>.</returns>");
+        sb.AppendLine($"{indent}protected bool SetProperty<T>(ref T storage, T value, global::System.Action? onChanged, [global::System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)");
+        sb.AppendLine($"{indent}{{");
+        sb.AppendLine($"{indent}    if (global::System.Collections.Generic.EqualityComparer<T>.Default.Equals(storage, value))");
+        sb.AppendLine($"{indent}    {{");
+        sb.AppendLine($"{indent}        return false;");
+        sb.AppendLine($"{indent}    }}");
+        sb.AppendLine();
+        sb.AppendLine($"{indent}    storage = value;");
+        sb.AppendLine($"{indent}    onChanged?.Invoke();");
+        sb.AppendLine($"{indent}    RaisePropertyChanged(propertyName);");
+        sb.AppendLine($"{indent}    return true;");
+        sb.AppendLine($"{indent}}}");
+        sb.AppendLine();
 
         // RaisePropertyChanged method
         sb.AppendLine($"{indent}/// <summary>");
