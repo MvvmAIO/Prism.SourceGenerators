@@ -124,6 +124,16 @@ internal static class DiagnosticDescriptors
         description: "The property name passed to [ObservesProperty] should exist on the containing type or one of its base types.",
         helpLinkUri: HelpLink);
 
+    public static readonly DiagnosticDescriptor NotifyCanExecuteChangedForCommandNotFound = new(
+        id: "PSG2005",
+        title: "[NotifyCanExecuteChangedFor] command not found",
+        messageFormat: "The command '{0}' referenced by [NotifyCanExecuteChangedFor] was not found on '{1}'",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: "The name passed to [NotifyCanExecuteChangedFor] should match either an existing member on the containing type, or the generated command property of a method annotated with [DelegateCommand] or [AsyncDelegateCommand] (e.g. method 'Save' yields 'SaveCommand').",
+        helpLinkUri: HelpLink);
+
     public static readonly DiagnosticDescriptor AsyncDelegateCommandPackageRequired = new(
         id: "PSG3002",
         title: "AsyncDelegateCommand package required for Prism prior to 9.0",

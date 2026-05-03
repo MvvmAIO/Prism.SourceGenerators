@@ -108,6 +108,16 @@ public sealed class DiagnosticTests
             }
         }
         """)]
+    [InlineData("PSG2005", """
+        namespace Demo;
+
+        public partial class Foo : Prism.Mvvm.BindableBase
+        {
+            [ObservableProperty]
+            [NotifyCanExecuteChangedFor("MissingCommand")]
+            private string _name = "";
+        }
+        """)]
     public void Reports_expected_diagnostic_for_invalid_input(string diagnosticId, string source)
     {
         GeneratorRunOutput output = GeneratorTestHarness.Run(source);

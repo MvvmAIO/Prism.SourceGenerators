@@ -15,6 +15,7 @@ namespace Prism.SourceGenerators.Models;
 /// <param name="DeclaredAccessibility">The declared accessibility of the property (used for partial property generation).</param>
 /// <param name="SetterAccessibility">The declared accessibility of the setter (e.g. <c>private set</c>). <see cref="Accessibility.NotApplicable"/> when same as property.</param>
 /// <param name="NotifyPropertyChangedFor">Property names to also raise <c>PropertyChanged</c> for when this property changes.</param>
+/// <param name="NotifyCanExecuteChangedFor">Command property names whose <c>RaiseCanExecuteChanged()</c> should be invoked when this property changes.</param>
 internal sealed record PropertyGenerationInfo(
     HierarchyInfo Hierarchy,
     string FieldName,
@@ -23,4 +24,5 @@ internal sealed record PropertyGenerationInfo(
     bool IsPartialProperty,
     Accessibility DeclaredAccessibility,
     Accessibility SetterAccessibility,
-    EquatableArray<string> NotifyPropertyChangedFor) : IEquatable<PropertyGenerationInfo>;
+    EquatableArray<string> NotifyPropertyChangedFor,
+    EquatableArray<string> NotifyCanExecuteChangedFor) : IEquatable<PropertyGenerationInfo>;

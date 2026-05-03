@@ -120,6 +120,26 @@ public partial class MainViewModel : BindableBase
 
 `[NotifyPropertyChangedFor(nameof(A), nameof(B))]` で複数のプロパティ名を指定、または複数の属性インスタンスを使用できます。
 
+### `[NotifyCanExecuteChangedFor]`
+
+`[ObservableProperty]` と組み合わせて使用し、対象プロパティが変更されたときに、指定したコマンドの `RaiseCanExecuteChanged()` を自動的に呼び出します。
+
+```csharp
+public partial class EditorViewModel : BindableBase
+{
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    private string _name = "";
+
+    [DelegateCommand(CanExecute = nameof(CanSave))]
+    private void Save() { /* ... */ }
+
+    private bool CanSave() => !string.IsNullOrEmpty(Name);
+}
+```
+
+生成された setter は `RaisePropertyChanged` の後に `SaveCommand?.RaiseCanExecuteChanged()` を呼び出します。`[NotifyCanExecuteChangedFor(nameof(A), nameof(B))]` で複数のコマンドを指定、または複数の属性インスタンスを使用できます。名前は型上の既存メンバー、または `[DelegateCommand]` / `[AsyncDelegateCommand]` メソッドが生成するコマンドプロパティ（例：メソッド `Save` が `SaveCommand` を生成）を指定できます。解決できない名前は **PSG2005**（警告）として報告されますが、setter は生成されます。
+
 ### `[DelegateCommand]`
 
 メソッドから `DelegateCommand` または `AsyncDelegateCommand` プロパティを生成します。
@@ -247,6 +267,7 @@ public partial class SimpleViewModel
 | PSG2002 | Catch ハンドラーのシグネチャに互換性がありません |
 | PSG2003 | CanExecute メンバーが見つかりません |
 | PSG2004 | 監視対象のプロパティが見つかりません |
+| PSG2005 | `[NotifyCanExecuteChangedFor]` が参照するコマンドが見つかりません |
 | PSG3002 | `AsyncDelegateCommand` が見つかりません。**`MvvmAIO.Prism.SourceGenerators`** を使用し、Prism.Core 8.1.97 では **`MvvmAIO.Prism.Bcl.Commands`** を追加するか、Prism 9+ にアップグレードしてください |
 
 ## インストール

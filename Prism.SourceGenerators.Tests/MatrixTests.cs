@@ -1,4 +1,5 @@
 using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
 
@@ -268,6 +269,91 @@ public sealed class MatrixTests
         GeneratorRunOutput output = GeneratorTestHarness.Run(source, languageVersion: LanguageVersion.Preview);
         Assert.Contains(output.Diagnostics, d => d.Id == "PSG2001");
         Assert.Contains(output.GeneratedSources, s => s.HintName.EndsWith(".HelloCommand.g.cs"));
+    }
+
+    [Fact]
+    public void NotifyCanExecuteChangedFor_emits_RaiseCanExecuteChanged_call_for_known_command()
+    {
+        const string source = """
+            namespace Demo;
+
+            public partial class Vm : Prism.Mvvm.BindableBase
+            {
+                [ObservableProperty]
+                [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+                private string _name = "";
+
+                [DelegateCommand(CanExecute = nameof(CanSave))]
+                private void Save() { }
+
+                private bool CanSave() => !string.IsNullOrEmpty(Name);
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source, languageVersion: LanguageVersion.Preview);
+
+        Assert.DoesNotContain(output.Diagnostics, d => d.Id == "PSG2005");
+
+        GeneratedSource propertySource = Assert.Single(output.GeneratedSources.Where(s => s.HintName.EndsWith(".Name.g.cs")));
+        Assert.Contains("SaveCommand?.RaiseCanExecuteChanged();", propertySource.Source);
+
+        // RaiseCanExecuteChanged must run AFTER RaisePropertyChanged
+        int raisePropertyIndex = propertySource.Source.IndexOf("this.RaisePropertyChanged(nameof(Name));", System.StringComparison.Ordinal);
+        int raiseCanExecuteIndex = propertySource.Source.IndexOf("SaveCommand?.RaiseCanExecuteChanged();", System.StringComparison.Ordinal);
+        Assert.InRange(raiseCanExecuteIndex, raisePropertyIndex + 1, int.MaxValue);
+    }
+
+    [Fact]
+    public void NotifyCanExecuteChangedFor_supports_multiple_commands_and_existing_member()
+    {
+        const string source = """
+            namespace Demo;
+
+            public partial class Vm : Prism.Mvvm.BindableBase
+            {
+                public global::Prism.Commands.DelegateCommand ManualCommand { get; } = null!;
+
+                [ObservableProperty]
+                [NotifyCanExecuteChangedFor(nameof(SaveCommand), nameof(ManualCommand))]
+                private string _name = "";
+
+                [DelegateCommand]
+                private void Save() { }
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source, languageVersion: LanguageVersion.Preview);
+
+        Assert.DoesNotContain(output.Diagnostics, d => d.Id == "PSG2005");
+
+        GeneratedSource propertySource = Assert.Single(output.GeneratedSources.Where(s => s.HintName.EndsWith(".Name.g.cs")));
+        Assert.Contains("SaveCommand?.RaiseCanExecuteChanged();", propertySource.Source);
+        Assert.Contains("ManualCommand?.RaiseCanExecuteChanged();", propertySource.Source);
+    }
+
+    [Fact]
+    public void NotifyCanExecuteChangedFor_reports_PSG2005_but_still_emits_property()
+    {
+        const string source = """
+            namespace Demo;
+
+            public partial class Vm : Prism.Mvvm.BindableBase
+            {
+                [ObservableProperty]
+                [NotifyCanExecuteChangedFor("MissingCommand")]
+                private string _name = "";
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source, languageVersion: LanguageVersion.Preview);
+
+        Diagnostic[] psg2005 = output.Diagnostics.Where(d => d.Id == "PSG2005").ToArray();
+        Assert.NotEmpty(psg2005);
+        Assert.All(psg2005, d => Assert.Equal(DiagnosticSeverity.Warning, d.Severity));
+
+        // Source still emitted so user code keeps compiling once they fix the name
+        GeneratedSource propertySource = Assert.Single(output.GeneratedSources.Where(s => s.HintName.EndsWith(".Name.g.cs")));
+        Assert.Contains("MissingCommand?.RaiseCanExecuteChanged();", propertySource.Source);
     }
 
     [Fact]

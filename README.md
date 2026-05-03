@@ -120,6 +120,26 @@ public partial class MainViewModel : BindableBase
 
 Supports multiple property names via `[NotifyPropertyChangedFor(nameof(A), nameof(B))]` or multiple attribute instances.
 
+### `[NotifyCanExecuteChangedFor]`
+
+Apply to a field or partial property alongside `[ObservableProperty]` to automatically invoke `RaiseCanExecuteChanged()` on the named commands when the property value changes.
+
+```csharp
+public partial class EditorViewModel : BindableBase
+{
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    private string _name = "";
+
+    [DelegateCommand(CanExecute = nameof(CanSave))]
+    private void Save() { /* ... */ }
+
+    private bool CanSave() => !string.IsNullOrEmpty(Name);
+}
+```
+
+The generated setter calls `SaveCommand?.RaiseCanExecuteChanged()` after `RaisePropertyChanged`. Multiple commands are supported via `[NotifyCanExecuteChangedFor(nameof(A), nameof(B))]` or repeated attributes. Names may reference either an existing member on the type or the generated command of a method annotated with `[DelegateCommand]` / `[AsyncDelegateCommand]` (e.g. method `Save` yields `SaveCommand`). Unresolved names are reported as **PSG2005** (warning) and the setter is still emitted.
+
 ### `[DelegateCommand]`
 
 Generates `DelegateCommand` or `AsyncDelegateCommand` properties from methods.
@@ -247,6 +267,7 @@ If the class already inherits from `BindableBase` or a base class that implement
 | PSG2002 | Catch handler signature is not compatible |
 | PSG2003 | CanExecute member was not found |
 | PSG2004 | Observed property was not found |
+| PSG2005 | `[NotifyCanExecuteChangedFor]` references a command that was not found |
 | PSG3002 | `AsyncDelegateCommand` not found; install **`MvvmAIO.Prism.SourceGenerators`** and, on Prism.Core 8.1.97, **`MvvmAIO.Prism.Bcl.Commands`** (or upgrade to Prism 9+) |
 
 ## Installation

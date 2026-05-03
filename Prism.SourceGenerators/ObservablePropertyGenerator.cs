@@ -29,6 +29,9 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
 {
     private const string AttributeName = "Prism.SourceGenerators.ObservablePropertyAttribute";
     private const string NotifyPropertyChangedForAttributeName = "Prism.SourceGenerators.NotifyPropertyChangedForAttribute";
+    private const string NotifyCanExecuteChangedForAttributeName = "Prism.SourceGenerators.NotifyCanExecuteChangedForAttribute";
+    private const string DelegateCommandAttributeName = "Prism.SourceGenerators.DelegateCommandAttribute";
+    private const string AsyncDelegateCommandAttributeName = "Prism.SourceGenerators.AsyncDelegateCommandAttribute";
 
     /// <inheritdoc/>
     public void Initialize(IncrementalGeneratorInitializationContext context)
@@ -123,11 +126,13 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
         string fieldType = fieldSymbol.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
         HierarchyInfo hierarchy = HierarchyInfo.From(containingType);
         ImmutableArray<string> notifyProps = CollectNotifyPropertyChangedFor(fieldSymbol);
+        ImmutableArray<string> notifyCommands = CollectNotifyCanExecuteChangedFor(fieldSymbol);
+        ImmutableArray<DiagnosticInfo> commandDiagnostics = ValidateCanExecuteCommands(notifyCommands, containingType, fieldSymbol);
 
         return new Result<PropertyGenerationInfo>(
             new PropertyGenerationInfo(hierarchy, fieldName, propertyName, fieldType,
-                IsPartialProperty: false, Accessibility.Public, Accessibility.NotApplicable, notifyProps),
-            ImmutableArray<DiagnosticInfo>.Empty);
+                IsPartialProperty: false, Accessibility.Public, Accessibility.NotApplicable, notifyProps, notifyCommands),
+            commandDiagnostics);
     }
 
     private static Result<PropertyGenerationInfo> ExtractPropertyInfo(
@@ -177,39 +182,111 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
             setterAccessibility = Accessibility.NotApplicable;
 
         ImmutableArray<string> notifyProps = CollectNotifyPropertyChangedFor(propertySymbol);
+        ImmutableArray<string> notifyCommands = CollectNotifyCanExecuteChangedFor(propertySymbol);
+        ImmutableArray<DiagnosticInfo> commandDiagnostics = ValidateCanExecuteCommands(notifyCommands, containingType, propertySymbol);
 
         return new Result<PropertyGenerationInfo>(
             new PropertyGenerationInfo(hierarchy, propertyName, propertyName, fieldType,
-                IsPartialProperty: true, propertySymbol.DeclaredAccessibility, setterAccessibility, notifyProps),
-            ImmutableArray<DiagnosticInfo>.Empty);
+                IsPartialProperty: true, propertySymbol.DeclaredAccessibility, setterAccessibility, notifyProps, notifyCommands),
+            commandDiagnostics);
     }
 
-    private static ImmutableArray<string> CollectNotifyPropertyChangedFor(ISymbol symbol)
+    private static ImmutableArray<string> CollectNotifyPropertyChangedFor(ISymbol symbol) =>
+        CollectNamesFromAttribute(symbol, NotifyPropertyChangedForAttributeName);
+
+    private static ImmutableArray<string> CollectNotifyCanExecuteChangedFor(ISymbol symbol) =>
+        CollectNamesFromAttribute(symbol, NotifyCanExecuteChangedForAttributeName);
+
+    private static ImmutableArray<string> CollectNamesFromAttribute(ISymbol symbol, string attributeFullName)
     {
         ImmutableArray<string>.Builder? builder = null;
 
         foreach (AttributeData attr in symbol.GetAttributes())
         {
-            if (attr.AttributeClass?.ToDisplayString() != NotifyPropertyChangedForAttributeName)
+            if (attr.AttributeClass?.ToDisplayString() != attributeFullName)
                 continue;
 
-            if (attr.ConstructorArguments.Length >= 1 && attr.ConstructorArguments[0].Value is string propName)
+            if (attr.ConstructorArguments.Length >= 1 && attr.ConstructorArguments[0].Value is string firstName)
             {
                 builder ??= ImmutableArray.CreateBuilder<string>();
-                builder.Add(propName);
+                builder.Add(firstName);
 
                 if (attr.ConstructorArguments.Length >= 2 && !attr.ConstructorArguments[1].IsNull)
                 {
                     foreach (var item in attr.ConstructorArguments[1].Values)
                     {
-                        if (item.Value is string otherProp)
-                            builder.Add(otherProp);
+                        if (item.Value is string otherName)
+                            builder.Add(otherName);
                     }
                 }
             }
         }
 
         return builder?.ToImmutable() ?? ImmutableArray<string>.Empty;
+    }
+
+    private static ImmutableArray<DiagnosticInfo> ValidateCanExecuteCommands(
+        ImmutableArray<string> commandNames,
+        INamedTypeSymbol containingType,
+        ISymbol attributedSymbol)
+    {
+        if (commandNames.IsDefaultOrEmpty)
+            return ImmutableArray<DiagnosticInfo>.Empty;
+
+        ImmutableArray<DiagnosticInfo>.Builder? builder = null;
+
+        foreach (string commandName in commandNames)
+        {
+            if (CommandMemberExists(containingType, commandName))
+                continue;
+
+            builder ??= ImmutableArray.CreateBuilder<DiagnosticInfo>();
+            builder.Add(DiagnosticInfo.Create(
+                DiagnosticDescriptors.NotifyCanExecuteChangedForCommandNotFound,
+                attributedSymbol,
+                commandName,
+                containingType.Name));
+        }
+
+        return builder?.ToImmutable() ?? ImmutableArray<DiagnosticInfo>.Empty;
+    }
+
+    private static bool CommandMemberExists(INamedTypeSymbol type, string commandName)
+    {
+        // Walk type + base types looking for an existing member with this name (e.g. user-defined SaveCommand).
+        for (INamedTypeSymbol? current = type; current is not null; current = current.BaseType)
+        {
+            if (current.GetMembers(commandName).Length > 0)
+                return true;
+        }
+
+        // Otherwise, check whether a [DelegateCommand]/[AsyncDelegateCommand] method on the type
+        // would generate this command property (e.g. method 'Save' generates 'SaveCommand').
+        if (commandName.EndsWith("Command", System.StringComparison.Ordinal))
+        {
+            string methodName = commandName.Substring(0, commandName.Length - "Command".Length);
+            if (methodName.Length > 0)
+            {
+                foreach (ISymbol member in type.GetMembers(methodName))
+                {
+                    if (member is IMethodSymbol method && HasCommandAttribute(method))
+                        return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static bool HasCommandAttribute(IMethodSymbol method)
+    {
+        foreach (AttributeData attr in method.GetAttributes())
+        {
+            string? name = attr.AttributeClass?.ToDisplayString();
+            if (name == DelegateCommandAttributeName || name == AsyncDelegateCommandAttributeName)
+                return true;
+        }
+        return false;
     }
 
     private static string GeneratePropertySource(PropertyGenerationInfo info)
@@ -290,6 +367,12 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
         foreach (string notifyProp in info.NotifyPropertyChangedFor.AsImmutableArray())
         {
             sb.AppendLine($"{indent}            this.RaisePropertyChanged(nameof({notifyProp}));");
+        }
+
+        // NotifyCanExecuteChangedFor
+        foreach (string commandName in info.NotifyCanExecuteChangedFor.AsImmutableArray())
+        {
+            sb.AppendLine($"{indent}            {commandName}?.RaiseCanExecuteChanged();");
         }
 
         sb.AppendLine($"{indent}        }}");

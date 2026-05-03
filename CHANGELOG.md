@@ -6,6 +6,8 @@ All notable changes to this project are documented in this file.
 
 ### Added
 - `[ObservableProperty]` now also emits `OnXxxChanging(value)` / `OnXxxChanging(oldValue, newValue)` `partial` method declarations alongside the existing `OnXxxChanged` overloads. The `Changing` hooks are invoked **before** the backing field is updated, the `Changed` hooks **after**.
+- New `[NotifyCanExecuteChangedFor(nameof(SaveCommand), ...)]` attribute (in **`MvvmAIO.Prism.Core`**) for use alongside `[ObservableProperty]`. The generated property setter calls `XxxCommand?.RaiseCanExecuteChanged()` for each named command after raising `PropertyChanged`. Names are validated against existing members or the generated command of a `[DelegateCommand]`/`[AsyncDelegateCommand]` method on the same type.
+- New diagnostic **PSG2005** (Warning): `[NotifyCanExecuteChangedFor]` references a name that cannot be resolved to a command property. The setter is still emitted so the project keeps compiling once the typo is fixed.
 
 ## [0.2.0] - 2026-05-01
 

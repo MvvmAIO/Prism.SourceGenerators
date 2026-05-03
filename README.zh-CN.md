@@ -120,6 +120,26 @@ public partial class MainViewModel : BindableBase
 
 支持通过 `[NotifyPropertyChangedFor(nameof(A), nameof(B))]` 指定多个属性名，也支持多次标注。
 
+### `[NotifyCanExecuteChangedFor]`
+
+与 `[ObservableProperty]` 一起使用，当被标注的属性变化时自动调用指定命令的 `RaiseCanExecuteChanged()`。
+
+```csharp
+public partial class EditorViewModel : BindableBase
+{
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+    private string _name = "";
+
+    [DelegateCommand(CanExecute = nameof(CanSave))]
+    private void Save() { /* ... */ }
+
+    private bool CanSave() => !string.IsNullOrEmpty(Name);
+}
+```
+
+生成的 setter 会在 `RaisePropertyChanged` 之后调用 `SaveCommand?.RaiseCanExecuteChanged()`。可以使用 `[NotifyCanExecuteChangedFor(nameof(A), nameof(B))]` 一次指定多个命令，或多次标注。命名既可以是类型上已有的成员，也可以是 `[DelegateCommand]` / `[AsyncDelegateCommand]` 方法生成的命令属性（例如方法 `Save` 生成 `SaveCommand`）。如果名称无法解析，会报告 **PSG2005**（警告），但 setter 仍会生成。
+
 ### `[DelegateCommand]`
 
 从方法生成 `DelegateCommand` 或 `AsyncDelegateCommand` 属性。
@@ -247,6 +267,7 @@ public partial class SimpleViewModel
 | PSG2002 | Catch 处理程序签名不兼容 |
 | PSG2003 | 未找到 CanExecute 成员 |
 | PSG2004 | 未找到被观察的属性 |
+| PSG2005 | `[NotifyCanExecuteChangedFor]` 引用的命令未找到 |
 | PSG3002 | 未找到 `AsyncDelegateCommand`；请安装 **`MvvmAIO.Prism.SourceGenerators`**，且在 Prism.Core 8.1.97 上安装 **`MvvmAIO.Prism.Bcl.Commands`**（或升级到 Prism 9+） |
 
 ## 安装
