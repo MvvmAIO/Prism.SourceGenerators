@@ -140,6 +140,32 @@ public partial class EditorViewModel : BindableBase
 
 生成された setter は `RaisePropertyChanged` の後に `SaveCommand?.RaiseCanExecuteChanged()` を呼び出します。`[NotifyCanExecuteChangedFor(nameof(A), nameof(B))]` で複数のコマンドを指定、または複数の属性インスタンスを使用できます。名前は型上の既存メンバー、または `[DelegateCommand]` / `[AsyncDelegateCommand]` メソッドが生成するコマンドプロパティ（例：メソッド `Save` が `SaveCommand` を生成）を指定できます。解決できない名前は **PSG2005**（警告）として報告されますが、setter は生成されます。
 
+### 生成されるプロパティへの属性転送
+
+**フィールド**ターゲットでは、明示的な `[property: Xxx]` ターゲット付きで書かれた属性が、生成されたプロパティに転送されます：
+
+```csharp
+public partial class Vm : BindableBase
+{
+    [ObservableProperty]
+    [property: System.Text.Json.Serialization.JsonIgnore]
+    [property: System.ComponentModel.DataAnnotations.Required]
+    private string _password = "";
+}
+```
+
+は次のように生成されます：
+
+```csharp
+[global::System.Text.Json.Serialization.JsonIgnoreAttribute]
+[global::System.ComponentModel.DataAnnotations.RequiredAttribute]
+public string Password { get { ... } set { ... } }
+```
+
+**partial プロパティ**ターゲットでは、partial 宣言に付けたすべての属性が実装宣言に転送されます（ジェネレーター自身の属性 `[ObservableProperty]`、`[NotifyPropertyChangedFor]`、`[NotifyCanExecuteChangedFor]` は除外されます）。転送される属性は完全修飾型名で出力されるため、生成ファイル内の `using` ディレクティブに依存しません。
+
+> 転送される属性の引数式はそのまま出力されます。生成ファイルから `using` ディレクティブが見えない場合は、リテラル / `nameof` / `typeof`、または引数位置で完全修飾型参照を使用してください。
+
 ### `[DelegateCommand]`
 
 メソッドから `DelegateCommand` または `AsyncDelegateCommand` プロパティを生成します。

@@ -140,6 +140,32 @@ public partial class EditorViewModel : BindableBase
 
 The generated setter calls `SaveCommand?.RaiseCanExecuteChanged()` after `RaisePropertyChanged`. Multiple commands are supported via `[NotifyCanExecuteChangedFor(nameof(A), nameof(B))]` or repeated attributes. Names may reference either an existing member on the type or the generated command of a method annotated with `[DelegateCommand]` / `[AsyncDelegateCommand]` (e.g. method `Save` yields `SaveCommand`). Unresolved names are reported as **PSG2005** (warning) and the setter is still emitted.
 
+### Forwarding attributes to the generated property
+
+For **field** targets, attributes you write with the explicit `[property: Xxx]` target are forwarded onto the generated property:
+
+```csharp
+public partial class Vm : BindableBase
+{
+    [ObservableProperty]
+    [property: System.Text.Json.Serialization.JsonIgnore]
+    [property: System.ComponentModel.DataAnnotations.Required]
+    private string _password = "";
+}
+```
+
+becomes
+
+```csharp
+[global::System.Text.Json.Serialization.JsonIgnoreAttribute]
+[global::System.ComponentModel.DataAnnotations.RequiredAttribute]
+public string Password { get { ... } set { ... } }
+```
+
+For **partial property** targets, every attribute you put on the partial declaration is forwarded onto the implementing declaration (with the exception of generator-owned attributes — `[ObservableProperty]`, `[NotifyPropertyChangedFor]`, `[NotifyCanExecuteChangedFor]` — which are stripped). Forwarded attributes are emitted with fully-qualified type names so they do not depend on `using` directives present in the generated file.
+
+> Argument expressions inside the forwarded attribute are emitted verbatim. Use literal/`nameof`/`typeof` arguments or fully-qualified type references in argument positions if your `using` directives aren't visible to the generated file.
+
 ### `[DelegateCommand]`
 
 Generates `DelegateCommand` or `AsyncDelegateCommand` properties from methods.

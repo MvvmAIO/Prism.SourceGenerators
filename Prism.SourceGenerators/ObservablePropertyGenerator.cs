@@ -128,10 +128,12 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
         ImmutableArray<string> notifyProps = CollectNotifyPropertyChangedFor(fieldSymbol);
         ImmutableArray<string> notifyCommands = CollectNotifyCanExecuteChangedFor(fieldSymbol);
         ImmutableArray<DiagnosticInfo> commandDiagnostics = ValidateCanExecuteCommands(notifyCommands, containingType, fieldSymbol);
+        ImmutableArray<string> forwardedAttributes = CollectForwardedAttributesFromField(
+            (VariableDeclaratorSyntax)context.TargetNode, context.SemanticModel, token);
 
         return new Result<PropertyGenerationInfo>(
             new PropertyGenerationInfo(hierarchy, fieldName, propertyName, fieldType,
-                IsPartialProperty: false, Accessibility.Public, Accessibility.NotApplicable, notifyProps, notifyCommands),
+                IsPartialProperty: false, Accessibility.Public, Accessibility.NotApplicable, notifyProps, notifyCommands, forwardedAttributes),
             commandDiagnostics);
     }
 
@@ -184,10 +186,12 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
         ImmutableArray<string> notifyProps = CollectNotifyPropertyChangedFor(propertySymbol);
         ImmutableArray<string> notifyCommands = CollectNotifyCanExecuteChangedFor(propertySymbol);
         ImmutableArray<DiagnosticInfo> commandDiagnostics = ValidateCanExecuteCommands(notifyCommands, containingType, propertySymbol);
+        ImmutableArray<string> forwardedAttributes = CollectForwardedAttributesFromProperty(
+            propertySyntax, context.SemanticModel, token);
 
         return new Result<PropertyGenerationInfo>(
             new PropertyGenerationInfo(hierarchy, propertyName, propertyName, fieldType,
-                IsPartialProperty: true, propertySymbol.DeclaredAccessibility, setterAccessibility, notifyProps, notifyCommands),
+                IsPartialProperty: true, propertySymbol.DeclaredAccessibility, setterAccessibility, notifyProps, notifyCommands, forwardedAttributes),
             commandDiagnostics);
     }
 
@@ -289,6 +293,113 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
         return false;
     }
 
+    /// <summary>
+    /// Collects attributes attached to a field via the explicit <c>[property: Xxx]</c> target so they can be
+    /// forwarded onto the generated property. Each attribute is rendered with a fully-qualified type name;
+    /// argument-list syntax is preserved verbatim (literals, <c>nameof</c>/<c>typeof</c>, etc.).
+    /// </summary>
+    private static ImmutableArray<string> CollectForwardedAttributesFromField(
+        VariableDeclaratorSyntax declarator,
+        SemanticModel semanticModel,
+        System.Threading.CancellationToken token)
+    {
+        if (declarator.Parent?.Parent is not FieldDeclarationSyntax field)
+            return ImmutableArray<string>.Empty;
+
+        ImmutableArray<string>.Builder? builder = null;
+
+        foreach (AttributeListSyntax list in field.AttributeLists)
+        {
+            if (list.Target?.Identifier.IsKind(SyntaxKind.PropertyKeyword) != true)
+                continue;
+
+            foreach (AttributeSyntax attribute in list.Attributes)
+            {
+                string? rendered = RenderForwardedAttribute(attribute, semanticModel, token);
+                if (rendered is null)
+                    continue;
+
+                builder ??= ImmutableArray.CreateBuilder<string>();
+                builder.Add(rendered);
+            }
+        }
+
+        return builder?.ToImmutable() ?? ImmutableArray<string>.Empty;
+    }
+
+    /// <summary>
+    /// Collects attributes attached to a partial property declaration so they can be forwarded onto the
+    /// generated implementing declaration. Generator-owned attributes (<c>[ObservableProperty]</c>,
+    /// <c>[NotifyPropertyChangedFor]</c>, <c>[NotifyCanExecuteChangedFor]</c>) are filtered out.
+    /// </summary>
+    private static ImmutableArray<string> CollectForwardedAttributesFromProperty(
+        PropertyDeclarationSyntax property,
+        SemanticModel semanticModel,
+        System.Threading.CancellationToken token)
+    {
+        ImmutableArray<string>.Builder? builder = null;
+
+        foreach (AttributeListSyntax list in property.AttributeLists)
+        {
+            // Partial property declarations don't permit explicit non-property targets, but be defensive.
+            if (list.Target is { } target
+                && !target.Identifier.IsKind(SyntaxKind.PropertyKeyword)
+                && !target.Identifier.IsKind(SyntaxKind.None))
+            {
+                continue;
+            }
+
+            foreach (AttributeSyntax attribute in list.Attributes)
+            {
+                INamedTypeSymbol? attributeType = ResolveAttributeType(attribute, semanticModel, token);
+                if (attributeType is null)
+                    continue;
+
+                string fqn = attributeType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                if (fqn == "global::" + AttributeName
+                    || fqn == "global::" + NotifyPropertyChangedForAttributeName
+                    || fqn == "global::" + NotifyCanExecuteChangedForAttributeName)
+                {
+                    continue;
+                }
+
+                string argsText = attribute.ArgumentList?.ToString() ?? "";
+                builder ??= ImmutableArray.CreateBuilder<string>();
+                builder.Add($"[{fqn}{argsText}]");
+            }
+        }
+
+        return builder?.ToImmutable() ?? ImmutableArray<string>.Empty;
+    }
+
+    private static string? RenderForwardedAttribute(
+        AttributeSyntax attribute,
+        SemanticModel semanticModel,
+        System.Threading.CancellationToken token)
+    {
+        INamedTypeSymbol? attributeType = ResolveAttributeType(attribute, semanticModel, token);
+        if (attributeType is null)
+            return null;
+
+        string fqn = attributeType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        string argsText = attribute.ArgumentList?.ToString() ?? "";
+        return $"[{fqn}{argsText}]";
+    }
+
+    private static INamedTypeSymbol? ResolveAttributeType(
+        AttributeSyntax attribute,
+        SemanticModel semanticModel,
+        System.Threading.CancellationToken token)
+    {
+        SymbolInfo info = semanticModel.GetSymbolInfo(attribute, token);
+        return info.Symbol switch
+        {
+            IMethodSymbol ctor => ctor.ContainingType,
+            INamedTypeSymbol type => type,
+            _ => info.CandidateSymbols.OfType<IMethodSymbol>().Select(static m => m.ContainingType).FirstOrDefault(),
+        };
+    }
+
     private static string GeneratePropertySource(PropertyGenerationInfo info)
     {
         StringBuilder sb = new();
@@ -333,6 +444,12 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
         string setterModifier = info.SetterAccessibility != Accessibility.NotApplicable
             ? GetAccessModifierString(info.SetterAccessibility) + " "
             : "";
+
+        // Forwarded attributes (from [property: Xxx] on the field, or from the partial property itself)
+        foreach (string forwarded in info.ForwardedAttributes.AsImmutableArray())
+        {
+            sb.AppendLine($"{indent}{forwarded}");
+        }
 
         if (info.IsPartialProperty)
         {

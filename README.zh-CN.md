@@ -140,6 +140,32 @@ public partial class EditorViewModel : BindableBase
 
 生成的 setter 会在 `RaisePropertyChanged` 之后调用 `SaveCommand?.RaiseCanExecuteChanged()`。可以使用 `[NotifyCanExecuteChangedFor(nameof(A), nameof(B))]` 一次指定多个命令，或多次标注。命名既可以是类型上已有的成员，也可以是 `[DelegateCommand]` / `[AsyncDelegateCommand]` 方法生成的命令属性（例如方法 `Save` 生成 `SaveCommand`）。如果名称无法解析，会报告 **PSG2005**（警告），但 setter 仍会生成。
 
+### 转发属性到生成的属性
+
+对于**字段**目标，使用显式 `[property: Xxx]` 标注的属性会被转发到生成的属性上：
+
+```csharp
+public partial class Vm : BindableBase
+{
+    [ObservableProperty]
+    [property: System.Text.Json.Serialization.JsonIgnore]
+    [property: System.ComponentModel.DataAnnotations.Required]
+    private string _password = "";
+}
+```
+
+会生成
+
+```csharp
+[global::System.Text.Json.Serialization.JsonIgnoreAttribute]
+[global::System.ComponentModel.DataAnnotations.RequiredAttribute]
+public string Password { get { ... } set { ... } }
+```
+
+对于**部分属性（partial property）**目标，写在部分属性声明上的所有属性都会转发到实现声明上（生成器自身的属性 `[ObservableProperty]`、`[NotifyPropertyChangedFor]`、`[NotifyCanExecuteChangedFor]` 会被过滤掉）。转发的属性以完全限定类型名输出，因此不依赖生成文件中的 `using` 指令。
+
+> 转发属性的参数表达式会按原样输出。如果生成文件无法看到 `using` 指令，请使用字面量 / `nameof` / `typeof`，或在参数位置使用完全限定的类型引用。
+
 ### `[DelegateCommand]`
 
 从方法生成 `DelegateCommand` 或 `AsyncDelegateCommand` 属性。

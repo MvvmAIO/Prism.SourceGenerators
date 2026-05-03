@@ -272,6 +272,86 @@ public sealed class MatrixTests
     }
 
     [Fact]
+    public void Field_property_attribute_target_forwards_to_generated_property()
+    {
+        const string source = """
+            namespace Demo;
+
+            public partial class Vm : Prism.Mvvm.BindableBase
+            {
+                [ObservableProperty]
+                [property: System.ComponentModel.DataAnnotations.Required]
+                [property: System.ComponentModel.DataAnnotations.Range(1, 100)]
+                private int _age;
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source, languageVersion: LanguageVersion.Preview);
+
+        Assert.Empty(output.Diagnostics.Where(d => d.Severity >= DiagnosticSeverity.Warning && d.Id.StartsWith("PSG", System.StringComparison.Ordinal)));
+
+        GeneratedSource propertySource = Assert.Single(output.GeneratedSources.Where(s => s.HintName.EndsWith(".Age.g.cs")));
+        Assert.Contains("[global::System.ComponentModel.DataAnnotations.RequiredAttribute]", propertySource.Source);
+        Assert.Contains("[global::System.ComponentModel.DataAnnotations.RangeAttribute(1, 100)]", propertySource.Source);
+
+        // Forwarded attributes appear immediately above the property declaration
+        int requiredIndex = propertySource.Source.IndexOf("RequiredAttribute", System.StringComparison.Ordinal);
+        int propertyIndex = propertySource.Source.IndexOf("public int Age", System.StringComparison.Ordinal);
+        Assert.InRange(requiredIndex, 1, propertyIndex - 1);
+    }
+
+    [Fact]
+    public void Partial_property_forwards_user_attributes_and_filters_generator_attributes()
+    {
+        const string source = """
+            namespace Demo;
+
+            public partial class Vm : Prism.Mvvm.BindableBase
+            {
+                [ObservableProperty]
+                [NotifyPropertyChangedFor(nameof(FullName))]
+                [System.ComponentModel.DataAnnotations.Required]
+                public partial string Name { get; set; }
+
+                public string FullName => Name + "!";
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source, languageVersion: LanguageVersion.Preview);
+
+        GeneratedSource propertySource = Assert.Single(output.GeneratedSources.Where(s => s.HintName.EndsWith(".Name.g.cs")));
+
+        // [Required] is forwarded
+        Assert.Contains("[global::System.ComponentModel.DataAnnotations.RequiredAttribute]", propertySource.Source);
+
+        // Generator-owned attributes are filtered out
+        Assert.DoesNotContain("ObservablePropertyAttribute]", propertySource.Source);
+        Assert.DoesNotContain("NotifyPropertyChangedForAttribute(", propertySource.Source);
+    }
+
+    [Fact]
+    public void Field_attributes_without_property_target_are_not_forwarded()
+    {
+        const string source = """
+            namespace Demo;
+
+            public partial class Vm : Prism.Mvvm.BindableBase
+            {
+                [ObservableProperty]
+                [System.ComponentModel.DataAnnotations.Required]
+                private int _age;
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source, languageVersion: LanguageVersion.Preview);
+
+        GeneratedSource propertySource = Assert.Single(output.GeneratedSources.Where(s => s.HintName.EndsWith(".Age.g.cs")));
+
+        // [Required] without [property: ...] target stays on the field; the generator does NOT auto-forward it
+        Assert.DoesNotContain("RequiredAttribute", propertySource.Source);
+    }
+
+    [Fact]
     public void NotifyCanExecuteChangedFor_emits_RaiseCanExecuteChanged_call_for_known_command()
     {
         const string source = """
