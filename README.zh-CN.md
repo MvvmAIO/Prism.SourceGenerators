@@ -171,7 +171,7 @@ public string Password { get { ... } set { ... } }
 从方法生成 `DelegateCommand` 或 `AsyncDelegateCommand` 属性。
 
 - **同步方法**（`void`）生成 `DelegateCommand` / `DelegateCommand<T>`
-- **异步方法**（`Task`）生成 `AsyncDelegateCommand` / `AsyncDelegateCommand<T>`
+- **异步方法**若返回非泛型 **`Task`**、**`ValueTask`** 或 **`ValueTask<TResult>`**，则生成 `AsyncDelegateCommand` / `AsyncDelegateCommand<T>`。`ValueTask` / `ValueTask<TResult>` 在生成代码中通过 `.AsTask()` 接到 Prism 的 `Func<Task>` / `Func<T, Task>` 构造函数。**`Task<TResult>`** 仍不能作为 execute 返回类型（与此前一致）。若 execute 方法带有 **`CancellationToken`** 参数，则不能返回 `ValueTask` / `ValueTask<TResult>`（**PSG1001**）。
 - 对于 Prism &lt; 9.0，请使用 NuGet **`MvvmAIO.Prism.SourceGenerators`**：它会添加 **`MvvmAIO.Prism.Core`**，用于提供生成器特性定义。若使用 Prism.Core 8.1.97 的异步命令，请手动安装 **`MvvmAIO.Prism.Bcl.Commands`**，以便存在 `AsyncDelegateCommand`。若使用异步命令却缺少上述程序集，将报告 **PSG3002**。
 - **C# 14+**：Command 属性使用 `field` 关键字（无需单独后备字段）
 - **C# 13 及更早版本**：Command 属性使用传统后备字段

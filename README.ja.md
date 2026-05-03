@@ -171,7 +171,7 @@ public string Password { get { ... } set { ... } }
 メソッドから `DelegateCommand` または `AsyncDelegateCommand` プロパティを生成します。
 
 - **同期メソッド**（`void`）は `DelegateCommand` / `DelegateCommand<T>` を生成
-- **非同期メソッド**（`Task`）は `AsyncDelegateCommand` / `AsyncDelegateCommand<T>` を生成
+- **非同期メソッド**の戻り値が非ジェネリックの **`Task`**、**`ValueTask`**、または **`ValueTask<TResult>`** のとき、`AsyncDelegateCommand` / `AsyncDelegateCommand<T>` を生成します。`ValueTask` / `ValueTask<TResult>` は生成コードで `.AsTask()` により Prism の `Func<Task>` / `Func<T, Task>` コンストラクタに接続します。**`Task<TResult>`** を execute の戻り値にすることはできません（従来どおり）。**`CancellationToken`** を取る execute メソッドでは `ValueTask` / `ValueTask<TResult>` はサポートされず（**PSG1001**）。
 - Prism &lt; 9.0 の場合、NuGet **`MvvmAIO.Prism.SourceGenerators`** を使用してください。**`MvvmAIO.Prism.Core`**（属性定義）を追加します。Prism.Core 8.1.97 の非同期コマンドを使う場合は **`MvvmAIO.Prism.Bcl.Commands`** を手動で追加してください。非同期コマンド使用時にこれらのアセンブリがない場合は **PSG3002** が報告されます。
 - **C# 14+**：Command プロパティは `field` キーワードを使用（個別のバッキングフィールド不要）
 - **C# 13 以前**：Command プロパティは従来のバッキングフィールドを使用

@@ -172,7 +172,7 @@ For **partial property** targets, every attribute you put on the partial declara
 Generates `DelegateCommand` or `AsyncDelegateCommand` properties from methods.
 
 - **Synchronous methods** (`void`) generate `DelegateCommand` / `DelegateCommand<T>`
-- **Async methods** (`Task`) generate `AsyncDelegateCommand` / `AsyncDelegateCommand<T>`
+- **Async methods** returning non-generic **`Task`**, **`ValueTask`**, or **`ValueTask<TResult>`** generate `AsyncDelegateCommand` / `AsyncDelegateCommand<T>`. `ValueTask` / `ValueTask<TResult>` are wired via `.AsTask()` in the generated delegate so Prism’s `Func<Task>` / `Func<T, Task>` constructors are used. **`Task<TResult>`** is not supported for execute methods (unchanged). Execute methods that take a **`CancellationToken`** cannot return `ValueTask` / `ValueTask<TResult>` with the current emission shape (**PSG1001**).
 - For Prism &lt; 9.0, use NuGet **`MvvmAIO.Prism.SourceGenerators`**, which adds **`MvvmAIO.Prism.Core`** for source-generator attributes. For Prism.Core 8.1.97 async commands, install **`MvvmAIO.Prism.Bcl.Commands`** manually so `AsyncDelegateCommand` exists. If those assemblies are missing while async commands are used, **PSG3002** is reported.
 - **C# 14+**: Command properties use the `field` keyword (no separate backing field)
 - **C# 13 and earlier**: Command properties use a traditional backing field

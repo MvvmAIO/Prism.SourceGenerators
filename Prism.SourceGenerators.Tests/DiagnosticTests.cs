@@ -69,6 +69,18 @@ public sealed class DiagnosticTests
             }
         }
         """)]
+    [InlineData("PSG1001", """
+        namespace Demo;
+
+        public partial class Foo : Prism.Mvvm.BindableBase
+        {
+            [DelegateCommand]
+            private async System.Threading.Tasks.ValueTask SaveAsync(System.Threading.CancellationToken ct)
+            {
+                await System.Threading.Tasks.Task.CompletedTask;
+            }
+        }
+        """)]
     [InlineData("PSG2002", """
         namespace Demo;
 

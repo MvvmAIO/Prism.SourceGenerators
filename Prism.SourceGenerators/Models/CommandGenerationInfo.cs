@@ -20,4 +20,5 @@ internal sealed record CommandGenerationInfo(
     string? CancellationTokenSourceFactory,
     bool EnableParallelExecution,
     EquatableArray<string> ObservesProperties,
-    bool UseFieldKeyword) : IEquatable<CommandGenerationInfo>;
+    bool UseFieldKeyword,
+    bool WrapAsyncExecuteWithAsTask) : IEquatable<CommandGenerationInfo>;
