@@ -16,7 +16,7 @@ namespace Prism.SourceGenerators;
 /// from methods annotated with <c>[DelegateCommand]</c> or <c>[AsyncDelegateCommand]</c>.
 /// <para>
 /// For synchronous methods (<c>void</c>), generates <c>DelegateCommand</c> or <c>DelegateCommand&lt;T&gt;</c>.
-/// For asynchronous methods (<c>Task</c>), generates <c>AsyncDelegateCommand</c> or <c>AsyncDelegateCommand&lt;T&gt;</c>.
+/// For asynchronous methods (<c>Task</c>, <c>ValueTask</c>, or <c>ValueTask&lt;TResult&gt;</c>), generates <c>AsyncDelegateCommand</c> or <c>AsyncDelegateCommand&lt;T&gt;</c>.
 /// For Prism versions prior to 9.0, use NuGet <c>MvvmAIO.Prism.SourceGenerators</c> and install <c>MvvmAIO.Prism.Bcl.Commands</c> manually for Prism.Core 8.1.97 (see diagnostic PSG3002).
 /// </para>
 /// </summary>
@@ -168,6 +168,7 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
         HierarchyInfo hierarchy = HierarchyInfo.From(containingType);
 
         bool useFieldKeyword = SupportsFieldKeyword(context);
+        bool wrapAsyncExecuteWithAsTask = isAsync && IsValueTaskReturnFamily(methodSymbol.ReturnType, compilation);
 
         if (canExecute is not null && !HasMember(containingType, canExecute))
         {
@@ -215,7 +216,8 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
                 CancellationTokenSourceFactory: null,
                 EnableParallelExecution: false,
                 ObservesProperties: observesProperties,
-                UseFieldKeyword: useFieldKeyword),
+                UseFieldKeyword: useFieldKeyword,
+                WrapAsyncExecuteWithAsTask: wrapAsyncExecuteWithAsTask),
             diagnostics.ToImmutable());
     }
 
@@ -237,6 +239,7 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
         bool hasAsyncDelegateCommand = HasConsumerVisibleAsyncDelegateCommandTypes(compilation);
         HierarchyInfo hierarchy = HierarchyInfo.From(containingType);
         bool useFieldKeyword = SupportsFieldKeyword(context);
+        bool wrapAsyncExecuteWithAsTask = IsValueTaskReturnFamily(methodSymbol.ReturnType, compilation);
 
         ImmutableArray<Result<CommandGenerationInfo>>.Builder builder =
             ImmutableArray.CreateBuilder<Result<CommandGenerationInfo>>();
@@ -351,7 +354,8 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
                     cancellationTokenSourceFactory,
                     enableParallelExecution,
                     observesProperties,
-                    useFieldKeyword),
+                    useFieldKeyword,
+                    WrapAsyncExecuteWithAsTask: wrapAsyncExecuteWithAsTask),
                 diagnostics.ToImmutable()));
         }
 
@@ -430,19 +434,8 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
         return null;
     }
 
-    private static bool IsAsyncMethod(IMethodSymbol method, Compilation compilation)
-    {
-        INamedTypeSymbol? taskType = compilation.GetTypeByMetadataName("System.Threading.Tasks.Task");
-        INamedTypeSymbol? taskOfTType = compilation.GetTypeByMetadataName("System.Threading.Tasks.Task`1");
-
-        if (taskType is null)
-            return false;
-
-        return SymbolEqualityComparer.Default.Equals(method.ReturnType, taskType)
-            || (method.ReturnType is INamedTypeSymbol namedReturn
-                && namedReturn.IsGenericType
-                && SymbolEqualityComparer.Default.Equals(namedReturn.ConstructedFrom, taskOfTType));
-    }
+    private static bool IsAsyncMethod(IMethodSymbol method, Compilation compilation) =>
+        IsAsyncAwaitableReturnType(method.ReturnType, compilation);
 
     private static bool IsCancellationToken(ITypeSymbol type)
     {
@@ -456,8 +449,14 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
             return methodSymbol.ReturnsVoid && methodSymbol.Parameters.Length <= 1;
         }
 
-        if (!IsNonGenericTaskReturnType(methodSymbol.ReturnType, compilation))
+        if (!IsBindingSupportedAsyncReturnType(methodSymbol.ReturnType, compilation))
             return false;
+
+        if (IsValueTaskReturnFamily(methodSymbol.ReturnType, compilation)
+            && methodSymbol.Parameters.Any(static p => IsCancellationToken(p.Type)))
+        {
+            return false;
+        }
 
         if (methodSymbol.Parameters.Length == 0)
             return true;
@@ -470,8 +469,14 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
 
     private static bool IsValidAsyncDelegateCommandMethodSignature(IMethodSymbol methodSymbol, Compilation compilation)
     {
-        if (!IsNonGenericTaskReturnType(methodSymbol.ReturnType, compilation))
+        if (!IsBindingSupportedAsyncReturnType(methodSymbol.ReturnType, compilation))
             return false;
+
+        if (IsValueTaskReturnFamily(methodSymbol.ReturnType, compilation)
+            && methodSymbol.Parameters.Any(static p => IsCancellationToken(p.Type)))
+        {
+            return false;
+        }
 
         if (methodSymbol.Parameters.Length == 0)
             return true;
@@ -482,14 +487,88 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
         return methodSymbol.Parameters.Length == 2 && IsCancellationToken(methodSymbol.Parameters[1].Type);
     }
 
-    private static bool IsNonGenericTaskReturnType(ITypeSymbol returnType, Compilation compilation)
+    /// <summary>
+    /// Returns whether the return type is a recognized async/awaitable pattern for command methods
+    /// (<c>Task</c>, <c>Task&lt;TResult&gt;</c>, <c>ValueTask</c>, or <c>ValueTask&lt;TResult&gt;</c>).
+    /// </summary>
+    private static bool IsAsyncAwaitableReturnType(ITypeSymbol returnType, Compilation compilation)
     {
-        INamedTypeSymbol? expectedTask = compilation.GetTypeByMetadataName("System.Threading.Tasks.Task");
+        if (returnType is not INamedTypeSymbol named)
+        {
+            return false;
+        }
 
-        return expectedTask is not null
-            && returnType is INamedTypeSymbol namedReturn
-            && !namedReturn.IsGenericType
-            && SymbolEqualityComparer.Default.Equals(namedReturn.OriginalDefinition, expectedTask);
+        INamedTypeSymbol? task = compilation.GetTypeByMetadataName("System.Threading.Tasks.Task");
+        if (task is not null && SymbolEqualityComparer.Default.Equals(returnType, task))
+        {
+            return true;
+        }
+
+        INamedTypeSymbol? taskOfT = compilation.GetTypeByMetadataName("System.Threading.Tasks.Task`1");
+        if (taskOfT is not null && named.IsGenericType && SymbolEqualityComparer.Default.Equals(named.OriginalDefinition, taskOfT))
+        {
+            return true;
+        }
+
+        INamedTypeSymbol? valueTask = compilation.GetTypeByMetadataName("System.Threading.Tasks.ValueTask");
+        if (valueTask is not null && !named.IsGenericType && SymbolEqualityComparer.Default.Equals(returnType, valueTask))
+        {
+            return true;
+        }
+
+        INamedTypeSymbol? valueTaskOfT = compilation.GetTypeByMetadataName("System.Threading.Tasks.ValueTask`1");
+        return valueTaskOfT is not null
+            && named.IsGenericType
+            && SymbolEqualityComparer.Default.Equals(named.OriginalDefinition, valueTaskOfT);
+    }
+
+    /// <summary>
+    /// Async command binding supports non-generic <c>Task</c>, non-generic <c>ValueTask</c>, and <c>ValueTask&lt;TResult&gt;</c>
+    /// (Prism exposes matching <c>Func&lt;ValueTask&gt;</c> / <c>Func&lt;ValueTask&lt;TResult&gt;&gt;</c> overloads on <c>AsyncDelegateCommand</c>).
+    /// <c>Task&lt;TResult&gt;</c> is not supported for command execute methods (unchanged).
+    /// </summary>
+    private static bool IsBindingSupportedAsyncReturnType(ITypeSymbol returnType, Compilation compilation)
+    {
+        if (returnType is not INamedTypeSymbol named)
+        {
+            return false;
+        }
+
+        INamedTypeSymbol? task = compilation.GetTypeByMetadataName("System.Threading.Tasks.Task");
+        if (task is not null && !named.IsGenericType && SymbolEqualityComparer.Default.Equals(returnType, task))
+        {
+            return true;
+        }
+
+        INamedTypeSymbol? valueTask = compilation.GetTypeByMetadataName("System.Threading.Tasks.ValueTask");
+        if (valueTask is not null && !named.IsGenericType && SymbolEqualityComparer.Default.Equals(returnType, valueTask))
+        {
+            return true;
+        }
+
+        INamedTypeSymbol? valueTaskOfT = compilation.GetTypeByMetadataName("System.Threading.Tasks.ValueTask`1");
+        return valueTaskOfT is not null
+            && named.IsGenericType
+            && SymbolEqualityComparer.Default.Equals(named.OriginalDefinition, valueTaskOfT);
+    }
+
+    private static bool IsValueTaskReturnFamily(ITypeSymbol returnType, Compilation compilation)
+    {
+        if (returnType is not INamedTypeSymbol named)
+        {
+            return false;
+        }
+
+        INamedTypeSymbol? valueTask = compilation.GetTypeByMetadataName("System.Threading.Tasks.ValueTask");
+        if (valueTask is not null && !named.IsGenericType && SymbolEqualityComparer.Default.Equals(returnType, valueTask))
+        {
+            return true;
+        }
+
+        INamedTypeSymbol? valueTaskOfT = compilation.GetTypeByMetadataName("System.Threading.Tasks.ValueTask`1");
+        return valueTaskOfT is not null
+            && named.IsGenericType
+            && SymbolEqualityComparer.Default.Equals(named.OriginalDefinition, valueTaskOfT);
     }
 
     private static bool HasMember(INamedTypeSymbol containingType, string memberName)
@@ -834,6 +913,18 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
         return methodName + "Command";
     }
 
+    private static string GetAsyncCommandExecuteArgument(CommandGenerationInfo info)
+    {
+        if (!info.WrapAsyncExecuteWithAsTask)
+        {
+            return info.MethodName;
+        }
+
+        return info.ParameterType is null
+            ? $"() => {info.MethodName}().AsTask()"
+            : $"(__p) => {info.MethodName}(__p).AsTask()";
+    }
+
     private static string GenerateCommandSource(CommandGenerationInfo info)
     {
         StringBuilder sb = new();
@@ -869,19 +960,20 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
 
         if (info.IsAsync)
         {
+            string executeArg = GetAsyncCommandExecuteArgument(info);
             if (info.ParameterType is not null)
             {
                 commandType = $"global::Prism.Commands.AsyncDelegateCommand<{info.ParameterType}>";
                 initialization = info.CanExecute is not null
-                    ? $"new {commandType}({info.MethodName}, {info.CanExecute})"
-                    : $"new {commandType}({info.MethodName})";
+                    ? $"new {commandType}({executeArg}, {info.CanExecute})"
+                    : $"new {commandType}({executeArg})";
             }
             else
             {
                 commandType = "global::Prism.Commands.AsyncDelegateCommand";
                 initialization = info.CanExecute is not null
-                    ? $"new {commandType}({info.MethodName}, {info.CanExecute})"
-                    : $"new {commandType}({info.MethodName})";
+                    ? $"new {commandType}({executeArg}, {info.CanExecute})"
+                    : $"new {commandType}({executeArg})";
             }
         }
         else

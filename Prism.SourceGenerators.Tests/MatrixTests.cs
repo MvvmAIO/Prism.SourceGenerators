@@ -60,6 +60,55 @@ public sealed class MatrixTests
         Assert.Equal(expectPackageDiagnostic, output.Diagnostics.Any(d => d.Id == "PSG3002"));
     }
 
+    [Fact]
+    public void DelegateCommand_ValueTask_execute_emits_AsTask_wrapper()
+    {
+        const string source = """
+            namespace Demo;
+
+            public partial class Vm : Prism.Mvvm.BindableBase
+            {
+                [DelegateCommand]
+                private async System.Threading.Tasks.ValueTask SaveAsync()
+                {
+                    await System.Threading.Tasks.Task.CompletedTask;
+                }
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source, languageVersion: LanguageVersion.Preview);
+        Assert.False(output.Diagnostics.Any(static d => d.Id is "PSG1001" or "PSG1002"));
+
+        GeneratedSource commandSource = Assert.Single(
+            output.GeneratedSources.Where(s => s.HintName.EndsWith(".SaveCommand.g.cs")));
+        Assert.Contains("() => SaveAsync().AsTask()", commandSource.Source);
+    }
+
+    [Fact]
+    public void AsyncDelegateCommand_ValueTaskOfT_execute_emits_parameterized_AsTask_wrapper()
+    {
+        const string source = """
+            namespace Demo;
+
+            public partial class Vm : Prism.Mvvm.BindableBase
+            {
+                [AsyncDelegateCommand]
+                private async System.Threading.Tasks.ValueTask<int> IncAsync(int seed)
+                {
+                    await System.Threading.Tasks.Task.CompletedTask;
+                    return seed + 1;
+                }
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source, languageVersion: LanguageVersion.Preview);
+        Assert.False(output.Diagnostics.Any(static d => d.Id is "PSG1001" or "PSG1002"));
+
+        GeneratedSource commandSource = Assert.Single(
+            output.GeneratedSources.Where(s => s.HintName.EndsWith(".IncCommand.g.cs")));
+        Assert.Contains("(__p) => IncAsync(__p).AsTask()", commandSource.Source);
+    }
+
     public static TheoryData<LanguageVersion, bool> ObservablePropertyMatrix => new()
     {
         // languageVersion, usePartialProperty
