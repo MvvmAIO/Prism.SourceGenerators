@@ -46,7 +46,8 @@ public partial class MainViewModel : BindableBase
     [ObservableProperty]
     private string _title = "Hello";
 
-    // Generated: public string Title { get => _title; set => SetProperty(ref _title, value); }
+    // Generated: setter calls OnTitleChanging*, then BindableBase.SetProperty(ref _title, value, () => { OnTitleChanged*; }),
+    // then optional RaisePropertyChanged for [NotifyPropertyChangedFor] / command refresh attributes.
 }
 ```
 
@@ -63,7 +64,7 @@ public partial class MainViewModel : BindableBase
     [ObservableProperty]
     public partial string Title { get; set; } = "Hello";
 
-    // Generated: public partial string Title { get => field; set => SetProperty(ref field, value); }
+    // Generated: same SetProperty(ref field, value, onChanged) pattern with OnChanging/OnChanged hooks.
 }
 ```
 
@@ -97,7 +98,7 @@ public partial class MainViewModel : BindableBase
 }
 ```
 
-The generated setter uses `EqualityComparer<T>.Default.Equals` for change detection. When the value differs, the setter calls both `OnChanging` overloads, assigns the backing field, calls both `OnChanged` overloads, and finally raises `PropertyChanged` (plus any extra notifications from `[NotifyPropertyChangedFor]`).
+The generated setter uses `EqualityComparer<T>.Default.Equals` for an early-out. When the value differs, it calls both `OnChanging` overloads, then `SetProperty(ref storage, value, onChanged)` so overrides of `SetProperty` run on the same path as hand-written Prism properties. The `onChanged` callback invokes both `OnChanged` overloads, then `SetProperty` raises `PropertyChanged` for the generated property. Any `[NotifyPropertyChangedFor]` names and `[NotifyCanExecuteChangedFor]` command refreshes are emitted after that call.
 
 ### `[NotifyPropertyChangedFor]`
 

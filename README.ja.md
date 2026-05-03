@@ -97,7 +97,7 @@ public partial class MainViewModel : BindableBase
 }
 ```
 
-生成された setter は `EqualityComparer<T>.Default.Equals` で変更を検出します。値が変化する場合、setter は両方の `OnChanging` オーバーロード呼び出し、バッキングフィールド書き込み、両方の `OnChanged` オーバーロード呼び出し、最後に `PropertyChanged`（および `[NotifyPropertyChangedFor]` による追加通知）の順に実行します。
+生成された setter はまず `EqualityComparer<T>.Default.Equals` で早期リターンします。値が変化する場合、両方の `OnChanging` オーバーロードを呼び出したうえで、`SetProperty(ref storage, value, onChanged)` を通じて `BindableBase` と同じ更新経路（`SetProperty` のオーバーライドが有効）でストアを更新します。`onChanged` 内で両方の `OnChanged` を呼び、その後 `SetProperty` が主プロパティの `PropertyChanged` を発行します。`[NotifyPropertyChangedFor]` および `[NotifyCanExecuteChangedFor]` による追加通知はその後に出力されます。
 
 ### `[NotifyPropertyChangedFor]`
 

@@ -4,6 +4,10 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+### Changed
+- `[ObservableProperty]` generated setters now call `BindableBase.SetProperty(ref storage, value, onChanged)` (Prism overload with `Action?`) for the backing-field update and main `PropertyChanged` notification. `OnXxxChanging` still runs before the update; `OnXxxChanged` runs inside the `onChanged` callback so it executes before the main property notification, matching the previous ordering. `RaisePropertyChanged` for `[NotifyPropertyChangedFor]` targets and `RaiseCanExecuteChanged` calls still run afterward. This lets overrides of `SetProperty` observe or intercept updates consistently with hand-written Prism properties.
+- `[BindableBase]`-generated types now include the same `SetProperty<T>(ref T, T, Action?, string?)` overload as Prism's `BindableBase` so generated observable properties compile when not using the framework base class.
+
 ### Added
 - Diagnostic **PSG2006** (Warning): `CanExecute` references a member that exists but is not usable as `Func<bool>` / `Func<T, bool>` / `bool M()` / `bool M(T)` for the annotated execute method (wrong return type or parameters).
 - `[ObservableProperty]` now also emits `OnXxxChanging(value)` / `OnXxxChanging(oldValue, newValue)` `partial` method declarations alongside the existing `OnXxxChanged` overloads. The `Changing` hooks are invoked **before** the backing field is updated, the `Changed` hooks **after**.

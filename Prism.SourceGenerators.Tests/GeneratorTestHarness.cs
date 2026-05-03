@@ -76,7 +76,26 @@ internal static class GeneratorTestHarness
                 {
                     protected bool SetProperty<T>(ref T storage, T value, string? propertyName = null)
                     {
+                        if (System.Collections.Generic.EqualityComparer<T>.Default.Equals(storage, value))
+                        {
+                            return false;
+                        }
+
                         storage = value;
+                        RaisePropertyChanged(propertyName);
+                        return true;
+                    }
+
+                    protected bool SetProperty<T>(ref T storage, T value, Action? onChanged, string? propertyName = null)
+                    {
+                        if (System.Collections.Generic.EqualityComparer<T>.Default.Equals(storage, value))
+                        {
+                            return false;
+                        }
+
+                        storage = value;
+                        onChanged?.Invoke();
+                        RaisePropertyChanged(propertyName);
                         return true;
                     }
 
