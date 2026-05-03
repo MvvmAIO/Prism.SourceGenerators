@@ -177,6 +177,15 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
                 canExecute,
                 containingType.Name));
         }
+        else if (canExecute is not null
+            && !IsValidCanExecuteMember(containingType, canExecute, methodSymbol, isAsync, compilation))
+        {
+            diagnostics.Add(DiagnosticInfo.Create(
+                DiagnosticDescriptors.CanExecuteMemberIncompatibleSignature,
+                methodSymbol,
+                canExecute,
+                containingType.Name));
+        }
 
         foreach (string observedProperty in observesProperties)
         {
@@ -267,6 +276,14 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
                         {
                             diagnostics.Add(DiagnosticInfo.Create(
                                 DiagnosticDescriptors.CanExecuteMemberNotFound,
+                                methodSymbol,
+                                ce,
+                                containingType.Name));
+                        }
+                        else if (!IsValidCanExecuteMember(containingType, ce, methodSymbol, isAsync: true, compilation))
+                        {
+                            diagnostics.Add(DiagnosticInfo.Create(
+                                DiagnosticDescriptors.CanExecuteMemberIncompatibleSignature,
                                 methodSymbol,
                                 ce,
                                 containingType.Name));
@@ -486,6 +503,119 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
         }
 
         return false;
+    }
+
+    private static ImmutableArray<ISymbol> ResolveMemberNameCandidates(INamedTypeSymbol containingType, string memberName)
+    {
+        for (INamedTypeSymbol? current = containingType; current is not null; current = current.BaseType)
+        {
+            ImmutableArray<ISymbol> members = current.GetMembers(memberName);
+            if (!members.IsDefaultOrEmpty)
+            {
+                return members;
+            }
+        }
+
+        return ImmutableArray<ISymbol>.Empty;
+    }
+
+    private static bool IsValidCanExecuteMember(
+        INamedTypeSymbol containingType,
+        string memberName,
+        IMethodSymbol commandMethod,
+        bool isAsync,
+        Compilation compilation)
+    {
+        ImmutableArray<ISymbol> candidates = ResolveMemberNameCandidates(containingType, memberName);
+        if (candidates.IsDefaultOrEmpty)
+        {
+            return false;
+        }
+
+        ITypeSymbol? commandArgType = GetCommandArgumentTypeSymbol(commandMethod, isAsync);
+
+        foreach (ISymbol symbol in candidates)
+        {
+            switch (symbol)
+            {
+                case IMethodSymbol { MethodKind: MethodKind.Ordinary } method:
+                    if (method.ReturnType.SpecialType != SpecialType.System_Boolean)
+                    {
+                        break;
+                    }
+
+                    if (commandArgType is null)
+                    {
+                        if (method.Parameters.Length == 0)
+                        {
+                            return true;
+                        }
+                    }
+                    else if (method.Parameters.Length == 1
+                        && SymbolEqualityComparer.Default.Equals(method.Parameters[0].Type, commandArgType))
+                    {
+                        return true;
+                    }
+
+                    break;
+
+                case IPropertySymbol property:
+                    if (IsFuncDelegateMatching(property.Type, commandArgType))
+                    {
+                        return true;
+                    }
+
+                    break;
+
+                case IFieldSymbol field:
+                    if (IsFuncDelegateMatching(field.Type, commandArgType))
+                    {
+                        return true;
+                    }
+
+                    break;
+            }
+        }
+
+        return false;
+    }
+
+    private static ITypeSymbol? GetCommandArgumentTypeSymbol(IMethodSymbol method, bool isAsync)
+    {
+        if (!isAsync)
+        {
+            return method.Parameters.Length == 1 ? method.Parameters[0].Type : null;
+        }
+
+        return method.Parameters.Length switch
+        {
+            0 => null,
+            1 => IsCancellationToken(method.Parameters[0].Type) ? null : method.Parameters[0].Type,
+            2 when IsCancellationToken(method.Parameters[1].Type) => method.Parameters[0].Type,
+            _ => null
+        };
+    }
+
+    private static bool IsFuncDelegateMatching(ITypeSymbol type, ITypeSymbol? commandArgType)
+    {
+        if (type is not INamedTypeSymbol named || named.DelegateInvokeMethod is null)
+        {
+            return false;
+        }
+
+        IMethodSymbol invoke = named.DelegateInvokeMethod;
+        if (invoke.ReturnType.SpecialType != SpecialType.System_Boolean)
+        {
+            return false;
+        }
+
+        if (commandArgType is null)
+        {
+            return invoke.Parameters.Length == 0;
+        }
+
+        return invoke.Parameters.Length == 1
+            && SymbolEqualityComparer.Default.Equals(invoke.Parameters[0].Type, commandArgType);
     }
 
     private static bool HasPropertyInTypeHierarchy(INamedTypeSymbol containingType, string propertyName)

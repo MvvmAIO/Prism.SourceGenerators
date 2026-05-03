@@ -134,6 +134,16 @@ internal static class DiagnosticDescriptors
         description: "The name passed to [NotifyCanExecuteChangedFor] should match either an existing member on the containing type, or the generated command property of a method annotated with [DelegateCommand] or [AsyncDelegateCommand] (e.g. method 'Save' yields 'SaveCommand').",
         helpLinkUri: HelpLink);
 
+    public static readonly DiagnosticDescriptor CanExecuteMemberIncompatibleSignature = new(
+        id: "PSG2006",
+        title: "CanExecute member has incompatible signature",
+        messageFormat: "The CanExecute member '{0}' on '{1}' does not match the expected signature for this command (expects bool-returning method or Func delegate compatible with the execute method parameters)",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: "For parameterless execute methods, CanExecute should be a bool-returning method with no parameters or a Func<bool> member. For commands with one argument type T, CanExecute should be bool M(T) or Func<T, bool>.",
+        helpLinkUri: HelpLink);
+
     public static readonly DiagnosticDescriptor AsyncDelegateCommandPackageRequired = new(
         id: "PSG3002",
         title: "AsyncDelegateCommand package required for Prism prior to 9.0",
