@@ -69,9 +69,9 @@ public partial class MainViewModel : BindableBase
 
 The partial property approach eliminates the need for a separate backing field and provides a cleaner API surface. Both modes can coexist in the same project.
 
-#### OnChanged partial methods
+#### OnChanging / OnChanged partial methods
 
-For every `[ObservableProperty]`, the generator emits two `partial` method declarations that you can optionally implement to react to changes:
+For every `[ObservableProperty]`, the generator emits four `partial` method declarations that you can optionally implement to react to changes. `OnXxxChanging` hooks run **before** the backing field is updated; `OnXxxChanged` hooks run **after**:
 
 ```csharp
 public partial class MainViewModel : BindableBase
@@ -79,9 +79,16 @@ public partial class MainViewModel : BindableBase
     [ObservableProperty]
     public partial int Age { get; set; }
 
-    // Generated declarations (implement one or both):
+    // Generated declarations (implement any subset):
+    // partial void OnAgeChanging(int value);
+    // partial void OnAgeChanging(int oldValue, int newValue);
     // partial void OnAgeChanged(int value);
     // partial void OnAgeChanged(int oldValue, int newValue);
+
+    partial void OnAgeChanging(int oldValue, int newValue)
+    {
+        Debug.WriteLine($"Age about to change from {oldValue} to {newValue}");
+    }
 
     partial void OnAgeChanged(int oldValue, int newValue)
     {
@@ -90,7 +97,7 @@ public partial class MainViewModel : BindableBase
 }
 ```
 
-The generated setter uses `EqualityComparer<T>.Default.Equals` for change detection and calls both `OnChanged` overloads before raising `PropertyChanged`.
+The generated setter uses `EqualityComparer<T>.Default.Equals` for change detection. When the value differs, the setter calls both `OnChanging` overloads, assigns the backing field, calls both `OnChanged` overloads, and finally raises `PropertyChanged` (plus any extra notifications from `[NotifyPropertyChangedFor]`).
 
 ### `[NotifyPropertyChangedFor]`
 

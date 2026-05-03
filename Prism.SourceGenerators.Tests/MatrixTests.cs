@@ -107,6 +107,22 @@ public sealed class MatrixTests
             Assert.Contains("public string Name", propertySource.Source);
             Assert.Contains("get => _name;", propertySource.Source);
         }
+
+        // OnChanging / OnChanged partial method declarations are always emitted
+        Assert.Contains("partial void OnNameChanging(string value);", propertySource.Source);
+        Assert.Contains("partial void OnNameChanging(string oldValue, string newValue);", propertySource.Source);
+        Assert.Contains("partial void OnNameChanged(string value);", propertySource.Source);
+        Assert.Contains("partial void OnNameChanged(string oldValue, string newValue);", propertySource.Source);
+
+        // OnChanging hooks must run BEFORE the assignment, before OnChanged
+        int changingIndex = propertySource.Source.IndexOf("OnNameChanging(value);", System.StringComparison.Ordinal);
+        int assignmentIndex = usePartialProperty
+            ? propertySource.Source.IndexOf("field = value;", System.StringComparison.Ordinal)
+            : propertySource.Source.IndexOf("_name = value;", System.StringComparison.Ordinal);
+        int changedIndex = propertySource.Source.IndexOf("OnNameChanged(value);", System.StringComparison.Ordinal);
+
+        Assert.InRange(changingIndex, 1, assignmentIndex - 1);
+        Assert.InRange(assignmentIndex, changingIndex + 1, changedIndex - 1);
     }
 
     public static TheoryData<LanguageVersion, string, string> DiagnosticLanguageMatrix => new()

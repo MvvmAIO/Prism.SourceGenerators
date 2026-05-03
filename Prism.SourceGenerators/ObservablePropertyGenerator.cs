@@ -244,7 +244,9 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
             indent += "    ";
         }
 
-        // OnChanged partial method declarations
+        // OnChanging / OnChanged partial method declarations
+        sb.AppendLine($"{indent}partial void On{info.PropertyName}Changing({info.FieldType} value);");
+        sb.AppendLine($"{indent}partial void On{info.PropertyName}Changing({info.FieldType} oldValue, {info.FieldType} newValue);");
         sb.AppendLine($"{indent}partial void On{info.PropertyName}Changed({info.FieldType} value);");
         sb.AppendLine($"{indent}partial void On{info.PropertyName}Changed({info.FieldType} oldValue, {info.FieldType} newValue);");
         sb.AppendLine();
@@ -277,6 +279,8 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
         sb.AppendLine($"{indent}        if (!global::System.Collections.Generic.EqualityComparer<{info.FieldType}>.Default.Equals({backingField}, value))");
         sb.AppendLine($"{indent}        {{");
         sb.AppendLine($"{indent}            {info.FieldType} oldValue = {backingField};");
+        sb.AppendLine($"{indent}            On{info.PropertyName}Changing(value);");
+        sb.AppendLine($"{indent}            On{info.PropertyName}Changing(oldValue, value);");
         sb.AppendLine($"{indent}            {backingField} = value;");
         sb.AppendLine($"{indent}            On{info.PropertyName}Changed(value);");
         sb.AppendLine($"{indent}            On{info.PropertyName}Changed(oldValue, value);");

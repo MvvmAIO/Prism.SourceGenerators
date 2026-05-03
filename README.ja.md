@@ -69,9 +69,9 @@ public partial class MainViewModel : BindableBase
 
 パーシャルプロパティ方式は個別のバッキングフィールドが不要で、よりクリーンな API を提供します。両モードは同一プロジェクト内で共存できます。
 
-#### OnChanged パーシャルメソッド
+#### OnChanging / OnChanged パーシャルメソッド
 
-すべての `[ObservableProperty]` に対して、変更に応答するためにオプションで実装できる 2 つの `partial` メソッド宣言が生成されます：
+すべての `[ObservableProperty]` に対して、変更に応答するためにオプションで実装できる 4 つの `partial` メソッド宣言が生成されます。`OnXxxChanging` フックはバッキングフィールド書き込みの**前**に実行され、`OnXxxChanged` フックは**後**に実行されます：
 
 ```csharp
 public partial class MainViewModel : BindableBase
@@ -79,9 +79,16 @@ public partial class MainViewModel : BindableBase
     [ObservableProperty]
     public partial int Age { get; set; }
 
-    // 生成される宣言（片方または両方を実装可能）:
+    // 生成される宣言（任意の組み合わせを実装可能）:
+    // partial void OnAgeChanging(int value);
+    // partial void OnAgeChanging(int oldValue, int newValue);
     // partial void OnAgeChanged(int value);
     // partial void OnAgeChanged(int oldValue, int newValue);
+
+    partial void OnAgeChanging(int oldValue, int newValue)
+    {
+        Debug.WriteLine($"Age が {oldValue} から {newValue} に変更されようとしています");
+    }
 
     partial void OnAgeChanged(int oldValue, int newValue)
     {
@@ -90,7 +97,7 @@ public partial class MainViewModel : BindableBase
 }
 ```
 
-生成されたsetterは `EqualityComparer<T>.Default.Equals` を使用して変更検出を行い、`PropertyChanged` を発行する前に両方の `OnChanged` オーバーロードを呼び出します。
+生成された setter は `EqualityComparer<T>.Default.Equals` で変更を検出します。値が変化する場合、setter は両方の `OnChanging` オーバーロード呼び出し、バッキングフィールド書き込み、両方の `OnChanged` オーバーロード呼び出し、最後に `PropertyChanged`（および `[NotifyPropertyChangedFor]` による追加通知）の順に実行します。
 
 ### `[NotifyPropertyChangedFor]`
 

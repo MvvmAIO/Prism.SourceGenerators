@@ -11,6 +11,8 @@ namespace Demo
 {
     partial class PersonViewModel
     {
+        partial void OnFirstNameChanging(string value);
+        partial void OnFirstNameChanging(string oldValue, string newValue);
         partial void OnFirstNameChanged(string value);
         partial void OnFirstNameChanged(string oldValue, string newValue);
 
@@ -22,6 +24,8 @@ namespace Demo
                 if (!global::System.Collections.Generic.EqualityComparer<string>.Default.Equals(_firstName, value))
                 {
                     string oldValue = _firstName;
+                    OnFirstNameChanging(value);
+                    OnFirstNameChanging(oldValue, value);
                     _firstName = value;
                     OnFirstNameChanged(value);
                     OnFirstNameChanged(oldValue, value);
@@ -42,6 +46,8 @@ namespace Demo
 {
     partial class PersonViewModel
     {
+        partial void OnLastNameChanging(string value);
+        partial void OnLastNameChanging(string oldValue, string newValue);
         partial void OnLastNameChanged(string value);
         partial void OnLastNameChanged(string oldValue, string newValue);
 
@@ -53,6 +59,8 @@ namespace Demo
                 if (!global::System.Collections.Generic.EqualityComparer<string>.Default.Equals(_lastName, value))
                 {
                     string oldValue = _lastName;
+                    OnLastNameChanging(value);
+                    OnLastNameChanging(oldValue, value);
                     _lastName = value;
                     OnLastNameChanged(value);
                     OnLastNameChanged(oldValue, value);

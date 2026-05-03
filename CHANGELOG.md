@@ -4,6 +4,9 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+### Added
+- `[ObservableProperty]` now also emits `OnXxxChanging(value)` / `OnXxxChanging(oldValue, newValue)` `partial` method declarations alongside the existing `OnXxxChanged` overloads. The `Changing` hooks are invoked **before** the backing field is updated, the `Changed` hooks **after**.
+
 ## [0.2.0] - 2026-05-01
 
 ### Changed

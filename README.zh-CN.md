@@ -69,9 +69,9 @@ public partial class MainViewModel : BindableBase
 
 部分属性方式无需单独的后备字段，提供更简洁的 API 接口。两种模式可以在同一项目中共存。
 
-#### OnChanged 部分方法
+#### OnChanging / OnChanged 部分方法
 
-每个 `[ObservableProperty]` 都会生成两个 `partial` 方法声明，可选择性实现以响应变化：
+每个 `[ObservableProperty]` 都会生成四个 `partial` 方法声明，可选择性实现以响应变化。`OnXxxChanging` 钩子在写入字段**之前**触发，`OnXxxChanged` 钩子在写入**之后**触发：
 
 ```csharp
 public partial class MainViewModel : BindableBase
@@ -79,9 +79,16 @@ public partial class MainViewModel : BindableBase
     [ObservableProperty]
     public partial int Age { get; set; }
 
-    // 生成的声明（可实现其中一个或两个）：
+    // 生成的声明（可实现任意子集）：
+    // partial void OnAgeChanging(int value);
+    // partial void OnAgeChanging(int oldValue, int newValue);
     // partial void OnAgeChanged(int value);
     // partial void OnAgeChanged(int oldValue, int newValue);
+
+    partial void OnAgeChanging(int oldValue, int newValue)
+    {
+        Debug.WriteLine($"Age 即将从 {oldValue} 变为 {newValue}");
+    }
 
     partial void OnAgeChanged(int oldValue, int newValue)
     {
@@ -90,7 +97,7 @@ public partial class MainViewModel : BindableBase
 }
 ```
 
-生成的 setter 使用 `EqualityComparer<T>.Default.Equals` 进行变化检测，在触发 `PropertyChanged` 之前调用两个 `OnChanged` 重载。
+生成的 setter 使用 `EqualityComparer<T>.Default.Equals` 进行变化检测。当值确实变化时，setter 会依次调用两个 `OnChanging` 重载、写入字段、调用两个 `OnChanged` 重载，最后触发 `PropertyChanged`（以及来自 `[NotifyPropertyChangedFor]` 的额外通知）。
 
 ### `[NotifyPropertyChangedFor]`
 
