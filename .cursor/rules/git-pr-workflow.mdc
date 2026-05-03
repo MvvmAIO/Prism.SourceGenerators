@@ -1,0 +1,14 @@
+---
+description: GitHub workflow — issue first, then PR, squash merge to master
+alwaysApply: true
+---
+
+# Git / GitHub workflow (MvvmAIO/Prism.SourceGenerators)
+
+For substantive changes that go through GitHub:
+
+1. **Issue** — Open (or reference) a GitHub issue describing the problem or feature before implementation when starting new work.
+2. **Pull request** — Implement on a branch and open a PR that targets `master`, with the PR body linking the issue (e.g. `Closes #NN` or `Fixes #NN`).
+3. **Merge** — When merging into `master`, use **Squash and merge** only (do not use merge commit or rebase merge for routine PRs unless the repo owner explicitly overrides).
+
+CI should be green and the change set reviewed before merge.
