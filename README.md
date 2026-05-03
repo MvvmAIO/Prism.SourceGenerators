@@ -35,7 +35,7 @@ Generates observable properties for classes inheriting from `BindableBase`. Supp
 
 #### Field target (all C# versions)
 
-Annotate a private field with `[ObservableProperty]` to generate a property that calls `SetProperty` in the setter. By default the generated property is **`public`**. Pass **`ObservablePropertyAccess`** to choose another accessibility (`internal`, `protected`, `private`, `protected internal`, `private protected`).
+Annotate a private field with `[ObservableProperty]` to generate a property that calls `SetProperty` in the setter. By default the generated property is **`public`**. Pass **`PropertyAccess`** (positional or named `PropertyAccess = …`) to choose another accessibility (`internal`, `protected`, `private`, `protected internal`, `private protected`).
 
 ```csharp
 // C# 12 or earlier
@@ -46,7 +46,8 @@ public partial class MainViewModel : BindableBase
     [ObservableProperty]
     private string _title = "Hello";
 
-    [ObservableProperty(ObservablePropertyAccess.Internal)]
+    [ObservableProperty(PropertyAccess.Internal)]
+    // or: [ObservableProperty(PropertyAccess = PropertyAccess.Internal)]
     private int _count;
 
     // Generated: setter calls OnTitleChanging*, then BindableBase.SetProperty(ref _title, value, () => { OnTitleChanged*; }),
@@ -54,7 +55,7 @@ public partial class MainViewModel : BindableBase
 }
 ```
 
-For **partial property** targets, the accessibility on the property declaration is used; the `ObservablePropertyAccess` argument is ignored.
+For **partial property** targets, the accessibility on the property declaration is used; `PropertyAccess` is ignored.
 
 #### Partial property target (C# 13+ with `field` keyword)
 

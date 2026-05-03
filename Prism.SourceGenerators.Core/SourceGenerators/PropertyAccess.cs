@@ -5,7 +5,7 @@ namespace Prism.SourceGenerators;
 /// attribute is applied to a <b>backing field</b> (field target mode). Partial property targets use the
 /// accessibility written on the property declaration instead.
 /// </summary>
-public enum ObservablePropertyAccess
+public enum PropertyAccess
 {
     /// <summary>Generated property is <c>public</c>. This is the default.</summary>
     Public = 0,

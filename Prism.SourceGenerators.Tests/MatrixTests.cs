@@ -173,6 +173,45 @@ public sealed class MatrixTests
         Assert.InRange(changedIndex, setPropertyIndex + 1, propertySource.Source.Length - 1);
     }
 
+    [Fact]
+    public void ObservableProperty_field_target_uses_attribute_property_access()
+    {
+        const string source = """
+            namespace Demo;
+
+            public partial class Vm : Prism.Mvvm.BindableBase
+            {
+                [ObservableProperty(PropertyAccess.Internal)]
+                private string _name = "";
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source, languageVersion: LanguageVersion.CSharp12);
+        GeneratedSource propertySource = Assert.Single(output.GeneratedSources.Where(s => s.HintName.EndsWith(".Name.g.cs")));
+
+        Assert.Contains("internal string Name", propertySource.Source);
+        Assert.DoesNotContain("public string Name", propertySource.Source);
+    }
+
+    [Fact]
+    public void ObservableProperty_field_target_accepts_named_PropertyAccess_argument()
+    {
+        const string source = """
+            namespace Demo;
+
+            public partial class Vm : Prism.Mvvm.BindableBase
+            {
+                [ObservableProperty(PropertyAccess = PropertyAccess.Internal)]
+                private string _name = "";
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source, languageVersion: LanguageVersion.CSharp12);
+        GeneratedSource propertySource = Assert.Single(output.GeneratedSources.Where(s => s.HintName.EndsWith(".Name.g.cs")));
+
+        Assert.Contains("internal string Name", propertySource.Source);
+    }
+
     public static TheoryData<LanguageVersion, string, string> DiagnosticLanguageMatrix => new()
     {
         { LanguageVersion.CSharp12, "PSG0001", """

@@ -11,8 +11,8 @@
 /// private string _name;
 /// </code>
 /// Generates: <c>public string Name { get =&gt; _name; set =&gt; SetProperty(ref _name, value); }</c>
-/// Use <see cref="ObservablePropertyAccess"/> to control the generated property's accessibility; the default is
-/// <see cref="ObservablePropertyAccess.Public"/> (including for the parameterless attribute constructor).
+/// Pass <see cref="PropertyAccess"/> positionally, or set the <see cref="ObservablePropertyAttribute.PropertyAccess"/>
+/// named argument, to control the generated property's accessibility. The default is <see cref="PropertyAccess.Public"/>.
 /// </para>
 /// <para>
 /// <b>Partial property usage</b> (C# 13+):
@@ -26,25 +26,25 @@
 [global::System.AttributeUsage(global::System.AttributeTargets.Field | global::System.AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
 public sealed class ObservablePropertyAttribute : global::System.Attribute
 {
-    /// <summary>
-    /// Initializes a new instance with <see cref="PropertyAccess"/> set to <see cref="ObservablePropertyAccess.Public"/>.
-    /// </summary>
+    /// <summary>Initializes a new instance; generated property accessibility defaults to <see cref="PropertyAccess.Public"/>.</summary>
     public ObservablePropertyAttribute()
     {
-        PropertyAccess = ObservablePropertyAccess.Public;
     }
 
     /// <summary>
     /// Initializes a new instance with the specified accessibility for the generated property (field target mode only).
     /// </summary>
     /// <param name="propertyAccess">Accessibility of the generated property.</param>
-    public ObservablePropertyAttribute(ObservablePropertyAccess propertyAccess)
+    public ObservablePropertyAttribute(PropertyAccess propertyAccess)
     {
         PropertyAccess = propertyAccess;
     }
 
     /// <summary>
-    /// Gets the accessibility of the property generated for a <b>field</b> target. Ignored for partial property targets.
+    /// Gets or sets the accessibility of the property generated for a <b>field</b> target. Ignored for partial property targets.
     /// </summary>
-    public ObservablePropertyAccess PropertyAccess { get; }
+    /// <remarks>
+    /// A public setter allows <c>[ObservableProperty(PropertyAccess = PropertyAccess.Internal)]</c> syntax in addition to the positional constructor.
+    /// </remarks>
+    public PropertyAccess PropertyAccess { get; set; } = PropertyAccess.Public;
 }

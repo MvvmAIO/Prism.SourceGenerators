@@ -35,7 +35,7 @@ Prism.SourceGenerators.Samples.Prism8/         # Avalonia 12 サンプル（Pris
 
 #### フィールドターゲット（すべての C# バージョン）
 
-プライベートフィールドに `[ObservableProperty]` を付与すると、setter で `SetProperty` を呼び出すプロパティが生成されます。**既定**は **`public`** です。`ObservablePropertyAccess` を渡すと `internal`、`protected`、`private`、`protected internal`、`private protected` を指定できます。
+プライベートフィールドに `[ObservableProperty]` を付与すると、setter で `SetProperty` を呼び出すプロパティが生成されます。**既定**は **`public`** です。`PropertyAccess` を位置指定または `PropertyAccess = …` の名前付きで渡すと `internal`、`protected`、`private`、`protected internal`、`private protected` を指定できます。
 
 ```csharp
 // C# 12 以前
@@ -46,14 +46,15 @@ public partial class MainViewModel : BindableBase
     [ObservableProperty]
     private string _title = "Hello";
 
-    [ObservableProperty(ObservablePropertyAccess.Internal)]
+    [ObservableProperty(PropertyAccess.Internal)]
+    // または: [ObservableProperty(PropertyAccess = PropertyAccess.Internal)]
     private int _count;
 
     // 生成: OnTitleChanging* の後に BindableBase.SetProperty(ref _title, value, () => { OnTitleChanged*; }) など。
 }
 ```
 
-**パーシャルプロパティ** ターゲットでは、プロパティ宣言の修飾子が使われます。`ObservablePropertyAccess` 引数は無視されます。
+**パーシャルプロパティ** ターゲットでは、プロパティ宣言の修飾子が使われます。`PropertyAccess` は無視されます。
 
 #### パーシャルプロパティターゲット（C# 13+ `field` キーワード）
 

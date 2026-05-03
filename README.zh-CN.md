@@ -35,7 +35,7 @@ Prism.SourceGenerators.Samples.Prism8/         # Avalonia 12 示例（Prism 8.1.
 
 #### 字段目标（所有 C# 版本）
 
-在私有字段上标注 `[ObservableProperty]`，生成调用 `SetProperty` 的属性；**默认**生成 **`public`**。可传入 **`ObservablePropertyAccess`** 指定为 `internal`、`protected`、`private`、`protected internal`、`private protected` 等。
+在私有字段上标注 `[ObservableProperty]`，生成调用 `SetProperty` 的属性；**默认**生成 **`public`**。可通过 **`PropertyAccess`** 的位置参数或命名参数 `PropertyAccess = …` 指定为 `internal`、`protected`、`private`、`protected internal`、`private protected` 等。
 
 ```csharp
 // C# 12 或更早版本
@@ -46,7 +46,8 @@ public partial class MainViewModel : BindableBase
     [ObservableProperty]
     private string _title = "Hello";
 
-    [ObservableProperty(ObservablePropertyAccess.Internal)]
+    [ObservableProperty(PropertyAccess.Internal)]
+    // 或: [ObservableProperty(PropertyAccess = PropertyAccess.Internal)]
     private int _count;
 
     // 生成：setter 中 OnTitleChanging*、BindableBase.SetProperty(ref _title, value, () => { OnTitleChanged*; })，
@@ -54,7 +55,7 @@ public partial class MainViewModel : BindableBase
 }
 ```
 
-**部分属性**目标以属性声明上的访问修饰符为准；`ObservablePropertyAccess` 参数会被忽略。
+**部分属性**目标以属性声明上的访问修饰符为准；`PropertyAccess` 会被忽略。
 
 #### 部分属性目标（C# 13+ `field` 关键字）
 

@@ -18,7 +18,8 @@ namespace Prism.SourceGenerators;
 /// Supports two usage modes:
 /// <list type="bullet">
 /// <item><b>Field target</b> (all C# versions): Apply <c>[ObservableProperty]</c> to a private field to generate
-/// a public property that calls <c>SetProperty</c> in the setter.</item>
+/// a property (default <c>public</c>; optional <c>PropertyAccess</c> on the attribute) that calls
+/// <c>SetProperty</c> in the setter.</item>
 /// <item><b>Partial property target</b> (C# 13+): Apply <c>[ObservableProperty]</c> to a <c>partial</c> property
 /// to generate the implementing declaration using the <c>field</c> keyword (semi-auto property).</item>
 /// </list>
@@ -131,9 +132,13 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
         ImmutableArray<string> forwardedAttributes = CollectForwardedAttributesFromField(
             (VariableDeclaratorSyntax)context.TargetNode, context.SemanticModel, token);
 
+        Accessibility generatedPropertyAccessibility = GetFieldTargetPropertyAccessibility(
+            fieldSymbol,
+            context.SemanticModel.Compilation);
+
         return new Result<PropertyGenerationInfo>(
             new PropertyGenerationInfo(hierarchy, fieldName, propertyName, fieldType,
-                IsPartialProperty: false, Accessibility.Public, Accessibility.NotApplicable, notifyProps, notifyCommands, forwardedAttributes),
+                IsPartialProperty: false, generatedPropertyAccessibility, Accessibility.NotApplicable, notifyProps, notifyCommands, forwardedAttributes),
             commandDiagnostics);
     }
 
@@ -461,8 +466,8 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
         }
         else
         {
-            // Field-backed property
-            sb.AppendLine($"{indent}public {info.FieldType} {info.PropertyName}");
+            // Field-backed property (accessibility from [ObservableProperty] for field targets)
+            sb.AppendLine($"{indent}{accessModifier} {info.FieldType} {info.PropertyName}");
             sb.AppendLine($"{indent}{{");
             sb.AppendLine($"{indent}    get => {backingField};");
             sb.AppendLine($"{indent}    set");
@@ -513,6 +518,58 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
 
         return sb.ToString();
     }
+
+    private const string ObservablePropertyAttributeMetadataName = "Prism.SourceGenerators.ObservablePropertyAttribute";
+
+    /// <summary>
+    /// Reads <c>PropertyAccess</c> from the attribute on a field target. Ordinal values must stay aligned with
+    /// <c>MvvmAIO.Prism.Core</c> <c>PropertyAccess</c> (generator does not reference that assembly).
+    /// </summary>
+    private static Accessibility GetFieldTargetPropertyAccessibility(IFieldSymbol fieldSymbol, Compilation compilation)
+    {
+        INamedTypeSymbol? attrType = compilation.GetTypeByMetadataName(ObservablePropertyAttributeMetadataName);
+        if (attrType is null)
+            return Accessibility.Public;
+
+        foreach (AttributeData attr in fieldSymbol.GetAttributes())
+        {
+            if (!SymbolEqualityComparer.Default.Equals(attr.AttributeClass, attrType))
+                continue;
+
+            return ReadPropertyAccessFromObservablePropertyAttribute(attr);
+        }
+
+        return Accessibility.Public;
+    }
+
+    private static Accessibility ReadPropertyAccessFromObservablePropertyAttribute(AttributeData attr)
+    {
+        if (attr.ConstructorArguments.Length >= 1
+            && attr.ConstructorArguments[0] is { Value: int ctorOrdinal })
+        {
+            return MapPropertyAccessOrdinalToAccessibility(ctorOrdinal);
+        }
+
+        foreach (System.Collections.Generic.KeyValuePair<string, TypedConstant> named in attr.NamedArguments)
+        {
+            if (named.Key == "PropertyAccess" && named.Value.Value is int namedOrdinal)
+                return MapPropertyAccessOrdinalToAccessibility(namedOrdinal);
+        }
+
+        return Accessibility.Public;
+    }
+
+    private static Accessibility MapPropertyAccessOrdinalToAccessibility(int value) =>
+        value switch
+        {
+            0 => Accessibility.Public,
+            1 => Accessibility.Internal,
+            2 => Accessibility.Protected,
+            3 => Accessibility.Private,
+            4 => Accessibility.ProtectedOrInternal,
+            5 => Accessibility.ProtectedAndInternal,
+            _ => Accessibility.Public,
+        };
 
     private static string GetAccessModifierString(Accessibility accessibility)
     {
