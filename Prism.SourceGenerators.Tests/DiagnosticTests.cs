@@ -118,6 +118,19 @@ public sealed class DiagnosticTests
             private string _name = "";
         }
         """)]
+    [InlineData("PSG2006", """
+        namespace Demo;
+
+        public partial class Foo : Prism.Mvvm.BindableBase
+        {
+            [DelegateCommand(CanExecute = nameof(CanSave))]
+            private void Save()
+            {
+            }
+
+            private int CanSave() => 1;
+        }
+        """)]
     public void Reports_expected_diagnostic_for_invalid_input(string diagnosticId, string source)
     {
         GeneratorRunOutput output = GeneratorTestHarness.Run(source);

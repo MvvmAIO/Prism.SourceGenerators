@@ -5,6 +5,7 @@ All notable changes to this project are documented in this file.
 ## Unreleased
 
 ### Added
+- Diagnostic **PSG2006** (Warning): `CanExecute` references a member that exists but is not usable as `Func<bool>` / `Func<T, bool>` / `bool M()` / `bool M(T)` for the annotated execute method (wrong return type or parameters).
 - `[ObservableProperty]` now also emits `OnXxxChanging(value)` / `OnXxxChanging(oldValue, newValue)` `partial` method declarations alongside the existing `OnXxxChanged` overloads. The `Changing` hooks are invoked **before** the backing field is updated, the `Changed` hooks **after**.
 - New `[NotifyCanExecuteChangedFor(nameof(SaveCommand), ...)]` attribute (in **`MvvmAIO.Prism.Core`**) for use alongside `[ObservableProperty]`. The generated property setter calls `XxxCommand?.RaiseCanExecuteChanged()` for each named command after raising `PropertyChanged`. Names are validated against existing members or the generated command of a `[DelegateCommand]`/`[AsyncDelegateCommand]` method on the same type.
 - New diagnostic **PSG2005** (Warning): `[NotifyCanExecuteChangedFor]` references a name that cannot be resolved to a command property. The setter is still emitted so the project keeps compiling once the typo is fixed.

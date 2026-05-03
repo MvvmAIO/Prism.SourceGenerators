@@ -294,6 +294,7 @@ If the class already inherits from `BindableBase` or a base class that implement
 | PSG2003 | CanExecute member was not found |
 | PSG2004 | Observed property was not found |
 | PSG2005 | `[NotifyCanExecuteChangedFor]` references a command that was not found |
+| PSG2006 | `CanExecute` names a member whose signature is not compatible with the command |
 | PSG3002 | `AsyncDelegateCommand` not found; install **`MvvmAIO.Prism.SourceGenerators`** and, on Prism.Core 8.1.97, **`MvvmAIO.Prism.Bcl.Commands`** (or upgrade to Prism 9+) |
 
 > **Quick fix:** PSG0001–PSG0004 all have an IDE code fix that inserts the missing `partial` modifier (Ctrl+. / Alt+Enter on the squiggle, or "Fix all in document/project/solution" to apply across the whole codebase).
