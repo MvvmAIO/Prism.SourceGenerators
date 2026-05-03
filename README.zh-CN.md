@@ -97,7 +97,7 @@ public partial class MainViewModel : BindableBase
 }
 ```
 
-生成的 setter 使用 `EqualityComparer<T>.Default.Equals` 进行变化检测。当值确实变化时，setter 会依次调用两个 `OnChanging` 重载、写入字段、调用两个 `OnChanged` 重载，最后触发 `PropertyChanged`（以及来自 `[NotifyPropertyChangedFor]` 的额外通知）。
+生成的 setter 先用 `EqualityComparer<T>.Default.Equals` 做快速相等判断。值确实变化时，先调用两个 `OnChanging` 重载，再通过 `SetProperty(ref storage, value, onChanged)` 更新存储并走与手写 Prism 属性一致的 `BindableBase` 路径（可覆写 `SetProperty`）。`onChanged` 回调内调用两个 `OnChanged` 重载，随后由 `SetProperty` 触发主属性的 `PropertyChanged`。`[NotifyPropertyChangedFor]` 与 `[NotifyCanExecuteChangedFor]` 的额外通知在该调用之后发出。
 
 ### `[NotifyPropertyChangedFor]`
 

@@ -468,19 +468,21 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
             sb.AppendLine($"{indent}    set");
         }
 
-        // Setter body
+        // Setter body: OnChanging before mutation; use BindableBase.SetProperty(ref, value, onChanged) so
+        // overrides of SetProperty participate; OnChanged runs in onChanged before main PropertyChanged.
         sb.AppendLine($"{indent}    {{");
         sb.AppendLine($"{indent}        if (!global::System.Collections.Generic.EqualityComparer<{info.FieldType}>.Default.Equals({backingField}, value))");
         sb.AppendLine($"{indent}        {{");
         sb.AppendLine($"{indent}            {info.FieldType} oldValue = {backingField};");
         sb.AppendLine($"{indent}            On{info.PropertyName}Changing(value);");
         sb.AppendLine($"{indent}            On{info.PropertyName}Changing(oldValue, value);");
-        sb.AppendLine($"{indent}            {backingField} = value;");
-        sb.AppendLine($"{indent}            On{info.PropertyName}Changed(value);");
-        sb.AppendLine($"{indent}            On{info.PropertyName}Changed(oldValue, value);");
-        sb.AppendLine($"{indent}            this.RaisePropertyChanged(nameof({info.PropertyName}));");
+        sb.AppendLine($"{indent}            this.SetProperty(ref {backingField}, value, () =>");
+        sb.AppendLine($"{indent}            {{");
+        sb.AppendLine($"{indent}                On{info.PropertyName}Changed(value);");
+        sb.AppendLine($"{indent}                On{info.PropertyName}Changed(oldValue, value);");
+        sb.AppendLine($"{indent}            }});");
 
-        // NotifyPropertyChangedFor
+        // NotifyPropertyChangedFor (after main PropertyChanged from SetProperty)
         foreach (string notifyProp in info.NotifyPropertyChangedFor.AsImmutableArray())
         {
             sb.AppendLine($"{indent}            this.RaisePropertyChanged(nameof({notifyProp}));");

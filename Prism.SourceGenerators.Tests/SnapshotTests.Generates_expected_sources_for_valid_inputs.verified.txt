@@ -26,10 +26,11 @@ namespace Demo
                     string oldValue = _firstName;
                     OnFirstNameChanging(value);
                     OnFirstNameChanging(oldValue, value);
-                    _firstName = value;
-                    OnFirstNameChanged(value);
-                    OnFirstNameChanged(oldValue, value);
-                    this.RaisePropertyChanged(nameof(FirstName));
+                    this.SetProperty(ref _firstName, value, () =>
+                    {
+                        OnFirstNameChanged(value);
+                        OnFirstNameChanged(oldValue, value);
+                    });
                     this.RaisePropertyChanged(nameof(FullName));
                 }
             }
@@ -61,10 +62,11 @@ namespace Demo
                     string oldValue = _lastName;
                     OnLastNameChanging(value);
                     OnLastNameChanging(oldValue, value);
-                    _lastName = value;
-                    OnLastNameChanged(value);
-                    OnLastNameChanged(oldValue, value);
-                    this.RaisePropertyChanged(nameof(LastName));
+                    this.SetProperty(ref _lastName, value, () =>
+                    {
+                        OnLastNameChanged(value);
+                        OnLastNameChanged(oldValue, value);
+                    });
                 }
             }
         }
