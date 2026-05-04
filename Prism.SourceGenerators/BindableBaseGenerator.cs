@@ -2,7 +2,6 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Prism.SourceGenerators.Diagnostics;
 using Prism.SourceGenerators.Helpers;
@@ -11,28 +10,26 @@ using Prism.SourceGenerators.Models;
 namespace Prism.SourceGenerators;
 
 /// <summary>
-/// A source generator that generates <c>INotifyPropertyChanged</c> implementation for classes annotated
-/// with <c>[BindableBase]</c> that do not already inherit from <c>Prism.Mvvm.BindableBase</c>.
+/// A source generator that generates <c>INotifyPropertyChanged</c> and <c>SetProperty</c> / <c>RaisePropertyChanged</c> helpers,
+/// matching CommunityToolkit.Mvvm <c>ObservableObject</c>, for classes annotated with <c>[BindableBase]</c> that do not inherit <c>Prism.Mvvm.BindableBase</c>.
 /// <para>
-/// Generates: <c>PropertyChanged</c> event, <c>SetProperty</c>, <c>RaisePropertyChanged</c>,
-/// and <c>OnPropertyChanged</c> methods.
+/// When the type hierarchy does not already implement <c>INotifyPropertyChanging</c>, <see cref="PropertyChangingGenerator"/> emits a companion
+/// <c>*.BindableBase.PropertyChanging.g.cs</c> partial. Two-parameter <c>SetProperty</c> calls <c>RaisePropertyChanging</c>; that behavior is gated at runtime by
+/// <c>Prism.SourceGenerators.__Internals.FeatureSwitches.EnableINotifyPropertyChangingSupport</c> (default <see langword="true"/>, like the toolkit).
 /// </para>
 /// </summary>
 [Generator(LanguageNames.CSharp)]
 public sealed class BindableBaseGenerator : IIncrementalGenerator
 {
-    private const string AttributeName = "Prism.SourceGenerators.BindableBaseAttribute";
-    private const string BindableBaseFullName = "Prism.Mvvm.BindableBase";
-
     /// <inheritdoc/>
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        IncrementalValuesProvider<Result<HierarchyInfo>> classInfos =
+        IncrementalValuesProvider<Result<BindableBaseGenerationInfo>> classInfos =
             context.SyntaxProvider
                 .ForAttributeWithMetadataName(
-                    AttributeName,
+                    BindableBaseMetadataExtractor.BindableBaseAttributeMetadataName,
                     static (node, _) => node is ClassDeclarationSyntax,
-                    static (context, token) => ExtractClassInfo(context, token));
+                    static (ctx, token) => BindableBaseMetadataExtractor.ExtractGenerationInfo(ctx, token));
 
         // Report diagnostics
         context.RegisterSourceOutput(
@@ -50,84 +47,17 @@ public sealed class BindableBaseGenerator : IIncrementalGenerator
             classInfos
                 .Where(static item => item.Value is not null && !item.HasBlockingDiagnostics)
                 .Select(static (item, _) => item.Value!),
-            static (context, hierarchy) =>
+            static (context, info) =>
             {
-                string source = GenerateBindableBaseSource(hierarchy);
-                context.AddSource($"{hierarchy.FilenameHint}.BindableBase.g.cs", source);
+                string source = GenerateBindableBaseSource(info);
+                context.AddSource($"{info.Hierarchy.FilenameHint}.BindableBase.g.cs", source);
             });
     }
 
-    private static Result<HierarchyInfo> ExtractClassInfo(
-        GeneratorAttributeSyntaxContext context, System.Threading.CancellationToken token)
+    private static string GenerateBindableBaseSource(BindableBaseGenerationInfo model)
     {
-        INamedTypeSymbol classSymbol = (INamedTypeSymbol)context.TargetSymbol;
+        HierarchyInfo hierarchy = model.Hierarchy;
 
-        // Check the class is partial
-        bool isPartial = classSymbol.DeclaringSyntaxReferences
-            .Select(r => r.GetSyntax(token))
-            .OfType<TypeDeclarationSyntax>()
-            .Any(static t => t.Modifiers.Any(SyntaxKind.PartialKeyword));
-
-        if (!isPartial)
-        {
-            return new Result<HierarchyInfo>(
-                default!,
-                ImmutableArray.Create(
-                    DiagnosticInfo.Create(
-                        DiagnosticDescriptors.NonPartialClassWithBindableBase,
-                        classSymbol,
-                        classSymbol.Name)));
-        }
-
-        // Check if the class already inherits from BindableBase
-        bool inheritsBindableBase = false;
-        for (INamedTypeSymbol? baseType = classSymbol.BaseType; baseType is not null; baseType = baseType.BaseType)
-        {
-            if (baseType.ToDisplayString() == BindableBaseFullName)
-            {
-                inheritsBindableBase = true;
-                break;
-            }
-        }
-
-        if (inheritsBindableBase)
-        {
-            // Already inherits BindableBase, no need to generate
-            return new Result<HierarchyInfo>(default!, ImmutableArray<DiagnosticInfo>.Empty);
-        }
-
-        // Check if the class already implements INotifyPropertyChanged
-        bool implementsINPC = classSymbol.AllInterfaces.Any(
-            static i => i.ToDisplayString() == "System.ComponentModel.INotifyPropertyChanged");
-
-        // If a base class already implements INPC, skip generation (only generate for the root)
-        if (implementsINPC)
-        {
-            bool baseImplementsINPC = false;
-            for (INamedTypeSymbol? baseType = classSymbol.BaseType; baseType is not null; baseType = baseType.BaseType)
-            {
-                if (baseType.AllInterfaces.Any(
-                    static i => i.ToDisplayString() == "System.ComponentModel.INotifyPropertyChanged"))
-                {
-                    baseImplementsINPC = true;
-                    break;
-                }
-            }
-
-            if (baseImplementsINPC)
-            {
-                // Base class already has INPC, skip
-                return new Result<HierarchyInfo>(default!, ImmutableArray<DiagnosticInfo>.Empty);
-            }
-        }
-
-        HierarchyInfo hierarchy = HierarchyInfo.From(classSymbol);
-
-        return new Result<HierarchyInfo>(hierarchy, ImmutableArray<DiagnosticInfo>.Empty);
-    }
-
-    private static string GenerateBindableBaseSource(HierarchyInfo hierarchy)
-    {
         StringBuilder sb = new();
 
         sb.AppendLine("// <auto-generated/>");
@@ -157,7 +87,6 @@ public sealed class BindableBaseGenerator : IIncrementalGenerator
 
             if (typeInfo == hierarchyArray[0])
             {
-                // The target class - add INotifyPropertyChanged interface
                 sb.AppendLine($"{indent}partial {keyword} {typeInfo.QualifiedName} : global::System.ComponentModel.INotifyPropertyChanged");
             }
             else
@@ -173,7 +102,7 @@ public sealed class BindableBaseGenerator : IIncrementalGenerator
         sb.AppendLine($"{indent}public event global::System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;");
         sb.AppendLine();
 
-        // SetProperty<T> method
+        // SetProperty<T> method (two-parameter): raises PropertyChanging (ObservableObject-style; three-parameter overload does not, for [ObservableProperty] ordering)
         sb.AppendLine($"{indent}/// <summary>");
         sb.AppendLine($"{indent}/// Sets the property value and raises <see cref=\"PropertyChanged\"/> if the value has changed.");
         sb.AppendLine($"{indent}/// </summary>");
@@ -189,6 +118,7 @@ public sealed class BindableBaseGenerator : IIncrementalGenerator
         sb.AppendLine($"{indent}        return false;");
         sb.AppendLine($"{indent}    }}");
         sb.AppendLine();
+        sb.AppendLine($"{indent}    RaisePropertyChanging(propertyName);");
         sb.AppendLine($"{indent}    storage = value;");
         sb.AppendLine($"{indent}    RaisePropertyChanged(propertyName);");
         sb.AppendLine($"{indent}    return true;");
@@ -196,6 +126,7 @@ public sealed class BindableBaseGenerator : IIncrementalGenerator
         sb.AppendLine();
         sb.AppendLine($"{indent}/// <summary>");
         sb.AppendLine($"{indent}/// Sets the property value, invokes <paramref name=\"onChanged\"/> after assignment, then raises <see cref=\"PropertyChanged\"/>.");
+        sb.AppendLine($"{indent}/// Does not raise <see cref=\"global::System.ComponentModel.INotifyPropertyChanging.PropertyChanging\"/> here; callers such as generated <c>[ObservableProperty]</c> setters raise it before changing callbacks.");
         sb.AppendLine($"{indent}/// </summary>");
         sb.AppendLine($"{indent}/// <typeparam name=\"T\">The type of the property.</typeparam>");
         sb.AppendLine($"{indent}/// <param name=\"storage\">Reference to the backing field.</param>");

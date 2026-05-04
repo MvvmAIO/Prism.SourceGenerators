@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
@@ -12,7 +13,8 @@ using Prism.SourceGenerators.Models;
 namespace Prism.SourceGenerators;
 
 /// <summary>
-/// A source generator that generates observable properties for classes inheriting from <c>Prism.Mvvm.BindableBase</c>.
+/// A source generator that generates observable properties for classes inheriting from <c>Prism.Mvvm.BindableBase</c>
+/// or using generated <c>[BindableBase]</c> MVVM helpers.
 /// <para>
 /// Attributes are supplied by the <c>MvvmAIO.Prism.Core</c> assembly (referenced by the <c>MvvmAIO.Prism.SourceGenerators</c> NuGet package).
 /// Supports two usage modes:
@@ -23,6 +25,8 @@ namespace Prism.SourceGenerators;
 /// <item><b>Partial property target</b> (C# 13+): Apply <c>[ObservableProperty]</c> to a <c>partial</c> property
 /// to generate the implementing declaration using the <c>field</c> keyword (semi-auto property).</item>
 /// </list>
+/// For any type with <c>[ObservableProperty]</c> members, setters always emit a guarded <c>RaisePropertyChanging</c> call.
+/// If the type hierarchy does not already implement <c>INotifyPropertyChanging</c> (and the type is not covered by generated <c>[BindableBase]</c> companion output), <see cref="PropertyChangingGenerator"/> adds <c>*.ObservablePropertyChanging.g.cs</c> with the interface and helpers.
 /// </para>
 /// </summary>
 [Generator(LanguageNames.CSharp)]
@@ -437,9 +441,10 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
             indent += "    ";
         }
 
-        // OnChanging / OnChanged partial method declarations
+        // OnChanging / OnChanged partial method declarations (OnChanging matches CommunityToolkit.Mvvm ObservableProperty)
         sb.AppendLine($"{indent}partial void On{info.PropertyName}Changing({info.FieldType} value);");
         sb.AppendLine($"{indent}partial void On{info.PropertyName}Changing({info.FieldType} oldValue, {info.FieldType} newValue);");
+        sb.AppendLine();
         sb.AppendLine($"{indent}partial void On{info.PropertyName}Changed({info.FieldType} value);");
         sb.AppendLine($"{indent}partial void On{info.PropertyName}Changed({info.FieldType} oldValue, {info.FieldType} newValue);");
         sb.AppendLine();
@@ -479,6 +484,11 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
         sb.AppendLine($"{indent}        if (!global::System.Collections.Generic.EqualityComparer<{info.FieldType}>.Default.Equals({backingField}, value))");
         sb.AppendLine($"{indent}        {{");
         sb.AppendLine($"{indent}            {info.FieldType} oldValue = {backingField};");
+        sb.AppendLine($"{indent}            if (global::Prism.SourceGenerators.__Internals.FeatureSwitches.EnableINotifyPropertyChangingSupport)");
+        sb.AppendLine($"{indent}            {{");
+        sb.AppendLine($"{indent}                this.RaisePropertyChanging(nameof({info.PropertyName}));");
+        sb.AppendLine($"{indent}            }}");
+
         sb.AppendLine($"{indent}            On{info.PropertyName}Changing(value);");
         sb.AppendLine($"{indent}            On{info.PropertyName}Changing(oldValue, value);");
         sb.AppendLine($"{indent}            this.SetProperty(ref {backingField}, value, () =>");

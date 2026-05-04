@@ -118,6 +118,7 @@ internal static class GeneratorTestHarness
         IIncrementalGenerator[] generators =
         {
             new ObservablePropertyGenerator(),
+            new PropertyChangingGenerator(),
             new DelegateCommandGenerator(),
             new BindableBaseGenerator()
         };

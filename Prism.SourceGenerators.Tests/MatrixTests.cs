@@ -171,6 +171,7 @@ public sealed class MatrixTests
 
         Assert.InRange(changingIndex, 1, setPropertyIndex - 1);
         Assert.InRange(changedIndex, setPropertyIndex + 1, propertySource.Source.Length - 1);
+        Assert.Contains("RaisePropertyChanging(nameof(Name))", propertySource.Source);
     }
 
     [Fact]
@@ -210,6 +211,34 @@ public sealed class MatrixTests
         GeneratedSource propertySource = Assert.Single(output.GeneratedSources.Where(s => s.HintName.EndsWith(".Name.g.cs")));
 
         Assert.Contains("internal string Name", propertySource.Source);
+    }
+
+    [Fact]
+    public void BindableBase_generator_and_observable_property_use_FeatureSwitches_for_PropertyChanging()
+    {
+        const string source = """
+            namespace Demo;
+
+            [BindableBase]
+            public partial class Vm
+            {
+                [ObservableProperty]
+                private string _name = "";
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source, languageVersion: LanguageVersion.CSharp12);
+        GeneratedSource bindableBaseMain = Assert.Single(output.GeneratedSources.Where(static s => s.HintName.EndsWith(".BindableBase.g.cs", System.StringComparison.Ordinal)));
+        GeneratedSource bindableChanging = Assert.Single(output.GeneratedSources.Where(static s => s.HintName.EndsWith(".BindableBase.PropertyChanging.g.cs", System.StringComparison.Ordinal)));
+        Assert.DoesNotContain(
+            "INotifyPropertyChanged, global::System.ComponentModel.INotifyPropertyChanging",
+            bindableBaseMain.Source);
+        Assert.Contains("INotifyPropertyChanging", bindableChanging.Source);
+        Assert.Contains("Prism.SourceGenerators.__Internals.FeatureSwitches.EnableINotifyPropertyChangingSupport", bindableChanging.Source);
+
+        GeneratedSource nameSource = Assert.Single(output.GeneratedSources.Where(static s => s.HintName.EndsWith(".Name.g.cs", System.StringComparison.Ordinal)));
+        Assert.Contains("Prism.SourceGenerators.__Internals.FeatureSwitches.EnableINotifyPropertyChangingSupport", nameSource.Source);
+        Assert.Contains("RaisePropertyChanging(nameof(Name))", nameSource.Source);
     }
 
     public static TheoryData<LanguageVersion, string, string> DiagnosticLanguageMatrix => new()

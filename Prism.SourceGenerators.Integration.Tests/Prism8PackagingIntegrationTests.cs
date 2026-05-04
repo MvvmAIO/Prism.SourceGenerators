@@ -97,6 +97,7 @@ public sealed class Prism8PackagingIntegrationTests
         ImmutableArray<IIncrementalGenerator> generators =
             ImmutableArray.Create<IIncrementalGenerator>(
                 new ObservablePropertyGenerator(),
+                new PropertyChangingGenerator(),
                 new DelegateCommandGenerator(),
                 new BindableBaseGenerator());
 
