@@ -1,11 +1,11 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace Prism.SourceGenerators.Samples.Prism9;
+namespace Prism.SourceGenerators.Samples.Prism9.Views;
 
-public partial class MainWindow : Window
+public partial class CommandsView : UserControl
 {
-    public MainWindow()
+    public CommandsView()
     {
         InitializeComponent();
     }

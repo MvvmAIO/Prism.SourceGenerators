@@ -1,0 +1,36 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:prism="http://prismlibrary.com/"
+        x:Class="Prism.SourceGenerators.Samples.Prism9.Views.MainWindow"
+        Title="Prism 9.0 - Prism.DryIoc.Avalonia Sample"
+        Height="560"
+        Width="960">
+  <Grid ColumnDefinitions="220,*">
+    <Border Grid.Column="0" Background="#0F172A" Padding="12">
+      <StackPanel Spacing="12">
+        <TextBlock Text="Prism 9 Navigation" FontSize="16" FontWeight="Bold" Foreground="White" />
+        <ListBox ItemsSource="{Binding NavigationItems}" SelectedItem="{Binding SelectedNavigationItem}">
+          <ListBox.ItemTemplate>
+            <DataTemplate>
+              <TextBlock Text="{Binding Title}" Margin="4" />
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+        <TextBlock Text="{Binding StatusMessage}"
+                   FontSize="11"
+                   Foreground="#94A3B8"
+                   TextWrapping="Wrap" />
+      </StackPanel>
+    </Border>
+
+    <Grid Grid.Column="1" RowDefinitions="Auto,*">
+      <StackPanel Margin="20,16,20,8" Spacing="4">
+        <TextBlock Text="{Binding CurrentSectionTitle}" FontSize="22" FontWeight="Bold" Foreground="DarkBlue" />
+        <TextBlock Text="{Binding CurrentSectionDescription}" FontSize="13" Foreground="Gray" />
+      </StackPanel>
+      <ContentControl Grid.Row="1"
+                      Margin="12,0,12,12"
+                      prism:RegionManager.RegionName="ContentRegion" />
+    </Grid>
+  </Grid>
+</Window>

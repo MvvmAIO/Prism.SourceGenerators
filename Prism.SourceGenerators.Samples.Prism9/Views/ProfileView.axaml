@@ -1,0 +1,10 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Prism.SourceGenerators.Samples.Prism9.Views.ProfileView">
+  <StackPanel Margin="24" Spacing="12">
+    <TextBlock Text="{Binding ProfileTitle}" FontSize="18" FontWeight="SemiBold" />
+    <TextBox Watermark="First name" Text="{Binding FirstName}" />
+    <TextBox Watermark="Last name" Text="{Binding LastName}" />
+    <TextBlock Text="{Binding FullName}" FontSize="16" />
+  </StackPanel>
+</UserControl>

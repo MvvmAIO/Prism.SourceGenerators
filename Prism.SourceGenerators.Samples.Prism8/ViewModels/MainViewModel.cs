@@ -1,142 +1,63 @@
-using System;
 using System.Collections.ObjectModel;
-using System.Threading.Tasks;
 using Prism.Mvvm;
+using Prism.Regions;
 using Prism.SourceGenerators;
+using Prism.SourceGenerators.Samples.Prism8.Models;
 
 namespace Prism.SourceGenerators.Samples.Prism8.ViewModels;
 
-/// <summary>
-/// Prism 8.1.97 sample ViewModel.
-/// Demonstrates [DelegateCommand], [AsyncDelegateCommand], [ObservesProperty],
-/// [NotifyPropertyChangedFor], and OnChanged partial methods.
-/// AsyncDelegateCommand is NOT available in Prism.Core 8.1.97;
-/// MvvmAIO.Prism.Bcl.Commands supplies Prism.Commands.AsyncDelegateCommand for Prism.Core 8.1.97 (via package targets in this repo).
-/// </summary>
+/// <summary>Shell ViewModel with Prism region navigation.</summary>
 public partial class MainViewModel : BindableBase
 {
+    private readonly IRegionManager _regionManager;
+    private bool _navigationReady;
+
     public ObservableCollection<NavigationItem> NavigationItems { get; } =
     [
-        new("dashboard", "Dashboard", "Overview and quick status of the sample."),
-        new("commands", "Commands", "Exercise DelegateCommand and AsyncDelegateCommand generation."),
-        new("profile", "Profile", "Demo area for observable properties and dependent notifications.")
+        new("Dashboard", "Dashboard", "Overview and Prism region navigation."),
+        new("Commands", "Commands", "DelegateCommand and AsyncDelegateCommand generation."),
+        new("Profile", "Profile", "ObservableProperty on backing fields.")
     ];
 
     [ObservableProperty]
-    private NavigationItem _selectedNavigationItem = new("dashboard", "Dashboard", "Overview and quick status of the sample.");
+    private NavigationItem _selectedNavigationItem =
+        new("Dashboard", "Dashboard", "Overview and Prism region navigation.");
 
     [ObservableProperty]
     private string _currentSectionTitle = "Dashboard";
 
     [ObservableProperty]
-    private string _currentSectionDescription = "Overview and quick status of the sample.";
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(FullName))]
-    private string _firstName = "";
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(FullName))]
-    private string _lastName = "";
-
-    public string FullName => $"{FirstName} {LastName}";
-
-    [ObservableProperty]
-    private string _title = "Hello Prism 8.1.97 Source Generators!";
-
-    [ObservableProperty]
-    private int _counter;
-
-    [ObservableProperty]
-    private bool _isActive;
+    private string _currentSectionDescription = "Overview and Prism region navigation.";
 
     [ObservableProperty]
     private string _statusMessage = "";
 
-    public MainViewModel()
+    public MainViewModel(IRegionManager regionManager)
     {
+        _regionManager = regionManager;
         SelectedNavigationItem = NavigationItems[0];
+    }
+
+    public void OnShellLoaded()
+    {
+        _navigationReady = true;
+        NavigateToSection(SelectedNavigationItem);
     }
 
     partial void OnSelectedNavigationItemChanged(NavigationItem value)
     {
+        NavigateToSection(value);
+    }
+
+    private void NavigateToSection(NavigationItem value)
+    {
         CurrentSectionTitle = value.Title;
         CurrentSectionDescription = value.Description;
-        StatusMessage = $"Switched to {value.Title}.";
-    }
+        StatusMessage = $"RequestNavigate → {value.Key}";
 
-    // OnChanged partial methods are auto-generated.
-    // Implement them to react to property changes:
-    partial void OnCounterChanged(int value)
-    {
-        StatusMessage = $"Counter changed to {value}";
-    }
+        if (!_navigationReady)
+            return;
 
-    // --- [DelegateCommand] examples ---
-    // With LangVersion < 14, command properties use a traditional backing field:
-    //   private DelegateCommand? _incrementCommand;
-    //   public DelegateCommand IncrementCommand => _incrementCommand ??= new DelegateCommand(Increment);
-
-    [DelegateCommand]
-    private void Increment()
-    {
-        Counter++;
-    }
-
-    [DelegateCommand]
-    private void Reset()
-    {
-        Counter = 0;
-    }
-
-    // --- [DelegateCommand] with auto async detection ---
-
-    [DelegateCommand]
-    private async Task LoadDataAsync()
-    {
-        await Task.Delay(500);
-        Title = "Data loaded! (Prism 8.1.97 MvvmAIO.Prism.Bcl.Commands)";
-    }
-
-    // --- [DelegateCommand] with CanExecute + ObservesProperty ---
-
-    [DelegateCommand(CanExecute = nameof(CanToggle))]
-    [ObservesProperty(nameof(Counter))]
-    private void Toggle()
-    {
-        IsActive = !IsActive;
-    }
-
-    private bool CanToggle() => Counter > 0;
-
-    // --- [AsyncDelegateCommand] with advanced features (MvvmAIO.Prism.Bcl.Commands) ---
-
-    [AsyncDelegateCommand(EnableParallelExecution = true)]
-    private async Task FetchDataAsync()
-    {
-        StatusMessage = "Fetching...";
-        await Task.Delay(1000);
-        StatusMessage = "Fetch complete! (parallel execution enabled, MvvmAIO.Prism.Bcl.Commands)";
-    }
-
-    [AsyncDelegateCommand(
-        CanExecute = nameof(CanSave),
-        Catch = nameof(HandleSaveError))]
-    [ObservesProperty(nameof(Counter), nameof(IsActive))]
-    private async Task SaveAsync()
-    {
-        StatusMessage = "Saving...";
-        await Task.Delay(800);
-        StatusMessage = $"Saved! Counter={Counter}, IsActive={IsActive} (MvvmAIO.Prism.Bcl.Commands)";
-    }
-
-    private bool CanSave() => Counter > 0 && IsActive;
-
-    private void HandleSaveError(Exception ex)
-    {
-        StatusMessage = $"Save failed: {ex.Message}";
+        _regionManager.RequestNavigate(RegionNames.Content, value.Key);
     }
 }
-
-public sealed record NavigationItem(string Key, string Title, string Description);
-

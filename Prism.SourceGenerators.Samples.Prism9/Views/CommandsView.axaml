@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Prism.SourceGenerators.Samples.Prism9.Views.CommandsView">
+  <ScrollViewer>
+    <StackPanel Margin="20" Spacing="10">
+      <TextBlock Text="{Binding Title}" FontSize="18" />
+      <TextBlock Text="{Binding Counter, StringFormat=Counter: {0}}" FontSize="16" />
+      <CheckBox Content="Is Active" IsChecked="{Binding IsActive}" FontSize="16" />
+
+      <TextBlock Text="[DelegateCommand] - basic commands:" FontSize="13" FontWeight="SemiBold" />
+      <WrapPanel>
+        <Button Content="Increment" Command="{Binding IncrementCommand}" Margin="0,0,10,10" Padding="10,5" />
+        <Button Content="Reset" Command="{Binding ResetCommand}" Margin="0,0,10,10" Padding="10,5" />
+        <Button Content="Load Data (Async)" Command="{Binding LoadDataCommand}" Margin="0,0,10,10" Padding="10,5" />
+        <Button Content="Toggle (CanExecute+ObservesProperty)" Command="{Binding ToggleCommand}" Margin="0,0,10,10" Padding="10,5" />
+      </WrapPanel>
+
+      <TextBlock Text="[AsyncDelegateCommand] - advanced features:" FontSize="13" FontWeight="SemiBold" />
+      <WrapPanel>
+        <Button Content="Fetch Data (Parallel)" Command="{Binding FetchDataCommand}" Margin="0,0,10,10" Padding="10,5" />
+        <Button Content="Save (Catch+ObservesProperty)" Command="{Binding SaveCommand}" Margin="0,0,10,10" Padding="10,5" />
+      </WrapPanel>
+
+      <TextBlock Text="{Binding StatusMessage}" FontSize="14" Foreground="DarkGreen" />
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>
