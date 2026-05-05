@@ -4,6 +4,7 @@
   <Import Project="..\Prism.SourceGenerators\Prism.SourceGenerators.projitems" Label="Shared" />
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.7" />
     <InternalsVisibleTo Include="Prism.SourceGenerators.Tests" />
     <InternalsVisibleTo Include="Prism.SourceGenerators.Integration.Tests" />
   </ItemGroup>
