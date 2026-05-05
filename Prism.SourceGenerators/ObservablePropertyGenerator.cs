@@ -128,7 +128,7 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
 
         string fieldName = fieldSymbol.Name;
         string propertyName = GetPropertyName(fieldName);
-        string fieldType = fieldSymbol.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        string fieldType = fieldSymbol.Type.GetFullyQualifiedNameWithNullabilityAnnotations();
         HierarchyInfo hierarchy = HierarchyInfo.From(containingType);
         ImmutableArray<string> notifyProps = CollectNotifyPropertyChangedFor(fieldSymbol);
         ImmutableArray<string> notifyCommands = CollectNotifyCanExecuteChangedFor(fieldSymbol);
@@ -185,7 +185,7 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
         }
 
         string propertyName = propertySymbol.Name;
-        string fieldType = propertySymbol.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        string fieldType = propertySymbol.Type.GetFullyQualifiedNameWithNullabilityAnnotations();
         HierarchyInfo hierarchy = HierarchyInfo.From(containingType);
 
         Accessibility setterAccessibility = propertySymbol.SetMethod?.DeclaredAccessibility ?? Accessibility.NotApplicable;
