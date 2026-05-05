@@ -19,7 +19,7 @@
     <PackageReference Include="Avalonia" Version="11.0.7" />
     <PackageReference Include="Avalonia.Desktop" Version="11.0.7" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.7" />
-    <PackageReference Include="Prism.Core" Version="8.1.97" />
+    <PackageReference Include="Prism.Core" Version="9.0.537" />
   </ItemGroup>
 
   <!-- Same lib selection as the NuGet package; analyzers come from ProjectReference above. -->
