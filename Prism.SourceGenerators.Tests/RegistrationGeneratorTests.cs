@@ -27,12 +27,13 @@ public sealed class RegistrationGeneratorTests
         (CSharpCompilation compilation, SyntaxTree tree) =
             GeneratorTestHarness.CreateHarnessCompilation(userSource, LanguageVersion.CSharp12);
 
-        Assert.Empty(compilation.GetDiagnostics().Where(static d => d.Severity == DiagnosticSeverity.Error));
+        var ct = TestContext.Current.CancellationToken;
+        Assert.Empty(compilation.GetDiagnostics(ct).Where(static d => d.Severity == DiagnosticSeverity.Error));
 
         SemanticModel model = compilation.GetSemanticModel(tree);
-        ClassDeclarationSyntax classA = tree.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>()
+        ClassDeclarationSyntax classA = tree.GetRoot(ct).DescendantNodes().OfType<ClassDeclarationSyntax>()
             .First(c => c.Identifier.ValueText == "A");
-        INamedTypeSymbol? sym = model.GetDeclaredSymbol(classA, default) as INamedTypeSymbol;
+        INamedTypeSymbol? sym = model.GetDeclaredSymbol(classA, ct) as INamedTypeSymbol;
         Assert.NotNull(sym);
         ImmutableArray<AttributeData> attrs = sym.GetAttributes();
         Assert.NotEmpty(attrs);
