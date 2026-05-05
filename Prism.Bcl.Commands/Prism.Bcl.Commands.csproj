@@ -10,7 +10,7 @@
 		<ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
 
 		<PackageId>MvvmAIO.Prism.Bcl.Commands</PackageId>
-		<Version>0.2.0</Version>
+		<Version>0.3.1</Version>
 		<Authors>MvvmAIO;Skymly;wys0610</Authors>
 		<Description>Prism 8 compatibility command library for AsyncDelegateCommand and IAsyncCommand. Install this package manually when using Prism.Core 8.1.97 with MvvmAIO.Prism.SourceGenerators.</Description>
 		<PackageTags>prism;mvvm;commands;asyncdelegatecommand;prism8</PackageTags>
@@ -30,7 +30,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Include="..\README.md" Pack="true" PackagePath="\" Visible="false" />
+		<None Include="README.md" Pack="true" PackagePath="\" />
 		<None Include="..\CHANGELOG.md" Pack="true" PackagePath="\" Visible="false" />
 		<None Include="..\LICENSE.txt" Pack="true" PackagePath="\" Visible="false" />
 	</ItemGroup>

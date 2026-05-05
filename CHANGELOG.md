@@ -4,6 +4,9 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+### Fixed
+- **`MvvmAIO.Prism.Bcl.Commands` NuGet package** now ships a **package-scoped README** (`Prism.Bcl.Commands/README.md`) instead of the monorepo root README, so the gallery page describes Prism 8 async commands only and links to the main repo for full generator docs.
+
 ### Changed
 - **`INotifyPropertyChanging`** behavior is aligned with **CommunityToolkit.Mvvm** **`ObservableObject`** / **`[ObservableProperty]`**: **`FeatureSwitches.EnableINotifyPropertyChangingSupport`** defaults to **`true`**; **`[BindableBase]`** always emits **`INotifyPropertyChanging`** (and helpers) when the type hierarchy does not already implement it; **`[ObservableProperty]`** always emits **`OnXxxChanging`** partials and invokes them before **`SetProperty`**, and **always** emits a guarded **`RaisePropertyChanging(nameof(...))`** in each generated setter. Types that have **`[ObservableProperty]`** but do not already get **`INotifyPropertyChanging`** from the hierarchy or from generated **`[BindableBase]`** also receive a companion **`*.ObservablePropertyChanging.g.cs`** with **`INotifyPropertyChanging`**, **`PropertyChanging`**, **`RaisePropertyChanging`**, and **`OnPropertyChanging`**. The two-parameter **`SetProperty`** overload from generated **`[BindableBase]`** raises **`PropertyChanging`**; the three-parameter overload does not (the observable setter raises it first, matching hook ordering). Set **`FeatureSwitches.EnableINotifyPropertyChangingSupport = false`** at startup to disable notifications at runtime (same performance trade-off as the toolkit).
 
