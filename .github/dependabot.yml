@@ -12,6 +12,9 @@ updates:
       time: "09:00"
       timezone: "Asia/Shanghai"
     open-pull-requests-limit: 10
+    # Pin intentional; add more `- dependency-name: "..."` rows as needed.
+    ignore:
+      - dependency-name: "Prism.Core"
     labels:
       - "dependencies"
       - "nuget"
