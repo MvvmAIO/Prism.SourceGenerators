@@ -12,9 +12,14 @@ updates:
       time: "09:00"
       timezone: "Asia/Shanghai"
     open-pull-requests-limit: 10
-    # Pin intentional; add more `- dependency-name: "..."` rows as needed.
+    # Versions coordinated manually (multi-Roslyn generator layout + test host alignment).
+    # See Prism.SourceGenerators/Prism.SourceGenerators.props and Directory.Build.props.
     ignore:
       - dependency-name: "Prism.Core"
+      - dependency-name: "Microsoft.CodeAnalysis.CSharp"
+      - dependency-name: "Microsoft.CodeAnalysis.CSharp.Workspaces"
+      - dependency-name: "Microsoft.CodeAnalysis.Analyzers"
+      - dependency-name: "Microsoft.Bcl.AsyncInterfaces"
     labels:
       - "dependencies"
       - "nuget"
