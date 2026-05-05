@@ -27,12 +27,13 @@ public sealed class RegistrationGeneratorTests
         (CSharpCompilation compilation, SyntaxTree tree) =
             GeneratorTestHarness.CreateHarnessCompilation(userSource, LanguageVersion.CSharp12);
 
-        Assert.Empty(compilation.GetDiagnostics().Where(static d => d.Severity == DiagnosticSeverity.Error));
+        var ct = TestContext.Current.CancellationToken;
+        Assert.Empty(compilation.GetDiagnostics(ct).Where(static d => d.Severity == DiagnosticSeverity.Error));
 
         SemanticModel model = compilation.GetSemanticModel(tree);
-        ClassDeclarationSyntax classA = tree.GetRoot().DescendantNodes().OfType<ClassDeclarationSyntax>()
+        ClassDeclarationSyntax classA = tree.GetRoot(ct).DescendantNodes().OfType<ClassDeclarationSyntax>()
             .First(c => c.Identifier.ValueText == "A");
-        INamedTypeSymbol? sym = model.GetDeclaredSymbol(classA, default) as INamedTypeSymbol;
+        INamedTypeSymbol? sym = model.GetDeclaredSymbol(classA, ct) as INamedTypeSymbol;
         Assert.NotNull(sym);
         ImmutableArray<AttributeData> attrs = sym.GetAttributes();
         Assert.NotEmpty(attrs);
@@ -82,7 +83,9 @@ public sealed class RegistrationGeneratorTests
 
         Assert.Contains("RegisterGeneratedTypes", reg.Source);
         Assert.Contains("containerRegistry.RegisterSingleton<global::Demo.ISvc, global::Demo.Svc>();", reg.Source);
-        Assert.Contains("containerRegistry.TryRegister<global::Demo.Other>();", reg.Source);
+        // IfNotRegistered now uses IsRegistered pattern instead of TryRegister
+        Assert.Contains("if (!containerRegistry.IsRegistered(typeof(global::Demo.Other)))", reg.Source);
+        Assert.Contains("containerRegistry.Register<global::Demo.Other>();", reg.Source);
     }
 
     [Fact]
@@ -360,5 +363,157 @@ public sealed class RegistrationGeneratorTests
 
         Assert.Contains("containerRegistry.Register<global::Demo.ILeft, global::Demo.Both>();", reg.Source);
         Assert.Contains("containerRegistry.Register<global::Demo.IRight, global::Demo.Both>();", reg.Source);
+    }
+
+    // --- New tests for IfNotRegistered / IsRegistered pattern ---
+
+    [Fact]
+    public void IfNotRegistered_singleton_emits_IsRegistered_guard()
+    {
+        const string source = """
+            namespace Demo
+            {
+                public interface ICache { }
+
+                [Prism.SourceGenerators.RegisterSingleton(ServiceType = typeof(Demo.ICache), IfNotRegistered = true)]
+                public sealed partial class Cache : ICache { }
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source, languageVersion: LanguageVersion.CSharp12);
+        GeneratedSource reg = Assert.Single(
+            output.GeneratedSources.Where(static s => s.HintName == "PrismRegistrationExtensions.g.cs"));
+
+        Assert.Contains("if (!containerRegistry.IsRegistered(typeof(global::Demo.ICache)))", reg.Source);
+        Assert.Contains("containerRegistry.RegisterSingleton<global::Demo.ICache, global::Demo.Cache>();", reg.Source);
+        // Should NOT contain TryRegister
+        Assert.DoesNotContain("TryRegister", reg.Source);
+    }
+
+    [Fact]
+    public void IfNotRegistered_self_registration_checks_impl_type()
+    {
+        const string source = """
+            namespace Demo
+            {
+                [Prism.SourceGenerators.RegisterScoped(IfNotRegistered = true)]
+                public sealed partial class Worker { }
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source, languageVersion: LanguageVersion.CSharp12);
+        GeneratedSource reg = Assert.Single(
+            output.GeneratedSources.Where(static s => s.HintName == "PrismRegistrationExtensions.g.cs"));
+
+        Assert.Contains("if (!containerRegistry.IsRegistered(typeof(global::Demo.Worker)))", reg.Source);
+        Assert.Contains("containerRegistry.RegisterScoped<global::Demo.Worker>();", reg.Source);
+    }
+
+    // --- New tests for Name property on service registrations ---
+
+    [Fact]
+    public void RegisterSingleton_with_Name_emits_named_registration()
+    {
+        const string source = """
+            namespace Demo
+            {
+                public interface ILogger { }
+
+                [Prism.SourceGenerators.RegisterSingleton(ServiceType = typeof(Demo.ILogger), Name = "file")]
+                public sealed partial class FileLogger : ILogger { }
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source, languageVersion: LanguageVersion.CSharp12);
+        GeneratedSource reg = Assert.Single(
+            output.GeneratedSources.Where(static s => s.HintName == "PrismRegistrationExtensions.g.cs"));
+
+        Assert.Contains(
+            "containerRegistry.RegisterSingleton(typeof(global::Demo.ILogger), typeof(global::Demo.FileLogger), \"file\");",
+            reg.Source);
+    }
+
+    [Fact]
+    public void RegisterTransient_with_Name_self_emits_named_registration()
+    {
+        const string source = """
+            namespace Demo
+            {
+                [Prism.SourceGenerators.RegisterTransient(Name = "worker")]
+                public sealed partial class BackgroundWorker { }
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source, languageVersion: LanguageVersion.CSharp12);
+        GeneratedSource reg = Assert.Single(
+            output.GeneratedSources.Where(static s => s.HintName == "PrismRegistrationExtensions.g.cs"));
+
+        Assert.Contains(
+            "containerRegistry.Register(typeof(global::Demo.BackgroundWorker), typeof(global::Demo.BackgroundWorker), \"worker\");",
+            reg.Source);
+    }
+
+    [Fact]
+    public void Mixed_attribute_types_on_same_class_emits_each_once()
+    {
+        const string source = """
+            namespace Demo
+            {
+                public interface ILeft { }
+                public interface IRight { }
+
+                [Prism.SourceGenerators.RegisterTransient(ServiceType = typeof(Demo.ILeft))]
+                [Prism.SourceGenerators.RegisterSingleton(ServiceType = typeof(Demo.IRight))]
+                public sealed partial class Multi : ILeft, IRight { }
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source, languageVersion: LanguageVersion.CSharp12);
+        GeneratedSource reg = Assert.Single(
+            output.GeneratedSources.Where(static s => s.HintName == "PrismRegistrationExtensions.g.cs"));
+
+        string src = reg.Source;
+        Assert.Contains("containerRegistry.Register<global::Demo.ILeft, global::Demo.Multi>();", src);
+        Assert.Contains("containerRegistry.RegisterSingleton<global::Demo.IRight, global::Demo.Multi>();", src);
+        // Each registration should appear exactly once (no duplicates)
+        int transientCount = CountOccurrences(src, "containerRegistry.Register<global::Demo.ILeft, global::Demo.Multi>();");
+        int singletonCount = CountOccurrences(src, "containerRegistry.RegisterSingleton<global::Demo.IRight, global::Demo.Multi>();");
+        Assert.Equal(1, transientCount);
+        Assert.Equal(1, singletonCount);
+    }
+
+    [Fact]
+    public void RegisterSingleton_generic_with_IfNotRegistered_emits_IsRegistered_guard()
+    {
+        const string source = """
+            namespace Demo
+            {
+                public interface IDateTimeProvider { }
+
+                [Prism.SourceGenerators.RegisterSingleton<Demo.IDateTimeProvider>(IfNotRegistered = true)]
+                public sealed partial class SystemDateTimeProvider : IDateTimeProvider { }
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source, languageVersion: LanguageVersion.CSharp12);
+        GeneratedSource reg = Assert.Single(
+            output.GeneratedSources.Where(static s => s.HintName == "PrismRegistrationExtensions.g.cs"));
+
+        Assert.Contains("if (!containerRegistry.IsRegistered(typeof(global::Demo.IDateTimeProvider)))", reg.Source);
+        Assert.Contains("containerRegistry.RegisterSingleton<global::Demo.IDateTimeProvider, global::Demo.SystemDateTimeProvider>();", reg.Source);
+        Assert.DoesNotContain("TryRegister", reg.Source);
+    }
+
+    private static int CountOccurrences(string text, string pattern)
+    {
+        int count = 0;
+        int index = 0;
+        while ((index = text.IndexOf(pattern, index, StringComparison.Ordinal)) >= 0)
+        {
+            count++;
+            index += pattern.Length;
+        }
+
+        return count;
     }
 }

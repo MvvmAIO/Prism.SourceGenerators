@@ -153,4 +153,32 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true,
         description: "Use MvvmAIO.Prism.SourceGenerators for analyzer + attributes, and install MvvmAIO.Prism.Bcl.Commands manually when targeting Prism.Core 8.1.97. Alternatively upgrade to Prism 9+.",
         helpLinkUri: HelpLink);
+
+    // --- Container registration diagnostics ---
+
+    /// <summary>
+    /// PSG4001: ServiceType is not assignable from the implementation type.
+    /// </summary>
+    public static readonly DiagnosticDescriptor ServiceTypeNotAssignable = new(
+        id: "PSG4001",
+        title: "ServiceType is not assignable from implementation type",
+        messageFormat: "The type '{0}' does not implement or inherit from ServiceType '{1}'",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: "When using a registration attribute with ServiceType, the decorated class should implement or inherit from the service type.",
+        helpLinkUri: HelpLink);
+
+    /// <summary>
+    /// PSG4002: ViewModelType could not be resolved.
+    /// </summary>
+    public static readonly DiagnosticDescriptor ViewModelTypeNotFound = new(
+        id: "PSG4002",
+        title: "ViewModelType could not be resolved",
+        messageFormat: "The ViewModelType on '{0}' could not be resolved; the registration will be skipped",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: "The ViewModelType property on [RegisterForNavigation] or [RegisterDialog] must reference a valid, resolvable type.",
+        helpLinkUri: HelpLink);
 }
