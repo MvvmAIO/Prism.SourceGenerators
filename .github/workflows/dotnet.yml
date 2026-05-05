@@ -104,7 +104,7 @@ jobs:
 
     - name: Commit test badge payload
       if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-      uses: stefanzweifel/git-auto-commit-action@v5
+      uses: stefanzweifel/git-auto-commit-action@v7
       with:
         commit_message: "chore(ci): update test badge payload [skip ci]"
         file_pattern: .github/badges/tests.json
