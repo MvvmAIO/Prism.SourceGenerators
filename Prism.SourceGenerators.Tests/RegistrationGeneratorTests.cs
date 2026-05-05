@@ -454,6 +454,35 @@ public sealed class RegistrationGeneratorTests
     }
 
     [Fact]
+    public void Mixed_attribute_types_on_same_class_emits_each_once()
+    {
+        const string source = """
+            namespace Demo
+            {
+                public interface ILeft { }
+                public interface IRight { }
+
+                [Prism.SourceGenerators.RegisterTransient(ServiceType = typeof(Demo.ILeft))]
+                [Prism.SourceGenerators.RegisterSingleton(ServiceType = typeof(Demo.IRight))]
+                public sealed partial class Multi : ILeft, IRight { }
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source, languageVersion: LanguageVersion.CSharp12);
+        GeneratedSource reg = Assert.Single(
+            output.GeneratedSources.Where(static s => s.HintName == "PrismRegistrationExtensions.g.cs"));
+
+        string src = reg.Source;
+        Assert.Contains("containerRegistry.Register<global::Demo.ILeft, global::Demo.Multi>();", src);
+        Assert.Contains("containerRegistry.RegisterSingleton<global::Demo.IRight, global::Demo.Multi>();", src);
+        // Each registration should appear exactly once (no duplicates)
+        int transientCount = CountOccurrences(src, "containerRegistry.Register<global::Demo.ILeft, global::Demo.Multi>();");
+        int singletonCount = CountOccurrences(src, "containerRegistry.RegisterSingleton<global::Demo.IRight, global::Demo.Multi>();");
+        Assert.Equal(1, transientCount);
+        Assert.Equal(1, singletonCount);
+    }
+
+    [Fact]
     public void RegisterSingleton_generic_with_IfNotRegistered_emits_IsRegistered_guard()
     {
         const string source = """
@@ -473,5 +502,18 @@ public sealed class RegistrationGeneratorTests
         Assert.Contains("if (!containerRegistry.IsRegistered(typeof(global::Demo.IDateTimeProvider)))", reg.Source);
         Assert.Contains("containerRegistry.RegisterSingleton<global::Demo.IDateTimeProvider, global::Demo.SystemDateTimeProvider>();", reg.Source);
         Assert.DoesNotContain("TryRegister", reg.Source);
+    }
+
+    private static int CountOccurrences(string text, string pattern)
+    {
+        int count = 0;
+        int index = 0;
+        while ((index = text.IndexOf(pattern, index, StringComparison.Ordinal)) >= 0)
+        {
+            count++;
+            index += pattern.Length;
+        }
+
+        return count;
     }
 }

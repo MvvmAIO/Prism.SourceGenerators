@@ -91,12 +91,13 @@ public sealed class ContainerRegistryRegistrationGenerator : IIncrementalGenerat
             .ForAttributeWithMetadataName(
                 metadataName,
                 static (node, _) => node is ClassDeclarationSyntax,
-                static (ctx, ct) => ExtractFromAttributeContext(ctx))
+                (ctx, ct) => ExtractFromAttributeContext(ctx, metadataName))
             .SelectMany(static (arr, _) => arr);
     }
 
     private static ImmutableArray<RegistrationStatement> ExtractFromAttributeContext(
-        GeneratorAttributeSyntaxContext ctx)
+        GeneratorAttributeSyntaxContext ctx,
+        string triggeringMetadataName)
     {
         if (ctx.TargetSymbol is not INamedTypeSymbol typeSymbol)
         {
@@ -106,10 +107,10 @@ public sealed class ContainerRegistryRegistrationGenerator : IIncrementalGenerat
         using ImmutableArrayBuilder<RegistrationStatement> builder =
             ImmutableArrayBuilder<RegistrationStatement>.Rent();
 
-        // Iterate over all matching attributes on the target symbol.
-        // For AllowMultiple attributes, ctx.Attributes may only contain the first match
-        // on older Roslyn polyfills; fall back to scanning all attributes on the symbol
-        // and filtering by the known metadata names.
+        // Only process attributes matching the specific metadata name that triggered
+        // this provider. We iterate typeSymbol.GetAttributes() (instead of ctx.Attributes)
+        // because the Roslyn 4.0 polyfill only returns the first matching attribute in
+        // ctx.Attributes, missing additional instances for AllowMultiple attributes.
         foreach (AttributeData attribute in typeSymbol.GetAttributes())
         {
             if (attribute.AttributeClass is not { } attributeClass)
@@ -118,7 +119,7 @@ public sealed class ContainerRegistryRegistrationGenerator : IIncrementalGenerat
             }
 
             string meta = attributeClass.GetFullyQualifiedMetadataName();
-            if (!IsKnownRegistrationAttribute(meta))
+            if (!string.Equals(meta, triggeringMetadataName, StringComparison.Ordinal))
             {
                 continue;
             }
