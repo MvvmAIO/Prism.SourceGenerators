@@ -361,3 +361,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Local scratch — temporary projects, experiments, and other disposable files
+.Temp/

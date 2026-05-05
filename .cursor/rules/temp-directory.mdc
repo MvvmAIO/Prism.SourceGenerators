@@ -1,0 +1,19 @@
+---
+description: Put local scratch work under .Temp/; folder is gitignored and excluded from indexing
+alwaysApply: true
+---
+
+# Temporary files and scratch projects
+
+## Where they go
+
+- Place **temporary projects** (e.g. a throwaway `dotnet new` app to test a generator), **one-off experiments**, and **other local-only disposable files** under the repository root directory **`.Temp/`** (not next to production projects unless they truly belong in the solution).
+
+## Source control and tooling
+
+- **Git** — The `.Temp/` directory is listed in `.gitignore` and must **not** be committed.
+- **Cursor** — `.Temp/` is listed in `.cursorignore` so scratch content stays out of default codebase indexing and reduces noise in AI context.
+
+## Cleanup
+
+- Safe to delete all or part of `.Temp/` at any time; nothing in CI or the product build should depend on it.
