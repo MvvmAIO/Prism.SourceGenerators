@@ -14,7 +14,9 @@
   <!--
     Multi-targeting for different Roslyn versions, following the CommunityToolkit.Mvvm pattern.
     Each Roslyn-versioned project uses the naming scheme: Prism.SourceGenerators.Roslyn<MAJOR><MINOR2><PATCH>
-    The Roslyn version is parsed from the project name suffix to determine the Microsoft.CodeAnalysis.CSharp version.
+    The suffix sets PrismSourceGeneratorRoslynVersion, which pins Microsoft.CodeAnalysis.CSharp and
+    Microsoft.CodeAnalysis.CSharp.Workspaces. Microsoft.CodeAnalysis.Analyzers follows the same line
+    via PrismSourceGeneratorCodeAnalysisAnalyzersVersion (3.11.x for Roslyn 4.x, 5.3.x once Roslyn >= 5.0).
   -->
   <PropertyGroup>
     <AssemblyName>$(MSBuildProjectName.Substring(0, $([MSBuild]::Subtract($(MSBuildProjectName.Length), 11))))</AssemblyName>
@@ -24,12 +26,20 @@
     <PrismSourceGeneratorRoslynPatchVersion>$(MSBuildProjectName.Substring($([MSBuild]::Subtract($(MSBuildProjectName.Length), 1)), 1))</PrismSourceGeneratorRoslynPatchVersion>
     <PrismSourceGeneratorRoslynVersion>$(PrismSourceGeneratorRoslynMajorVersion).$(PrismSourceGeneratorRoslynMinorVersion).$(PrismSourceGeneratorRoslynPatchVersion)</PrismSourceGeneratorRoslynVersion>
 
+    <!-- Microsoft.CodeAnalysis.CSharp / .Workspaces use $(PrismSourceGeneratorRoslynVersion). Analyzers ship on a different cadence: keep 3.11.x for Roslyn 4.x lines, newer set for Roslyn 5+. -->
+    <PrismSourceGeneratorCodeAnalysisAnalyzersVersion>3.11.0</PrismSourceGeneratorCodeAnalysisAnalyzersVersion>
     <DefineConstants Condition="$([MSBuild]::VersionGreaterThanOrEquals($(PrismSourceGeneratorRoslynVersion), 4.3.1))">$(DefineConstants);ROSLYN_4_3_1_OR_GREATER</DefineConstants>
     <DefineConstants Condition="$([MSBuild]::VersionGreaterThanOrEquals($(PrismSourceGeneratorRoslynVersion), 4.12.0))">$(DefineConstants);ROSLYN_4_12_0_OR_GREATER</DefineConstants>
     <DefineConstants Condition="$([MSBuild]::VersionGreaterThanOrEquals($(PrismSourceGeneratorRoslynVersion), 5.0.0))">$(DefineConstants);ROSLYN_5_0_0_OR_GREATER</DefineConstants>
 
     <NoWarn Condition="$([MSBuild]::VersionLessThan($(PrismSourceGeneratorRoslynVersion), 5.0.0))">$(NoWarn);RS2003</NoWarn>
+  </PropertyGroup>
 
+  <PropertyGroup Condition="$([MSBuild]::VersionGreaterThanOrEquals($(PrismSourceGeneratorRoslynVersion), 5.0.0))">
+    <PrismSourceGeneratorCodeAnalysisAnalyzersVersion>5.3.0</PrismSourceGeneratorCodeAnalysisAnalyzersVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <!--
       RS1038: "Compiler extension assemblies should not depend on Workspaces". Suppressed because we
       bundle a CodeFixProvider in the same DLL as the analyzer + generator. The host (VS / dotnet IDE)
@@ -44,7 +54,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="5.3.0">
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="$(PrismSourceGeneratorCodeAnalysisAnalyzersVersion)">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
