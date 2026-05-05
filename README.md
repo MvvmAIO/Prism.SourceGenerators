@@ -2,6 +2,8 @@
 
 **English** | [简体中文](README.zh-CN.md) | [日本語](README.ja.md)
 
+参与贡献见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+
 Roslyn source generators for the [Prism](https://github.com/PrismLibrary/Prism) MVVM library.
 
 ## CI Status
