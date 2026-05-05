@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Markup.Xaml;
 using Prism.DryIoc;
 using Prism.Ioc;
+using Prism.SourceGenerators.Samples.Prism8.Services;
 using Prism.SourceGenerators.Samples.Prism8.ViewModels;
 using Prism.SourceGenerators.Samples.Prism8.Views;
 
@@ -25,6 +26,7 @@ public partial class App : PrismApplication
     protected override void RegisterTypes(IContainerRegistry containerRegistry)
     {
         containerRegistry.RegisterSingleton<MainViewModel>();
+        containerRegistry.RegisterSingleton<ISettingsService, SettingsService>();
 
         containerRegistry.RegisterForNavigation<DashboardView, DashboardViewModel>("Dashboard");
         containerRegistry.RegisterForNavigation<CommandsView, CommandsViewModel>("Commands");

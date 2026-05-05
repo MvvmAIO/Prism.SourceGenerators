@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Markup.Xaml;
 using Prism.DryIoc;
 using Prism.Ioc;
+using Prism.SourceGenerators;
 using Prism.SourceGenerators.Samples.Prism9.ViewModels;
 using Prism.SourceGenerators.Samples.Prism9.Views;
 
@@ -24,10 +25,8 @@ public partial class App : PrismApplication
 
     protected override void RegisterTypes(IContainerRegistry containerRegistry)
     {
-        containerRegistry.RegisterSingleton<MainViewModel>();
-
-        containerRegistry.RegisterForNavigation<DashboardView, DashboardViewModel>("Dashboard");
-        containerRegistry.RegisterForNavigation<CommandsView, CommandsViewModel>("Commands");
-        containerRegistry.RegisterForNavigation<ProfileView, ProfileViewModel>("Profile");
+        // All registrations come from attributes on partial types (see Services/, Views/, MainViewModel)
+        // and are emitted into PrismRegistrationExtensions.RegisterGeneratedTypes().
+        containerRegistry.RegisterGeneratedTypes();
     }
 }

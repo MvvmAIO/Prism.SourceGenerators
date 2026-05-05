@@ -120,7 +120,8 @@ internal static class GeneratorTestHarness
             new ObservablePropertyGenerator(),
             new PropertyChangingGenerator(),
             new DelegateCommandGenerator(),
-            new BindableBaseGenerator()
+            new BindableBaseGenerator(),
+            new ContainerRegistryRegistrationGenerator()
         };
 
         GeneratorDriver driver = CSharpGeneratorDriver.Create(
@@ -196,7 +197,8 @@ internal static class GeneratorTestHarness
             throw new InvalidOperationException($"Required test reference not found: {mvvmCore}");
         }
 
-        return platform.Append(MetadataReference.CreateFromFile(mvvmCore));
+        return platform
+            .Append(MetadataReference.CreateFromFile(mvvmCore));
     }
 }
 

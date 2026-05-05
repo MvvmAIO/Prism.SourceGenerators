@@ -54,6 +54,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)BindableBaseGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BindableBaseSyntax.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BindableBaseMetadataExtractor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ContainerRegistryRegistrationGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PropertyChangingAnalysis.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PropertyChangingGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PropertyChangingSyntax.cs" />

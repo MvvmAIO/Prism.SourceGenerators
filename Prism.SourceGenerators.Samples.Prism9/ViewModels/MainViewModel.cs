@@ -10,6 +10,7 @@ namespace Prism.SourceGenerators.Samples.Prism9.ViewModels;
 /// Shell ViewModel: sidebar + Prism region navigation.
 /// Child views (<see cref="DashboardViewModel"/>, <see cref="CommandsViewModel"/>, <see cref="ProfileViewModel"/>) load into the content region.
 /// </summary>
+[RegisterSingleton]
 public partial class MainViewModel : BindableBase
 {
     private readonly IRegionManager _regionManager;
