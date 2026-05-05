@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="Prism.DryIoc.Avalonia" Version="8.1.97.11073" />
-    <PackageReference Include="Tmds.DBus.Protocol" Version="0.92.0" />
+    <PackageReference Include="Tmds.DBus.Protocol" Version="0.93.0" />
     <ProjectReference Include="..\Prism.SourceGenerators.Core\Prism.SourceGenerators.Core.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\Prism.Bcl.Commands\Prism.Bcl.Commands.csproj" />
     <ProjectReference Include="..\Prism.SourceGenerators.Roslyn4120\Prism.SourceGenerators.Roslyn4120.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
