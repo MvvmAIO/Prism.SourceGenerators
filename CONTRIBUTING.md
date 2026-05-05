@@ -1,0 +1,109 @@
+# Contributing to Prism.SourceGenerators
+
+Thank you for your interest in this project. The following guidelines help keep reviews predictable and CI green.
+
+---
+
+## Ground rules
+
+- Be respectful and assume good intent.
+- For **substantive** work (new generator behavior, packaging changes, non-trivial refactors), prefer an [**issue**](https://github.com/MvvmAIO/Prism.SourceGenerators/issues) (or link an existing one) **before** large implementation efforts, so maintainers can confirm direction.
+- Open **pull requests against `master`**. Link the issue in the PR body (`Fixes #123`, `Closes #456`, or `Ref #789`).
+- Maintainers merge with **Squash and merge** for routine PRs. Write commit messages and PR titles so the squashed commit message stays readable.
+- **CI must pass** before merge unless a maintainer explicitly agrees to an exception.
+
+Chinese-language docs and wiki live in the repository and [GitHub Wiki](https://github.com/MvvmAIO/Prism.SourceGenerators/wiki); technical discussion in issues and PRs may be in English or Chinese.
+
+---
+
+## Development environment
+
+| Requirement | Notes |
+|-------------|--------|
+| **.NET 10 SDK** | Required to build this repository. |
+| **IDE** | Visual Studio **2022 17.13+**, **Rider**, or **VS Code with C# Dev Kit** — solution entry is **`.slnx`**. |
+
+Clone and restore as usual:
+
+```bash
+git clone https://github.com/MvvmAIO/Prism.SourceGenerators.git
+cd Prism.SourceGenerators
+dotnet build Prism.SourceGenerators.slnx
+```
+
+---
+
+## Repository layout (short)
+
+| Area | Purpose |
+|------|---------|
+| `Prism.SourceGenerators/` | Shared generator sources (`.shproj` / `.projitems`). |
+| `Prism.SourceGenerators.Roslyn4001` … `Roslyn5000` | Analyzer builds pinned to different **Roslyn** API bands; packaged under `analyzers/dotnet/roslyn*` in the NuGet layout. |
+| `Prism.SourceGenerators.Core` | **`MvvmAIO.Prism.Core`** — attributes referenced by user code and the generator. |
+| `Prism.SourceGenerators.Package` | NuGet package project for **`MvvmAIO.Prism.SourceGenerators`**. |
+| `Prism.Bcl.Commands` | Optional **`MvvmAIO.Prism.Bcl.Commands`** package for Prism 8 async commands. |
+| `Prism.SourceGenerators.Tests` / `…Integration.Tests` | Unit and integration tests. |
+| `Prism.SourceGenerators.Samples.Prism8` / `Prism9` | Avalonia sample apps. |
+| `build/` | [**Nuke**](https://nuke.build/) automation (`build.slnx`, `build/_build.csproj`). |
+
+When you change generator behavior, consider **all Roslyn** flavor projects if the API surface differs, and run the **full CI target** locally (see below).
+
+---
+
+## Build and test
+
+**Fast loop** (compile everything the IDE would compile):
+
+```bash
+dotnet build Prism.SourceGenerators.slnx
+```
+
+**Same pipeline as GitHub Actions** (recommended before opening a PR):
+
+```bash
+dotnet run --project build/_build.csproj -- --target Ci --configuration Release
+```
+
+Other useful Nuke targets (see `build/` and README **Nuke Build**):
+
+```bash
+dotnet run --project build/_build.csproj -- --target Pack --configuration Release --version 0.2.0
+```
+
+---
+
+## Tests and snapshots
+
+- **Unit tests** use **xUnit v3** and often **Verify** (`Verify.XunitV3`). If intentional output changes, refresh snapshots using the workflow documented for Verify (accept changes in the test harness / diff tool).
+- **Integration tests** cover packaging and analyzer scenarios (e.g. **PSG3002** with and without **`MvvmAIO.Prism.Bcl.Commands`**).
+
+If a PR changes emitted source or diagnostics, update or add tests and any **`.verified.`** files deliberately—do not bulk-delete snapshots without review.
+
+---
+
+## Code and review expectations
+
+- Match **existing style** in touched files (naming, nullable annotations, `#nullable`, language features already in use).
+- Prefer **focused** changes: one logical concern per PR when practical.
+- **User-visible** behavior (new diagnostics, generator output, package layout) should be reflected in **`CHANGELOG.md`** under **Unreleased** (or the appropriate section maintainers use).
+- New **analyzer IDs** (`PSGxxxx`) should appear in **README** diagnostic tables (English and Chinese READMEs stay in sync for tables when practical).
+
+---
+
+## Pull requests
+
+- Use the [pull request template](.github/pull_request_template.md) and tick the checklist.
+- Describe **what** changed and **why**; link issues and note breaking changes explicitly.
+- Keep commits readable; final history is usually **squash** into one commit on `master`.
+
+---
+
+## Security
+
+Do not commit **secrets** (NuGet API keys, PATs, private feed URLs with credentials). Use GitHub **encrypted secrets** or local environment variables for publish operations.
+
+---
+
+## Questions
+
+Open a [discussion-style issue](https://github.com/MvvmAIO/Prism.SourceGenerators/issues/new/choose) or ask in your PR. For consumer usage (not hacking on this repo), see **[README.md](README.md)** and the **[Wiki](https://github.com/MvvmAIO/Prism.SourceGenerators/wiki)**.
