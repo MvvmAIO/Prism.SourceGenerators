@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -172,6 +173,84 @@ public sealed class MatrixTests
         Assert.InRange(changingIndex, 1, setPropertyIndex - 1);
         Assert.InRange(changedIndex, setPropertyIndex + 1, propertySource.Source.Length - 1);
         Assert.Contains("RaisePropertyChanging(nameof(Name))", propertySource.Source);
+    }
+
+    /// <summary>
+    /// GitHub #23: partial On* hooks must use the same nullable reference type as the property/field
+    /// so user-defined <c>partial void OnXChanged(string? value)</c> matches the generator declaration.
+    /// </summary>
+    [Fact]
+    public void ObservableProperty_nullable_reference_emits_nullable_partial_hook_parameters_issue_23()
+    {
+        const string partialPropertySource = """
+            namespace Demo;
+
+            public partial class Vm : Prism.Mvvm.BindableBase
+            {
+                [ObservableProperty]
+                public partial string? Nickname { get; set; }
+
+                partial void OnNicknameChanged(string? value) { _ = value; }
+            }
+            """;
+
+        GeneratorRunOutput partialPropOutput = GeneratorTestHarness.Run(
+            partialPropertySource,
+            languageVersion: LanguageVersion.Preview);
+        GeneratedSource nickProp = Assert.Single(
+            partialPropOutput.GeneratedSources.Where(s => s.HintName.EndsWith(".Nickname.g.cs")));
+
+        Assert.Contains("partial void OnNicknameChanging(", nickProp.Source);
+        Assert.Contains("partial void OnNicknameChanged(", nickProp.Source);
+        Assert.True(
+            nickProp.Source.Contains("OnNicknameChanging(global::System.String? value)", StringComparison.Ordinal)
+            || nickProp.Source.Contains("OnNicknameChanging(string? value)", StringComparison.Ordinal),
+            $"Expected nullable changing-hook parameter type in:{System.Environment.NewLine}{nickProp.Source}");
+        Assert.True(
+            nickProp.Source.Contains("OnNicknameChanged(global::System.String? value)", StringComparison.Ordinal)
+            || nickProp.Source.Contains("OnNicknameChanged(string? value)", StringComparison.Ordinal),
+            $"Expected nullable changed-hook parameter type in:{System.Environment.NewLine}{nickProp.Source}");
+        Assert.True(
+            nickProp.Source.Contains("public partial global::System.String? Nickname", StringComparison.Ordinal)
+            || nickProp.Source.Contains("public partial string? Nickname", StringComparison.Ordinal),
+            nickProp.Source);
+        Assert.True(
+            nickProp.Source.Contains(
+                "global::System.Collections.Generic.EqualityComparer<global::System.String?>.Default",
+                StringComparison.Ordinal)
+            || nickProp.Source.Contains(
+                "global::System.Collections.Generic.EqualityComparer<string?>.Default",
+                StringComparison.Ordinal),
+            nickProp.Source);
+
+        const string fieldSource = """
+            namespace Demo;
+
+            public partial class Vm2 : Prism.Mvvm.BindableBase
+            {
+                [ObservableProperty]
+                private string? _bio;
+
+                partial void OnBioChanged(string? value) { _ = value; }
+            }
+            """;
+
+        GeneratorRunOutput fieldOutput = GeneratorTestHarness.Run(fieldSource, languageVersion: LanguageVersion.CSharp12);
+        GeneratedSource bioField = Assert.Single(
+            fieldOutput.GeneratedSources.Where(s => s.HintName.EndsWith(".Bio.g.cs")));
+
+        Assert.True(
+            bioField.Source.Contains("OnBioChanging(global::System.String? value)", StringComparison.Ordinal)
+            || bioField.Source.Contains("OnBioChanging(string? value)", StringComparison.Ordinal),
+            bioField.Source);
+        Assert.True(
+            bioField.Source.Contains("OnBioChanged(global::System.String? value)", StringComparison.Ordinal)
+            || bioField.Source.Contains("OnBioChanged(string? value)", StringComparison.Ordinal),
+            bioField.Source);
+        Assert.True(
+            bioField.Source.Contains("public global::System.String? Bio", StringComparison.Ordinal)
+            || bioField.Source.Contains("public string? Bio", StringComparison.Ordinal),
+            bioField.Source);
     }
 
     [Fact]
@@ -617,7 +696,7 @@ public sealed class MatrixTests
             }
             """,
             "partial class Vm<T>",
-            "public T Value"
+            "public T? Value"
         },
         {
             "abstract",
