@@ -12,8 +12,9 @@ namespace Prism.SourceGenerators;
 
 /// <summary>
 /// Ordinal alignment with <c>PrismRegistrationLifetime</c> in MvvmAIO.Prism.Core (generator assembly does not reference attribute enum type).
+/// Int underlying type matches Roslyn <see cref="Microsoft.CodeAnalysis.TypedConstant"/> enum values passed to <see cref="Enum.IsDefined"/>.
 /// </summary>
-internal enum PrismRegistrationLifetimeOrdinal : byte
+internal enum PrismRegistrationLifetimeOrdinal
 {
     Transient = 0,
     Scoped = 1,
@@ -27,59 +28,90 @@ internal enum PrismRegistrationLifetimeOrdinal : byte
 [Generator(LanguageNames.CSharp)]
 public sealed class ContainerRegistryRegistrationGenerator : IIncrementalGenerator
 {
+    /// <summary>Deterministic emission order: navigation, dialogs, then lifetime-based registrations.</summary>
+    private const byte SortNavigation = 0;
+
+    private const byte SortDialog = 1;
+
+    private const byte SortSingleton = 2;
+
+    private const byte SortScoped = 3;
+
+    private const byte SortTransient = 4;
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        IncrementalValuesProvider<ImmutableArray<RegistrationStatement>> perType =
-            context.SyntaxProvider.CreateSyntaxProvider(
-                static (node, _) => node is ClassDeclarationSyntax { AttributeLists.Count: > 0 },
-                static (ctx, ct) => ExtractStatements(ctx, ct));
-
+        // Walk the full compilation per CompilationProvider update. CreateSyntaxProvider + Collect
+        // did not reliably surface some attributes (e.g. RegisterAttribute) in the test harness;
+        // CompilationProvider matches normal GetSemanticModel binding. Prefer ForAttributeWithMetadataName
+        // once a stable multi-attribute merge exists (see Devin review).
         IncrementalValueProvider<ImmutableArray<RegistrationStatement>> combined =
-            perType.Collect().Select(static (batches, _) =>
-            {
-                ImmutableArray<RegistrationStatement>.Builder builder =
-                    ImmutableArray.CreateBuilder<RegistrationStatement>();
-                foreach (ImmutableArray<RegistrationStatement> batch in batches)
-                {
-                    builder.AddRange(batch);
-                }
-
-                return builder.ToImmutable();
-            });
+            context.CompilationProvider.Select(static (compilation, cancellationToken) =>
+                ExtractAllRegistrationStatements(compilation, cancellationToken));
 
         context.RegisterSourceOutput(combined, static (spc, statements) =>
         {
-            string source = BuildSource(statements);
-            spc.AddSource("PrismRegistrationExtensions.g.cs", source);
+            if (statements.IsDefaultOrEmpty)
+            {
+                return;
+            }
+
+            spc.AddSource("PrismRegistrationExtensions.g.cs", BuildSource(statements));
         });
     }
 
-    private static ImmutableArray<RegistrationStatement> ExtractStatements(
-        GeneratorSyntaxContext context,
+    private static ImmutableArray<RegistrationStatement> ExtractAllRegistrationStatements(
+        Compilation compilation,
         System.Threading.CancellationToken cancellationToken)
     {
-        if (context.Node is not ClassDeclarationSyntax classDeclaration)
-            return ImmutableArray<RegistrationStatement>.Empty;
+        using ImmutableArrayBuilder<RegistrationStatement> builder =
+            ImmutableArrayBuilder<RegistrationStatement>.Rent();
 
-        if (context.SemanticModel.GetDeclaredSymbol(classDeclaration, cancellationToken) is not INamedTypeSymbol typeSymbol)
-            return ImmutableArray<RegistrationStatement>.Empty;
-
-        using ImmutableArrayBuilder<RegistrationStatement> builder = ImmutableArrayBuilder<RegistrationStatement>.Rent();
-
-        foreach (AttributeData attribute in typeSymbol.GetAttributes())
+        foreach (SyntaxTree tree in compilation.SyntaxTrees)
         {
-            if (attribute.AttributeClass is not { } attributeClass)
-                continue;
-
-            string meta = attributeClass.GetFullyQualifiedMetadataName();
-            if (TryExtractRegistration(typeSymbol, attribute, attributeClass, meta, out RegistrationStatement? statement)
-                && statement is not null)
+            SemanticModel semanticModel = compilation.GetSemanticModel(tree);
+            SyntaxNode root = tree.GetRoot(cancellationToken);
+            foreach (ClassDeclarationSyntax classDeclaration in root.DescendantNodes().OfType<ClassDeclarationSyntax>())
             {
-                builder.Add(statement.Value);
+                if (classDeclaration.AttributeLists.Count == 0)
+                {
+                    continue;
+                }
+
+                if (semanticModel.GetDeclaredSymbol(classDeclaration, cancellationToken) is not INamedTypeSymbol typeSymbol)
+                {
+                    continue;
+                }
+
+                builder.AddRange(ExtractStatementsForNamedType(typeSymbol).AsSpan());
             }
         }
 
         return builder.ToImmutable();
+    }
+
+    private static ImmutableArray<RegistrationStatement> ExtractStatementsForNamedType(INamedTypeSymbol typeSymbol)
+    {
+        using ImmutableArrayBuilder<RegistrationStatement> part =
+            ImmutableArrayBuilder<RegistrationStatement>.Rent();
+
+        foreach (AttributeData attribute in typeSymbol.GetAttributes())
+        {
+            if (attribute.AttributeClass is not { } attributeClass)
+            {
+                continue;
+            }
+
+            string meta = attributeClass.GetFullyQualifiedMetadataName();
+
+            if (TryExtractRegistration(typeSymbol, attribute, attributeClass, meta, out RegistrationStatement? statement)
+                && statement is not null)
+            {
+                part.Add(statement.Value);
+            }
+        }
+
+        return part.ToImmutable();
     }
 
     private static bool TryExtractRegistration(
@@ -101,7 +133,8 @@ public sealed class ContainerRegistryRegistrationGenerator : IIncrementalGenerat
                 useTry: GetIfNotRegistered(attribute),
                 transient: true,
                 scoped: false,
-                singleton: false);
+                singleton: false,
+                sortGroup: SortTransient);
             return true;
         }
 
@@ -115,7 +148,8 @@ public sealed class ContainerRegistryRegistrationGenerator : IIncrementalGenerat
                 useTry: GetIfNotRegistered(attribute),
                 transient: true,
                 scoped: false,
-                singleton: false);
+                singleton: false,
+                sortGroup: SortTransient);
             return true;
         }
 
@@ -128,7 +162,8 @@ public sealed class ContainerRegistryRegistrationGenerator : IIncrementalGenerat
                 useTry: GetIfNotRegistered(attribute),
                 transient: false,
                 scoped: true,
-                singleton: false);
+                singleton: false,
+                sortGroup: SortScoped);
             return true;
         }
 
@@ -142,7 +177,8 @@ public sealed class ContainerRegistryRegistrationGenerator : IIncrementalGenerat
                 useTry: GetIfNotRegistered(attribute),
                 transient: false,
                 scoped: true,
-                singleton: false);
+                singleton: false,
+                sortGroup: SortScoped);
             return true;
         }
 
@@ -155,7 +191,8 @@ public sealed class ContainerRegistryRegistrationGenerator : IIncrementalGenerat
                 useTry: GetIfNotRegistered(attribute),
                 transient: false,
                 scoped: false,
-                singleton: true);
+                singleton: true,
+                sortGroup: SortSingleton);
             return true;
         }
 
@@ -169,36 +206,42 @@ public sealed class ContainerRegistryRegistrationGenerator : IIncrementalGenerat
                 useTry: GetIfNotRegistered(attribute),
                 transient: false,
                 scoped: false,
-                singleton: true);
+                singleton: true,
+                sortGroup: SortSingleton);
             return true;
         }
 
-        if (metadataName is "Prism.SourceGenerators.RegisterAttribute")
+        // Metadata name may be reported with generic arity (`RegisterAttribute`1`); use prefix match.
+        if (metadataName.StartsWith("Prism.SourceGenerators.RegisterAttribute", StringComparison.Ordinal))
         {
             PrismRegistrationLifetimeOrdinal lifetime = GetLifetime(attribute);
-            statement = BuildRegisterAttribute(implementationType, attribute, lifetime);
-            return true;
-        }
+            if (metadataName.Contains('`', StringComparison.Ordinal))
+            {
+                ITypeSymbol? svc = attributeClass.TypeArguments.Length > 0 ? attributeClass.TypeArguments[0] : null;
+                statement = BuildRegisterAttributeWithService(
+                    implementationType,
+                    attribute,
+                    svc ?? GetServiceType(attribute, implementationType),
+                    lifetime);
+            }
+            else
+            {
+                statement = BuildRegisterAttribute(implementationType, attribute, lifetime);
+            }
 
-        if (metadataName is "Prism.SourceGenerators.RegisterAttribute`1")
-        {
-            ITypeSymbol? svc = attributeClass.TypeArguments.Length > 0 ? attributeClass.TypeArguments[0] : null;
-            PrismRegistrationLifetimeOrdinal lifetime = GetLifetime(attribute);
-            statement = BuildRegisterAttributeWithService(
-                implementationType,
-                attribute,
-                svc ?? GetServiceType(attribute, implementationType),
-                lifetime);
             return true;
         }
 
         if (metadataName is "Prism.SourceGenerators.RegisterForNavigationAttribute")
         {
             if (!TryGetTypeNamedArgument(attribute, "ViewModelType", out INamedTypeSymbol? vm) || vm is null)
+            {
                 return false;
+            }
 
             string key = GetStringName(attribute, defaultKey: implementationType.Name);
             statement = new RegistrationStatement(
+                SortNavigation,
                 $"containerRegistry.RegisterForNavigation<{TypeFq(implementationType)}, {TypeFq(vm)}>({Literal(key)});");
             return true;
         }
@@ -207,10 +250,13 @@ public sealed class ContainerRegistryRegistrationGenerator : IIncrementalGenerat
         {
             ITypeSymbol? vm = attributeClass.TypeArguments.Length > 0 ? attributeClass.TypeArguments[0] : null;
             if (vm is not INamedTypeSymbol vmNamed)
+            {
                 return false;
+            }
 
             string key = GetStringName(attribute, defaultKey: implementationType.Name);
             statement = new RegistrationStatement(
+                SortNavigation,
                 $"containerRegistry.RegisterForNavigation<{TypeFq(implementationType)}, {TypeFq(vmNamed)}>({Literal(key)});");
             return true;
         }
@@ -218,10 +264,13 @@ public sealed class ContainerRegistryRegistrationGenerator : IIncrementalGenerat
         if (metadataName is "Prism.SourceGenerators.RegisterDialogAttribute")
         {
             if (!TryGetTypeNamedArgument(attribute, "ViewModelType", out INamedTypeSymbol? vm) || vm is null)
+            {
                 return false;
+            }
 
             string key = GetStringName(attribute, defaultKey: implementationType.Name);
             statement = new RegistrationStatement(
+                SortDialog,
                 $"containerRegistry.RegisterDialog<{TypeFq(implementationType)}, {TypeFq(vm)}>({Literal(key)});");
             return true;
         }
@@ -230,10 +279,13 @@ public sealed class ContainerRegistryRegistrationGenerator : IIncrementalGenerat
         {
             ITypeSymbol? vm = attributeClass.TypeArguments.Length > 0 ? attributeClass.TypeArguments[0] : null;
             if (vm is not INamedTypeSymbol vmNamed)
+            {
                 return false;
+            }
 
             string key = GetStringName(attribute, defaultKey: implementationType.Name);
             statement = new RegistrationStatement(
+                SortDialog,
                 $"containerRegistry.RegisterDialog<{TypeFq(implementationType)}, {TypeFq(vmNamed)}>({Literal(key)});");
             return true;
         }
@@ -242,6 +294,7 @@ public sealed class ContainerRegistryRegistrationGenerator : IIncrementalGenerat
         {
             string key = GetStringName(attribute, defaultKey: implementationType.Name);
             statement = new RegistrationStatement(
+                SortDialog,
                 $"containerRegistry.RegisterDialogWindow<{TypeFq(implementationType)}>({Literal(key)});");
             return true;
         }
@@ -256,46 +309,70 @@ public sealed class ContainerRegistryRegistrationGenerator : IIncrementalGenerat
         bool useTry,
         bool transient,
         bool scoped,
-        bool singleton)
+        bool singleton,
+        byte sortGroup)
     {
         if (serviceType is null)
         {
             // Self-registration (single type argument overloads).
             if (transient)
-                return Single("Register", "TryRegister", useTry, implementationType);
+            {
+                return Single("Register", "TryRegister", useTry, sortGroup, implementationType);
+            }
+
             if (scoped)
-                return Single("RegisterScoped", "TryRegisterScoped", useTry, implementationType);
+            {
+                return Single("RegisterScoped", "TryRegisterScoped", useTry, sortGroup, implementationType);
+            }
+
             if (singleton)
-                return Single("RegisterSingleton", "TryRegisterSingleton", useTry, implementationType);
+            {
+                return Single("RegisterSingleton", "TryRegisterSingleton", useTry, sortGroup, implementationType);
+            }
         }
         else
         {
             if (transient)
-                return Pair("Register", "TryRegister", useTry, serviceType, implementationType);
+            {
+                return Pair("Register", "TryRegister", useTry, sortGroup, serviceType, implementationType);
+            }
+
             if (scoped)
-                return Pair("RegisterScoped", "TryRegisterScoped", useTry, serviceType, implementationType);
+            {
+                return Pair("RegisterScoped", "TryRegisterScoped", useTry, sortGroup, serviceType, implementationType);
+            }
+
             if (singleton)
-                return Pair("RegisterSingleton", "TryRegisterSingleton", useTry, serviceType, implementationType);
+            {
+                return Pair("RegisterSingleton", "TryRegisterSingleton", useTry, sortGroup, serviceType, implementationType);
+            }
         }
 
         return null;
     }
 
-    private static RegistrationStatement Single(string register, string tryRegister, bool useTry, INamedTypeSymbol impl)
+    private static RegistrationStatement Single(
+        string register,
+        string tryRegister,
+        bool useTry,
+        byte sortGroup,
+        INamedTypeSymbol impl)
     {
         string method = useTry ? tryRegister : register;
-        return new RegistrationStatement($"containerRegistry.{method}<{TypeFq(impl)}>();");
+        return new RegistrationStatement(sortGroup, $"containerRegistry.{method}<{TypeFq(impl)}>();");
     }
 
     private static RegistrationStatement Pair(
         string register,
         string tryRegister,
         bool useTry,
+        byte sortGroup,
         ITypeSymbol service,
         INamedTypeSymbol impl)
     {
         string method = useTry ? tryRegister : register;
         return new RegistrationStatement(
+            sortGroup,
             $"containerRegistry.{method}<{TypeFq(service)}, {TypeFq(impl)}>();");
     }
 
@@ -306,15 +383,24 @@ public sealed class ContainerRegistryRegistrationGenerator : IIncrementalGenerat
     {
         bool useTry = GetIfNotRegistered(attribute);
         ITypeSymbol? serviceType = GetServiceType(attribute, implementationType);
+        byte sort = lifetime switch
+        {
+            PrismRegistrationLifetimeOrdinal.Transient => SortTransient,
+            PrismRegistrationLifetimeOrdinal.Scoped => SortScoped,
+            PrismRegistrationLifetimeOrdinal.Singleton => SortSingleton,
+            _ => SortTransient,
+        };
+
         return lifetime switch
         {
             PrismRegistrationLifetimeOrdinal.Transient => BuildTwoTypeRegistration(
-                implementationType, attribute, serviceType, useTry, transient: true, scoped: false, singleton: false),
+                implementationType, attribute, serviceType, useTry, transient: true, scoped: false, singleton: false, sort),
             PrismRegistrationLifetimeOrdinal.Scoped => BuildTwoTypeRegistration(
-                implementationType, attribute, serviceType, useTry, transient: false, scoped: true, singleton: false),
+                implementationType, attribute, serviceType, useTry, transient: false, scoped: true, singleton: false, sort),
             PrismRegistrationLifetimeOrdinal.Singleton => BuildTwoTypeRegistration(
-                implementationType, attribute, serviceType, useTry, transient: false, scoped: false, singleton: true),
-            _ => null
+                implementationType, attribute, serviceType, useTry, transient: false, scoped: false, singleton: true, sort),
+            _ => BuildTwoTypeRegistration(
+                implementationType, attribute, serviceType, useTry, transient: true, scoped: false, singleton: false, SortTransient)
         };
     }
 
@@ -325,15 +411,24 @@ public sealed class ContainerRegistryRegistrationGenerator : IIncrementalGenerat
         PrismRegistrationLifetimeOrdinal lifetime)
     {
         bool useTry = GetIfNotRegistered(attribute);
+        byte sort = lifetime switch
+        {
+            PrismRegistrationLifetimeOrdinal.Transient => SortTransient,
+            PrismRegistrationLifetimeOrdinal.Scoped => SortScoped,
+            PrismRegistrationLifetimeOrdinal.Singleton => SortSingleton,
+            _ => SortTransient,
+        };
+
         return lifetime switch
         {
             PrismRegistrationLifetimeOrdinal.Transient => BuildTwoTypeRegistration(
-                implementationType, attribute, serviceType, useTry, transient: true, scoped: false, singleton: false),
+                implementationType, attribute, serviceType, useTry, transient: true, scoped: false, singleton: false, sort),
             PrismRegistrationLifetimeOrdinal.Scoped => BuildTwoTypeRegistration(
-                implementationType, attribute, serviceType, useTry, transient: false, scoped: true, singleton: false),
+                implementationType, attribute, serviceType, useTry, transient: false, scoped: true, singleton: false, sort),
             PrismRegistrationLifetimeOrdinal.Singleton => BuildTwoTypeRegistration(
-                implementationType, attribute, serviceType, useTry, transient: false, scoped: false, singleton: true),
-            _ => null
+                implementationType, attribute, serviceType, useTry, transient: false, scoped: false, singleton: true, sort),
+            _ => BuildTwoTypeRegistration(
+                implementationType, attribute, serviceType, useTry, transient: true, scoped: false, singleton: false, SortTransient)
         };
     }
 
@@ -341,8 +436,15 @@ public sealed class ContainerRegistryRegistrationGenerator : IIncrementalGenerat
     {
         foreach (KeyValuePair<string, TypedConstant> pair in attribute.NamedArguments)
         {
-            if (pair.Key == "ServiceType" && pair.Value.Value is INamedTypeSymbol named)
+            if (!string.Equals(pair.Key, "ServiceType", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (pair.Value.Value is INamedTypeSymbol named)
+            {
                 return named;
+            }
         }
 
         return null;
@@ -353,7 +455,9 @@ public sealed class ContainerRegistryRegistrationGenerator : IIncrementalGenerat
         foreach (KeyValuePair<string, TypedConstant> pair in attribute.NamedArguments)
         {
             if (pair.Key == "IfNotRegistered" && pair.Value.Value is bool b)
+            {
                 return b;
+            }
         }
 
         return false;
@@ -363,21 +467,33 @@ public sealed class ContainerRegistryRegistrationGenerator : IIncrementalGenerat
     {
         foreach (KeyValuePair<string, TypedConstant> pair in attribute.NamedArguments)
         {
-            if (pair.Key != "ServiceLifetime")
+            if (!string.Equals(pair.Key, "ServiceLifetime", StringComparison.OrdinalIgnoreCase))
+            {
                 continue;
+            }
 
             if (pair.Value.Value is int i && Enum.IsDefined(typeof(PrismRegistrationLifetimeOrdinal), i))
+            {
                 return (PrismRegistrationLifetimeOrdinal)i;
+            }
 
             if (pair.Value.Value is not null)
             {
                 string? display = pair.Value.ToString();
-                if (display?.Contains("Transient", System.StringComparison.Ordinal) == true)
+                if (display?.Contains("Transient", StringComparison.Ordinal) == true)
+                {
                     return PrismRegistrationLifetimeOrdinal.Transient;
-                if (display?.Contains("Scoped", System.StringComparison.Ordinal) == true)
+                }
+
+                if (display?.Contains("Scoped", StringComparison.Ordinal) == true)
+                {
                     return PrismRegistrationLifetimeOrdinal.Scoped;
-                if (display?.Contains("Singleton", System.StringComparison.Ordinal) == true)
+                }
+
+                if (display?.Contains("Singleton", StringComparison.Ordinal) == true)
+                {
                     return PrismRegistrationLifetimeOrdinal.Singleton;
+                }
             }
         }
 
@@ -407,7 +523,9 @@ public sealed class ContainerRegistryRegistrationGenerator : IIncrementalGenerat
         foreach (KeyValuePair<string, TypedConstant> pair in attribute.NamedArguments)
         {
             if (pair.Key == "Name" && pair.Value.Value is string s && !string.IsNullOrEmpty(s))
+            {
                 return s;
+            }
         }
 
         return defaultKey;
@@ -440,7 +558,9 @@ public sealed class ContainerRegistryRegistrationGenerator : IIncrementalGenerat
         sb.AppendLine("        public static void RegisterGeneratedTypes(this global::Prism.Ioc.IContainerRegistry containerRegistry)");
         sb.AppendLine("        {");
 
-        foreach (RegistrationStatement line in statements.OrderBy(static s => s.Text, StringComparer.Ordinal))
+        foreach (RegistrationStatement line in statements
+                     .OrderBy(static s => s.SortGroup)
+                     .ThenBy(static s => s.Text, StringComparer.Ordinal))
         {
             sb.Append("            ");
             sb.AppendLine(line.Text);
@@ -452,8 +572,22 @@ public sealed class ContainerRegistryRegistrationGenerator : IIncrementalGenerat
         return sb.ToString();
     }
 
-    private readonly struct RegistrationStatement(string text)
+    private readonly struct RegistrationStatement(byte sortGroup, string text) : IEquatable<RegistrationStatement>
     {
+        public byte SortGroup { get; } = sortGroup;
+
         public string Text { get; } = text;
+
+        /// <summary>Equality uses <see cref="Text"/> only so incremental caching matches emitted source lines.</summary>
+        public bool Equals(RegistrationStatement other) =>
+            string.Equals(Text, other.Text, StringComparison.Ordinal);
+
+        public override bool Equals(object? obj) => obj is RegistrationStatement other && Equals(other);
+
+        public override int GetHashCode() => StringComparer.Ordinal.GetHashCode(Text);
+
+        public static bool operator ==(RegistrationStatement left, RegistrationStatement right) => left.Equals(right);
+
+        public static bool operator !=(RegistrationStatement left, RegistrationStatement right) => !left.Equals(right);
     }
 }

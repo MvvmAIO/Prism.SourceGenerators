@@ -10,7 +10,7 @@ public class RegisterAttribute : Attribute
     public Type? ServiceType { get; set; } = null;
 
     /// <summary>
-    /// 默认是 Transient。
+    /// Lifetime for this registration. Default is <see cref="PrismRegistrationLifetime.Transient"/>.
     /// </summary>
     public PrismRegistrationLifetime ServiceLifetime { get; set; } = PrismRegistrationLifetime.Transient;
 
@@ -23,7 +23,7 @@ public class RegisterAttribute<T> : Attribute
     public string? Name { get; set; } = null;
 
     /// <summary>
-    /// 默认是 Transient。
+    /// Lifetime for this registration. Default is <see cref="PrismRegistrationLifetime.Transient"/>.
     /// </summary>
     public PrismRegistrationLifetime ServiceLifetime { get; set; } = PrismRegistrationLifetime.Transient;
 
@@ -87,7 +87,7 @@ public class RegisterTransientAttribute<T> : Attribute
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
 public class RegisterForNavigationAttribute : Attribute
 {
-    public required Type? ViewModelType { get; init; }
+    public required Type ViewModelType { get; init; }
 
     public string? Name { get; set; } = null;
 }
@@ -101,7 +101,7 @@ public class RegisterForNavigationAttribute<TViewModel> : Attribute
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
 public class RegisterDialogAttribute : Attribute
 {
-    public required Type? ViewModelType { get; init; }
+    public required Type ViewModelType { get; init; }
 
     public string? Name { get; set; } = null;
 }

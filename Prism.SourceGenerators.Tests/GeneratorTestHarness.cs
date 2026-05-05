@@ -12,10 +12,7 @@ namespace Prism.SourceGenerators.Tests;
 
 internal static class GeneratorTestHarness
 {
-    public static GeneratorRunOutput Run(
-        string userSource,
-        LanguageVersion languageVersion = LanguageVersion.Preview,
-        bool hasAsyncDelegateCommand = true)
+    internal static string BuildHarnessDocument(string userSource, bool hasAsyncDelegateCommand = true)
     {
         string asyncDelegateCommandStubs = hasAsyncDelegateCommand
             ? """
@@ -45,7 +42,7 @@ internal static class GeneratorTestHarness
                 """
             : string.Empty;
 
-        string source = $$"""
+        return $$"""
             #nullable enable
             using System;
             using System.Threading;
@@ -105,7 +102,14 @@ internal static class GeneratorTestHarness
 
             {{userSource}}
             """;
+    }
 
+    internal static (CSharpCompilation Compilation, SyntaxTree Tree) CreateHarnessCompilation(
+        string userSource,
+        LanguageVersion languageVersion = LanguageVersion.Preview,
+        bool hasAsyncDelegateCommand = true)
+    {
+        string source = BuildHarnessDocument(userSource, hasAsyncDelegateCommand);
         CSharpParseOptions parseOptions = CSharpParseOptions.Default.WithLanguageVersion(languageVersion);
         SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(source, parseOptions);
 
@@ -114,6 +118,19 @@ internal static class GeneratorTestHarness
             syntaxTrees: new[] { syntaxTree },
             references: GetMetadataReferences(),
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+
+        return (compilation, syntaxTree);
+    }
+
+    public static GeneratorRunOutput Run(
+        string userSource,
+        LanguageVersion languageVersion = LanguageVersion.Preview,
+        bool hasAsyncDelegateCommand = true)
+    {
+        (CSharpCompilation compilation, _) =
+            CreateHarnessCompilation(userSource, languageVersion, hasAsyncDelegateCommand);
+
+        CSharpParseOptions parseOptions = CSharpParseOptions.Default.WithLanguageVersion(languageVersion);
 
         IIncrementalGenerator[] generators =
         {
@@ -128,9 +145,22 @@ internal static class GeneratorTestHarness
             generators: generators.Select(g => g.AsSourceGenerator()),
             parseOptions: parseOptions);
 
-        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out _, out ImmutableArray<Diagnostic> driverDiagnostics);
+        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out Compilation outputCompilation, out ImmutableArray<Diagnostic> driverDiagnostics);
+
+        ImmutableArray<Diagnostic> compilationErrors = outputCompilation
+            .GetDiagnostics()
+            .Where(static d => d.Severity == DiagnosticSeverity.Error)
+            .ToImmutableArray();
 
         GeneratorDriverRunResult runResult = driver.GetRunResult();
+        foreach (GeneratorRunResult gr in runResult.Results)
+        {
+            if (gr.Exception is not null)
+            {
+                throw gr.Exception;
+            }
+        }
+
         ImmutableArray<Diagnostic> generatorDiagnostics = runResult.Diagnostics
             .AddRange(runResult.Results.SelectMany(static r => r.Diagnostics));
 
@@ -140,7 +170,9 @@ internal static class GeneratorTestHarness
             .Select(static item => new GeneratedSource(item.HintName, item.SourceText.ToString()))
             .ToImmutableArray();
 
-        return new GeneratorRunOutput(generatedSources, generatorDiagnostics.AddRange(driverDiagnostics));
+        return new GeneratorRunOutput(
+            generatedSources,
+            generatorDiagnostics.AddRange(driverDiagnostics).AddRange(compilationErrors));
     }
 
     public static string ToSnapshot(GeneratorRunOutput output)
@@ -179,7 +211,7 @@ internal static class GeneratorTestHarness
         return sb.ToString().TrimEnd();
     }
 
-    private static IEnumerable<MetadataReference> GetMetadataReferences()
+    internal static IEnumerable<MetadataReference> GetMetadataReferences()
     {
         string? trustedPlatformAssemblies = AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") as string;
         if (string.IsNullOrWhiteSpace(trustedPlatformAssemblies))
