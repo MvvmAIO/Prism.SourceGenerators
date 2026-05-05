@@ -1,60 +1,83 @@
-# Build, samples, and Prism.Bcl.Commands
+# 构建、示例与 Wiki 维护
 
-## Repository layout (high level)
+---
 
-| Path | Role |
-|------|------|
-| `Prism.SourceGenerators/` | Shared generator sources (`.shproj` / `.projitems`) |
-| `Prism.SourceGenerators.Roslyn4001` / `4031` / `4120` / `5000` | Analyzer packages built per Roslyn band |
-| `Prism.SourceGenerators.Core` | **`MvvmAIO.Prism.Core`** — attributes bundled in the main package |
-| `Prism.Bcl.Commands` | **`MvvmAIO.Prism.Bcl.Commands`** — optional Prism 8 async commands |
-| `Prism.SourceGenerators.Samples.Prism8` / `Prism9` | Avalonia samples |
-
-## Build the sources
+## 一、克隆本仓库后构建源码
 
 ```bash
 dotnet build Prism.SourceGenerators.slnx
 ```
 
-Requires **.NET 10 SDK** and a recent IDE for `.slnx`.
+- 需要 **.NET 10 SDK**。  
+- 建议使用支持 **`.slnx`** 的 IDE 版本（见 README **Requirements**）。
 
-## Nuke automation
+---
 
-Orchestration lives under **`build/`** (see **`build.slnx`**).
+## 二、Nuke 常用命令
+
+编排入口在 **`build/_build.csproj`**，解决方案 **`build.slnx`**。
 
 ```bash
-# CI-like: clean, restore, compile, test
+# 接近 CI 的完整流程：clean + restore + compile + test
 dotnet run --project build/_build.csproj -- --target Ci --configuration Release
 
-# Pack NuGet (optional version)
+# 打 NuGet 包（版本号可按需修改）
 dotnet run --project build/_build.csproj -- --target Pack --configuration Release --version 0.2.0
 
-# Publish packages (requires API key)
+# 发布到 NuGet（需要 API Key）
 dotnet run --project build/_build.csproj -- --target Publish --configuration Release --version 0.2.0 --nuget-api-key <NUGET_API_KEY>
 ```
 
-## Publish GitHub Wiki from `wiki/`
+---
 
-1. On GitHub: **Settings → General → Features → Wikis** — enable Wikis.
-2. Clone the wiki repository (HTTPS; authenticate as you usually do for GitHub):
+## 三、示例工程
 
-   ```bash
-   git clone https://github.com/MvvmAIO/Prism.SourceGenerators.wiki.git
-   cd Prism.SourceGenerators.wiki
-   ```
+| 项目 | 说明 |
+|------|------|
+| **`Prism.SourceGenerators.Samples.Prism9`** | Avalonia 12 + **Prism 9**，使用框架自带 **`AsyncDelegateCommand`** |
+| **`Prism.SourceGenerators.Samples.Prism8`** | Avalonia 12 + **Prism.Core 8.1.97**，与 NuGet 包相同的 MSBuild / 包引用策略 |
 
-3. Copy all files from the main repo’s **`wiki/`** directory into this clone (overwrite `Home.md` / `_Sidebar.md` as needed).
-4. Commit and push:
+阅读 `.csproj` 可对照消费方应如何引用 **`MvvmAIO.Prism.SourceGenerators`** 与（在 Prism 8 时）**`MvvmAIO.Prism.Bcl.Commands`**。
 
-   ```bash
-   git add -A
-   git commit -m "docs: sync wiki from main repository"
-   git push origin master
-   ```
+---
 
-Wiki uses **`master`** as the default branch name in many GitHub wiki repos; if your remote uses **`main`**, push accordingly.
+## 四、把主仓库里的 `wiki/` 同步到 GitHub Wiki
 
-## MvvmAIO.Prism.Bcl.Commands
+Wiki 内容维护在主仓库的 **`wiki/`** 目录（与 **`.wiki.git`** 远程分离，便于 PR 与 Code Review）。
 
-- Separate NuGet for **Prism.Core 8.1.97** consumers who need **`AsyncDelegateCommand`** and related APIs.
-- On **netstandard2.0**, the package references **`System.Threading.Tasks.Extensions`** (conditional); see **`Prism.Bcl.Commands.csproj`** in the repo.
+**一次性克隆 Wiki 仓库：**
+
+```bash
+git clone https://github.com/MvvmAIO/Prism.SourceGenerators.wiki.git
+cd Prism.SourceGenerators.wiki
+```
+
+**每次更新（在已克隆的 Wiki 仓库目录执行）：**
+
+```bash
+git pull
+# 将主仓库 wiki/ 下所有 .md 覆盖复制到本目录
+git add -A
+git status
+git commit -m "docs: sync wiki from MvvmAIO/Prism.SourceGenerators wiki/"
+git push origin master
+```
+
+> 若远程默认分支名为 **`main`**，请将最后一句中的 **`master`** 改为 **`main`**。
+
+**在 Windows PowerShell 下从本机路径复制（示例）：**
+
+```powershell
+$repo = "C:\Code\Prism.SourceGenerators"
+$wiki = "C:\path\to\Prism.SourceGenerators.wiki"
+Copy-Item "$repo\wiki\*" $wiki -Force
+```
+
+推送后在浏览器打开：  
+**https://github.com/MvvmAIO/Prism.SourceGenerators/wiki**
+
+---
+
+## 五、CI 与测试结果
+
+工作流见 **`.github/workflows/`**。测试徽章与 **`.trx`** 制品说明见 [首页](Home) 的 CI 一节。

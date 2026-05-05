@@ -1,12 +1,17 @@
-**[Home](Home)**
+**[首页](Home)**
 
-### Guide
-- [Getting Started](Getting-Started)
-- [ObservableProperty](ObservableProperty)
-- [Commands](Commands)
-- [Diagnostics](Diagnostics)
-- [Build and samples](Build-and-samples)
+### 使用指南
+- [快速开始](Getting-Started)
+- [可观察属性](ObservableProperty)
+- [命令](Commands)
+- [诊断与排错](Diagnostics)
+- [常见问题（FAQ）](FAQ)
 
-### Repo
-- [README (full)](https://github.com/MvvmAIO/Prism.SourceGenerators/blob/master/README.md)
+### 贡献与原理
+- [架构与打包](Architecture)
+- [构建、示例与 Wiki 维护](Build-and-samples)
+
+### 仓库链接
+- [README（英文）](https://github.com/MvvmAIO/Prism.SourceGenerators/blob/master/README.md)
+- [README（简体中文）](https://github.com/MvvmAIO/Prism.SourceGenerators/blob/master/README.zh-CN.md)
 - [CHANGELOG](https://github.com/MvvmAIO/Prism.SourceGenerators/blob/master/CHANGELOG.md)

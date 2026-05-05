@@ -1,30 +1,44 @@
-# MvvmAIO Prism Source Generators
+# MvvmAIO Prism Source Generators Wiki
 
-Roslyn source generators for [Prism](https://github.com/PrismLibrary/Prism) MVVM: `[ObservableProperty]`, `[DelegateCommand]` / `[AsyncDelegateCommand]`, `[BindableBase]`, and related attributes.
+面向 **[Prism](https://github.com/PrismLibrary/Prism)** 的 Roslyn **源生成器**：在编译期生成与手写一致的 `SetProperty`、`DelegateCommand` / `AsyncDelegateCommand` 等样板代码，减少重复并保持与 **Prism.Mvvm.BindableBase** 同一套语义。
 
-**Repository:** [MvvmAIO/Prism.SourceGenerators](https://github.com/MvvmAIO/Prism.SourceGenerators)  
-**Full documentation (README):** [English](https://github.com/MvvmAIO/Prism.SourceGenerators/blob/master/README.md) · [简体中文](https://github.com/MvvmAIO/Prism.SourceGenerators/blob/master/README.zh-CN.md) · [日本語](https://github.com/MvvmAIO/Prism.SourceGenerators/blob/master/README.ja.md)
+**主仓库**：[MvvmAIO/Prism.SourceGenerators](https://github.com/MvvmAIO/Prism.SourceGenerators)  
+**NuGet 主包**：[MvvmAIO.Prism.SourceGenerators](https://www.nuget.org/packages/MvvmAIO.Prism.SourceGenerators)  
+**Prism 8 异步命令扩展包**：[MvvmAIO.Prism.Bcl.Commands](https://www.nuget.org/packages/MvvmAIO.Prism.Bcl.Commands)
 
-## Wiki map
+---
 
-| Topic | Page |
-|--------|------|
-| Install & requirements | [Getting Started](Getting-Started) |
-| `[ObservableProperty]` & notifications | [ObservableProperty](ObservableProperty) |
-| Commands & execution | [Commands](Commands) |
-| Analyzer IDs (PSGxxxx) | [Diagnostics](Diagnostics) |
-| Build, Nuke, samples, Prism 8 BCL | [Build and samples](Build-and-samples) |
+## 本 Wiki 与 README 的分工
 
-## CI
+| 内容 | 建议阅读 |
+|------|----------|
+| 特性说明、长表格、英文为主 | 仓库根目录 [README.md](https://github.com/MvvmAIO/Prism.SourceGenerators/blob/master/README.md) |
+| 简体中文与 README 平行叙述 | [README.zh-CN.md](https://github.com/MvvmAIO/Prism.SourceGenerators/blob/master/README.zh-CN.md) |
+| **中文导读、架构、排错、FAQ、与发布相关的操作** | **本 Wiki 各页（下方导航）** |
 
-[![.NET](https://github.com/MvvmAIO/Prism.SourceGenerators/actions/workflows/dotnet.yml/badge.svg?branch=master)](https://github.com/MvvmAIO/Prism.SourceGenerators/actions/workflows/dotnet.yml)
+---
 
-## Publishing this wiki from the main repo
+## 文档地图
 
-The markdown in the main repository’s `wiki/` folder is the **source** for GitHub Wiki. After enabling Wiki under **Settings → General → Features**:
+1. **[快速开始](Getting-Started)** — 安装、Prism 版本与包组合、第一个 ViewModel、必备 `partial`  
+2. **[可观察属性](ObservableProperty)** — 字段 / 部分属性、`PropertyAccess`、钩子、`Notify*`、属性转发、`INotifyPropertyChanging`  
+3. **[命令](Commands)** — `[DelegateCommand]` / `[AsyncDelegateCommand]`、`ValueTask`、CanExecute、`[ObservesProperty]`、Prism 8 与 PSG3002  
+4. **[诊断与排错](Diagnostics)** — PSGxxxx 一览与处理建议  
+5. **[架构与打包](Architecture)** — 多 Roslyn 版本、MSBuild 如何选择分析器、`MvvmAIO.Prism.Core` 注入逻辑  
+6. **[构建、示例与 Wiki 维护](Build-and-samples)** — `slnx`、Nuke、示例工程、如何把 `wiki/` 推送到本 Wiki 仓库  
+7. **[常见问题（FAQ）](FAQ)** — 高频疑问集中解答  
 
-1. Clone the wiki git repository (empty on first use is OK after Wiki is enabled).
-2. Copy the contents of the `wiki/` folder from the default branch into that clone.
-3. Commit and push to `https://github.com/MvvmAIO/Prism.SourceGenerators.wiki.git`.
+---
 
-See [Build and samples](Build-and-samples) for the exact commands.
+## CI 状态
+
+[![.NET](https://github.com/MvvmAIO/Prism.SourceGenerators/actions/workflows/dotnet.yml/badge.svg?branch=master)](https://github.com/MvvmAIO/Prism.SourceGenerators/actions/workflows/dotnet.yml)  
+[![Tests](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/MvvmAIO/Prism.SourceGenerators/master/.github/badges/tests.json)](https://github.com/MvvmAIO/Prism.SourceGenerators/actions/workflows/dotnet.yml)
+
+构建产物中的 **`test-results`**（`.trx`）可用于在 CI 或本机分析失败用例。
+
+---
+
+## 版本与变更
+
+权威变更记录见仓库 **[CHANGELOG.md](https://github.com/MvvmAIO/Prism.SourceGenerators/blob/master/CHANGELOG.md)**（含 **Unreleased** 中与 `INotifyPropertyChanging`、**`PropertyAccess`**、`ValueTask` 等相关的说明）。
