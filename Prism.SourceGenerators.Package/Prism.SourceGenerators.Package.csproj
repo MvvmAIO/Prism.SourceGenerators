@@ -24,7 +24,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.203" PrivateAssets="all" />
     <ProjectReference Include="..\Prism.SourceGenerators.Core\Prism.SourceGenerators.Core.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
     <ProjectReference Include="..\Prism.SourceGenerators.Roslyn4001\Prism.SourceGenerators.Roslyn4001.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\Prism.SourceGenerators.Roslyn4031\Prism.SourceGenerators.Roslyn4031.csproj" ReferenceOutputAssembly="false" />
