@@ -56,14 +56,14 @@ jobs:
           dotnet run --project "build/_build.csproj" -- --target Publish --configuration Release --version "${{ env.VERSION }}" --nuget-api-key "${{ secrets.NUGET_API_KEY }}" --bcl-nuget-api-key "${{ secrets.NUGET_API_KEY_BCL }}" 2>&1 | tee publish.log
       - name: Upload publish log
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: nuget-publish-log
           path: ./publish.log
           if-no-files-found: warn
       - name: Upload package artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: nuget-packages
           path: |
