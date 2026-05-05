@@ -1,0 +1,97 @@
+name: Bug Report
+description: Report incorrect generated code, analyzer errors, or packaging / build problems
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. Please fill in as much as you can; a **minimal repro** (small project or snippet) helps a lot.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: One or two sentences describing what went wrong.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: What we need to do to see the problem (commands, file edits, IDE actions).
+      placeholder: |
+        1. Create project targeting …
+        2. Add package MvvmAIO.Prism.SourceGenerators …
+        3. …
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+
+  - type: input
+    id: package-version
+    attributes:
+      label: MvvmAIO.Prism.SourceGenerators version
+      placeholder: e.g. 0.2.0
+    validations:
+      required: true
+
+  - type: input
+    id: prism-version
+    attributes:
+      label: Prism / Prism.Core version (if applicable)
+      placeholder: e.g. Prism 9.0.x or Prism.Core 8.1.97
+
+  - type: input
+    id: bcl-version
+    attributes:
+      label: MvvmAIO.Prism.Bcl.Commands version (if applicable)
+      placeholder: e.g. 0.2.0 or N/A
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: SDK, IDE, and target framework(s).
+      placeholder: |
+        - .NET SDK: dotnet --version
+        - IDE: VS 2022 17.x / Rider / VS Code
+        - Target framework(s): net8.0, net9.0, …
+    validations:
+      required: true
+
+  - type: input
+    id: diagnostic-ids
+    attributes:
+      label: Analyzer diagnostic IDs (if any)
+      placeholder: e.g. PSG3002, PSG1001
+
+  - type: textarea
+    id: sample
+    attributes:
+      label: Minimal repro code or link
+      description: Paste a small ViewModel (or link to a gist / branch). Redact secrets.
+      render: csharp
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Confirmation
+      options:
+        - label: I have searched existing issues for duplicates
+          required: true
