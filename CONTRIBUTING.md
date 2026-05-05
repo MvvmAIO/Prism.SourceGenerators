@@ -43,7 +43,7 @@ dotnet build Prism.SourceGenerators.slnx
 | `Prism.SourceGenerators.Package` | NuGet package project for **`MvvmAIO.Prism.SourceGenerators`**. |
 | `Prism.Bcl.Commands` | Optional **`MvvmAIO.Prism.Bcl.Commands`** package for Prism 8 async commands. |
 | `Prism.SourceGenerators.Tests` / `…Integration.Tests` | Unit and integration tests. |
-| `Prism.SourceGenerators.Samples.Prism8` / `Prism9` | Avalonia sample apps. |
+| Samples | [Prism.SourceGenerators.Samples](https://github.com/MvvmAIO/Prism.SourceGenerators.Samples) (separate repo). |
 | `build/` | [**Nuke**](https://nuke.build/) automation (`build.slnx`, `build/_build.csproj`). |
 
 When you change generator behavior, consider **all Roslyn** flavor projects if the API surface differs, and run the **full CI target** locally (see below).

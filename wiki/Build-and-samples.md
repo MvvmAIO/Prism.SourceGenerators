@@ -34,8 +34,7 @@ dotnet run --project build/_build.csproj -- --target Publish --configuration Rel
 
 | 项目 | 说明 |
 |------|------|
-| **`Prism.SourceGenerators.Samples.Prism9`** | Avalonia 12 + **Prism 9**，使用框架自带 **`AsyncDelegateCommand`** |
-| **`Prism.SourceGenerators.Samples.Prism8`** | Avalonia 12 + **Prism.Core 8.1.97**，与 NuGet 包相同的 MSBuild / 包引用策略 |
+| **[Prism.SourceGenerators.Samples](https://github.com/MvvmAIO/Prism.SourceGenerators.Samples)**（独立仓库） | Avalonia 示例：Prism 8（含 **`MvvmAIO.Prism.Bcl.Commands`**）与 Prism 9，通过 NuGet 引用 **`MvvmAIO.Prism.SourceGenerators`** |
 
 阅读 `.csproj` 可对照消费方应如何引用 **`MvvmAIO.Prism.SourceGenerators`** 与（在 Prism 8 时）**`MvvmAIO.Prism.Bcl.Commands`**。
 

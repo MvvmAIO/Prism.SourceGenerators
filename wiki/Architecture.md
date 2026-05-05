@@ -14,7 +14,7 @@
 | **`Prism.SourceGenerators.Package`** | **NuGet 包工程**：收集多份 analyzer DLL + Core + MSBuild **targets** |
 | **`Prism.Bcl.Commands`** | 独立包 **`MvvmAIO.Prism.Bcl.Commands`**（Prism 8 异步命令兼容） |
 
-示例应用见 **`Prism.SourceGenerators.Samples.Prism8`** / **`Prism9`**（Avalonia 12）。
+Avalonia 示例应用已迁至独立仓库 **[Prism.SourceGenerators.Samples](https://github.com/MvvmAIO/Prism.SourceGenerators.Samples)**。
 
 ---
 

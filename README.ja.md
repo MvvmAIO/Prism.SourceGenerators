@@ -23,9 +23,9 @@ Prism.SourceGenerators.Roslyn4120/             # Roslyn 4.12.0
 Prism.SourceGenerators.Roslyn5000/             # Roslyn 5.0.0
 Prism.SourceGenerators.Core/                   # MvvmAIO.Prism.Core（属性）、MvvmAIO.Prism.SourceGenerators に同梱
 Prism.Bcl.Commands/                            # MvvmAIO.Prism.Bcl.Commands（Prism 8 AsyncDelegateCommand パッケージ、手動インストール）
-Prism.SourceGenerators.Samples.Prism9/         # Avalonia 12 サンプル（Prism 9.0、ネイティブ AsyncDelegateCommand）
-Prism.SourceGenerators.Samples.Prism8/         # Avalonia 12 サンプル（Prism 8.1.97、NuGet と同じ MSBuild のアセンブリ選択）
 ```
+
+サンプル（Avalonia）: 別リポジトリ [Prism.SourceGenerators.Samples](https://github.com/MvvmAIO/Prism.SourceGenerators.Samples) — Prism 8 / 9 のデモ。NuGet の **`MvvmAIO.Prism.SourceGenerators`** を参照。
 
 ## ジェネレーター
 

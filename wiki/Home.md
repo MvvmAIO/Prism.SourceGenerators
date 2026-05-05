@@ -4,7 +4,8 @@
 
 **主仓库**：[MvvmAIO/Prism.SourceGenerators](https://github.com/MvvmAIO/Prism.SourceGenerators)  
 **NuGet 主包**：[MvvmAIO.Prism.SourceGenerators](https://www.nuget.org/packages/MvvmAIO.Prism.SourceGenerators)  
-**Prism 8 异步命令扩展包**：[MvvmAIO.Prism.Bcl.Commands](https://www.nuget.org/packages/MvvmAIO.Prism.Bcl.Commands)
+**Prism 8 异步命令扩展包**：[MvvmAIO.Prism.Bcl.Commands](https://www.nuget.org/packages/MvvmAIO.Prism.Bcl.Commands)  
+**Avalonia 示例（独立仓库）**：[Prism.SourceGenerators.Samples](https://github.com/MvvmAIO/Prism.SourceGenerators.Samples)
 
 ---
 
@@ -25,7 +26,7 @@
 3. **[命令](Commands)** — `[DelegateCommand]` / `[AsyncDelegateCommand]`、`ValueTask`、CanExecute、`[ObservesProperty]`、Prism 8 与 PSG3002  
 4. **[诊断与排错](Diagnostics)** — PSGxxxx 一览与处理建议  
 5. **[架构与打包](Architecture)** — 多 Roslyn 版本、MSBuild 如何选择分析器、`MvvmAIO.Prism.Core` 注入逻辑  
-6. **[构建、示例与 Wiki 维护](Build-and-samples)** — `slnx`、Nuke、示例工程、如何把 `wiki/` 推送到本 Wiki 仓库  
+6. **[构建、示例与 Wiki 维护](Build-and-samples)** — `slnx`、Nuke、独立示例仓库链接、如何把 `wiki/` 推送到本 Wiki 仓库  
 7. **[常见问题（FAQ）](FAQ)** — 高频疑问集中解答  
 
 ---

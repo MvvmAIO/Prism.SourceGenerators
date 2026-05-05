@@ -25,9 +25,9 @@ Prism.SourceGenerators.Roslyn4120/             # Roslyn 4.12.0
 Prism.SourceGenerators.Roslyn5000/             # Roslyn 5.0.0
 Prism.SourceGenerators.Core/                   # MvvmAIO.Prism.Core (attributes), bundled in MvvmAIO.Prism.SourceGenerators
 Prism.Bcl.Commands/                            # MvvmAIO.Prism.Bcl.Commands (Prism 8 AsyncDelegateCommand package, install manually)
-Prism.SourceGenerators.Samples.Prism9/         # Avalonia 12 sample (Prism 9.0, native AsyncDelegateCommand)
-Prism.SourceGenerators.Samples.Prism8/         # Avalonia 12 sample (Prism 8.1.97; same MSBuild lib selection as the NuGet package)
 ```
+
+Samples (Avalonia): [Prism.SourceGenerators.Samples](https://github.com/MvvmAIO/Prism.SourceGenerators.Samples) — Prism 8 / Prism 9 demo apps consuming **`MvvmAIO.Prism.SourceGenerators`** from NuGet.
 
 ## Generators
 
