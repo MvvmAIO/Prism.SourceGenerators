@@ -25,7 +25,7 @@
 2. **[可观察属性](ObservableProperty)** — 字段 / 部分属性、`PropertyAccess`、钩子、`Notify*`、属性转发、`INotifyPropertyChanging`  
 3. **[命令](Commands)** — `[DelegateCommand]` / `[AsyncDelegateCommand]`、`ValueTask`、CanExecute、`[ObservesProperty]`、Prism 8 与 PSG3002  
 4. **[诊断与排错](Diagnostics)** — PSGxxxx 一览与处理建议  
-5. **[架构与打包](Architecture)** — 多 Roslyn 版本、MSBuild 如何选择分析器、`MvvmAIO.Prism.Core` 注入逻辑  
+5. **[架构与打包](Architecture)** — 多 Roslyn 版本、MSBuild 如何选择分析器、`MvvmAIO.Prism.Core` 注入逻辑、开发与 **Dependabot**（CodeAnalysis / 测试对齐）  
 6. **[构建、示例与 Wiki 维护](Build-and-samples)** — `slnx`、Nuke、独立示例仓库链接、如何把 `wiki/` 推送到本 Wiki 仓库  
 7. **[常见问题（FAQ）](FAQ)** — 高频疑问集中解答  
 

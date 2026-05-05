@@ -74,7 +74,47 @@ Avalonia 示例应用已迁至独立仓库 **[Prism.SourceGenerators.Samples](ht
 
 ---
 
-## 六、延伸阅读
+## 六、本仓库开发与 Dependabot（Roslyn / Polyfill / 测试对齐）
+
+本节说明**源码树里**（与已发布的 NuGet 内 `roslyn4.x` 目录选择是两层概念）如何固定 **Microsoft.CodeAnalysis.\*** 与相关包，以及为何在 **Dependabot** 中忽略部分包，避免再次出现「测试工程用 Roslyn 5.x、生成器变体却是 4.12」的漂移。
+
+### 6.1 生成器变体工程（`Prism.SourceGenerators.Roslyn*`）
+
+共享逻辑在 **`Prism.SourceGenerators/Prism.SourceGenerators.props`**：
+
+| MSBuild 属性 | 作用 |
+|--------------|------|
+| **`PrismSourceGeneratorRoslynVersion`** | 由工程名 **`Prism.SourceGenerators.Roslyn<MAJOR><MINOR2><PATCH>`** 解析（与 **CommunityToolkit.Mvvm** 多 Roslyn 变体命名一致），用于 **`Microsoft.CodeAnalysis.CSharp`** 与 **`Microsoft.CodeAnalysis.CSharp.Workspaces`** 的 **PackageReference** 版本。 |
+| **`PrismSourceGeneratorCodeAnalysisAnalyzersVersion`** | **`Microsoft.CodeAnalysis.Analyzers`** 的版本：Roslyn **&lt; 5.0** 的变体使用 **3.11.0**；Roslyn **≥ 5.0**（如 **`Roslyn5000`**）使用 **5.3.0**。Analyzers 与编译器 API 的发布节奏不同，因此**不与** `PrismSourceGeneratorRoslynVersion` **强行捆成同一版本号**。 |
+
+每个 **`Prism.SourceGenerators.RoslynXXXX`** 工程仍产出同名 **`Prism.SourceGenerators.dll`**，再按第二节所述被打进 NuGet 的不同 **`analyzers/dotnet/roslyn…/cs/`** 目录。
+
+### 6.2 根目录 `Directory.Build.props`
+
+仓库根 **`Directory.Build.props`** 集中维护：
+
+- **`PolyfillVersion`** — 全仓库 **Polyfill** 包版本（生成器与 **Core** 等一致）。  
+- **`PrismSourceGeneratorsTestsRoslynVersion`** — **单元测试 / 集成测试** 工程中 **`Microsoft.CodeAnalysis.*`** 的宿主版本，**必须与** 测试项目 **`ProjectReference`** 所指向的 **`Prism.SourceGenerators.Roslyn*`** 变体一致（当前默认 **4.12.0**，对应 **`Roslyn4120`**）。
+
+若将来增加「针对 **Roslyn5000** 的测试工程」，应同步把该属性改为 **5.0.0**（或拆多个测试工程分别引用不同变体）。
+
+### 6.3 集成测试与 `Microsoft.Bcl.AsyncInterfaces`
+
+**`Prism.SourceGenerators.Integration.Tests`** 与 **`Prism.SourceGenerators.Roslyn4120`** 上的 **`Microsoft.Bcl.AsyncInterfaces`** 需与 **`Prism.Core`**、**`Microsoft.CodeAnalysis` 4.12** 等依赖图一致（避免 **MSB3277** 等绑定冲突），版本由维护者**手动协调**，不交给机器人单独升级。
+
+### 6.4 Dependabot 忽略列表
+
+**`.github/dependabot.yml`** 中 NuGet 更新已 **ignore** 以下包（防止与上述策略冲突）：
+
+- **`Prism.Core`**  
+- **`Microsoft.CodeAnalysis.CSharp`**、**`Microsoft.CodeAnalysis.CSharp.Workspaces`**、**`Microsoft.CodeAnalysis.Analyzers`**  
+- **`Microsoft.Bcl.AsyncInterfaces`**
+
+其余依赖（如 **xUnit**、**Verify**、**GitHub Actions** 等）仍可按周由 Dependabot 提议升级；若需把更多包改为手动管理，在同一 **`ignore:`** 下追加 **`dependency-name`** 即可。
+
+---
+
+## 七、延伸阅读
 
 - 变更与破坏性调整：**[CHANGELOG](https://github.com/MvvmAIO/Prism.SourceGenerators/blob/master/CHANGELOG.md)**  
 - 命令行打包与发布：**[构建、示例与 Wiki 维护](Build-and-samples)**  
