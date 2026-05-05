@@ -68,10 +68,8 @@ public readonly struct MulticastExceptionHandler
 
         if (result is Task task)
             await task.ConfigureAwait(false);
-#if NET6_0_OR_GREATER
         else if (result is ValueTask valueTask)
             await valueTask.ConfigureAwait(false);
-#endif
     }
 
     private MulticastDelegate? GetDelegate(Type? type)
