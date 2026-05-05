@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <!-- SimonCropp/Polyfill: keep one version across the repo (https://github.com/SimonCropp/Polyfill). -->
+    <PolyfillVersion>10.4.0</PolyfillVersion>
+  </PropertyGroup>
+</Project>

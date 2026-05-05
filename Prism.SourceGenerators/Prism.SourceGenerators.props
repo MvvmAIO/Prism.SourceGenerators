@@ -36,6 +36,11 @@
       always loads Workspaces alongside, so this is safe in practice.
     -->
     <NoWarn>$(NoWarn);RS1038</NoWarn>
+    <!--
+      Polyfill types are internal; this assembly uses InternalsVisibleTo (tests). Embedded attributes
+      keep polyfill internals from colliding across friend assemblies (see Polyfill consuming.md).
+    -->
+    <PolyUseEmbeddedAttribute>true</PolyUseEmbeddedAttribute>
   </PropertyGroup>
 
   <ItemGroup>
@@ -45,7 +50,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(PrismSourceGeneratorRoslynVersion)" PrivateAssets="all" Pack="false" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(PrismSourceGeneratorRoslynVersion)" PrivateAssets="all" Pack="false" />
-    <PackageReference Include="Polyfill" Version="10.3.0">
+    <PackageReference Include="Polyfill" Version="$(PolyfillVersion)">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

@@ -8,10 +8,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>14.0</LangVersion>
     <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+    <!-- App sample: Polyfill recommends root app + PolyPublic (consuming.md). -->
+    <PolyPublic>true</PolyPublic>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Polyfill" Version="10.3.0">
+    <PackageReference Include="Polyfill" Version="$(PolyfillVersion)">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
