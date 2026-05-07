@@ -15,9 +15,6 @@
     <Project Path="Prism.SourceGenerators.Tests/Prism.SourceGenerators.Tests.csproj" />
     <Project Path="Prism.SourceGenerators.Integration.Tests/Prism.SourceGenerators.Integration.Tests.csproj" />
   </Folder>
-  <Folder Name="/DocsSite/">
-    <Project Path="DocsSite/Prism.SourceGenerators.DocsSite.csproj" />
-  </Folder>
   <Folder Name="/Build/">
     <Project Path="build/_build.csproj" />
   </Folder>

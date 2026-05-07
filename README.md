@@ -17,7 +17,7 @@ Roslyn source generators for the [Prism](https://github.com/PrismLibrary/Prism) 
 
 ## Web documentation (Blazor + GitHub Pages)
 
-A Blazor WebAssembly shell for richer docs UI lives in [`DocsSite/`](DocsSite/) (English / 简体中文 / 日本語 UI strings, JSON under `wwwroot/locales/`). It is built and deployed by [`.github/workflows/github-pages.yml`](.github/workflows/github-pages.yml) when **Settings → Pages → Build and deployment** uses **GitHub Actions** (one-time setup). The default project-site URL is `https://<owner>.github.io/<repository>/`.
+The Blazor documentation site (English / 简体中文 / 日本語) lives in the separate repository **[MvvmAIO/Prism.SourceGenerators.Docs](https://github.com/MvvmAIO/Prism.SourceGenerators.Docs)** and is published to **https://mvvmaio.github.io/Prism.SourceGenerators.Docs/** via GitHub Actions. Use that repo’s **Settings → Pages** with **GitHub Actions** as the source if you fork or recreate the environment.
 
 ## Project Structure
 
@@ -335,7 +335,7 @@ dotnet build Prism.SourceGenerators.slnx
 This repository uses [Nuke](https://nuke.build/) as the build orchestration layer for local automation and CI.
 
 - Main source solution: `Prism.SourceGenerators.slnx`
-- Full solution (all product projects, `DocsSite/`, and Nuke): `Prism.SourceGenerators.Full.slnx`
+- Full solution (all product projects and Nuke; docs site is in **Prism.SourceGenerators.Docs**): `Prism.SourceGenerators.Full.slnx`
 - Build automation solution: `build.slnx` (contains only `build/_build.csproj`)
 
 Common commands:
