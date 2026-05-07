@@ -15,6 +15,10 @@ Roslyn source generators for the [Prism](https://github.com/PrismLibrary/Prism) 
 - The `Tests` badge displays the latest passed/failed/skipped counts.
 - The run also uploads a `test-results` artifact (`.trx`) for detailed test reports.
 
+## Web documentation (Blazor + GitHub Pages)
+
+A Blazor WebAssembly shell for richer docs UI lives in [`DocsSite/`](DocsSite/). It is built and deployed by [`.github/workflows/github-pages.yml`](.github/workflows/github-pages.yml) when **Settings → Pages → Build and deployment** uses **GitHub Actions** (one-time setup). The default project-site URL is `https://<owner>.github.io/<repository>/`.
+
 ## Project Structure
 
 ```
@@ -331,6 +335,7 @@ dotnet build Prism.SourceGenerators.slnx
 This repository uses [Nuke](https://nuke.build/) as the build orchestration layer for local automation and CI.
 
 - Main source solution: `Prism.SourceGenerators.slnx`
+- Full solution (all product projects, `DocsSite/`, and Nuke): `Prism.SourceGenerators.Full.slnx`
 - Build automation solution: `build.slnx` (contains only `build/_build.csproj`)
 
 Common commands:

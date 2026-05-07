@@ -1,0 +1,20 @@
+---
+description: Prefer .slnx for solutions; do not introduce new .sln as the primary solution unless explicitly requested
+alwaysApply: true
+---
+
+# Solution format: prefer SLNX over SLN
+
+## When creating or extending a solution
+
+- Use **`.slnx`** (XML solution format) as the **primary** solution for this repository.
+- Prefer **`dotnet new slnx`** (or Visual Studio’s SLNX flow) when **creating a new solution** from scratch.
+- When **adding or removing projects**, edit **the existing root `.slnx`** in this repository (or add another `.slnx` here if the workflow calls for it), not a legacy `.sln`.
+
+## Avoid unless the user asks
+
+- Do **not** create a new **`.sln`** as the default way to represent the product solution. Classic `.sln` is harder to merge and duplicates the graph already in `.slnx`.
+
+## Exceptions
+
+- A **secondary** `.sln` is acceptable only when the user **explicitly** asks for it (e.g. tooling that cannot consume `.slnx`). Document why it exists if you add one.

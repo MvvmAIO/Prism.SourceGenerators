@@ -1,0 +1,110 @@
+# Publishes the Blazor WebAssembly site under DocsSite/ to GitHub Pages.
+#
+# First-time repository setup (one-time):
+#   Settings → Pages → Build and deployment → Source: GitHub Actions.
+#
+# Project site URL shape: https://<owner>.github.io/<repo>/
+#   - The workflow patches <base href> to "/<repo>/".
+#   - If you use a user/org site (username.github.io repo), set BASE_PATH_INPUT
+#     on workflow_dispatch to "/" and adjust the workflow accordingly.
+#
+# GitHub Pages + Blazor caveats:
+#   - wwwroot/.nojekyll disables Jekyll so paths like _framework/ are served.
+#   - 404.html is a copy of index.html so deep links / refresh on client routes work.
+#   - Static hosting only: no server-side API on Pages; call external APIs if needed.
+
+name: GitHub Pages
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "DocsSite/**"
+      - ".github/workflows/github-pages.yml"
+  pull_request:
+    branches: [master]
+    paths:
+      - "DocsSite/**"
+      - ".github/workflows/github-pages.yml"
+  workflow_dispatch:
+    inputs:
+      base_path:
+        description: "Override base path (default: /<repository>/). Use / for username.github.io root site."
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Publish Blazor WebAssembly
+        run: >-
+          dotnet publish "DocsSite/Prism.SourceGenerators.DocsSite.csproj"
+          -c Release
+          -o "${{ github.workspace }}/gh-pages-publish"
+
+      - name: Patch base href and SPA fallback (project Pages)
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          WWWROOT="${GITHUB_WORKSPACE}/gh-pages-publish/wwwroot"
+          if [[ ! -f "${WWWROOT}/index.html" ]]; then
+            echo "Missing ${WWWROOT}/index.html"
+            exit 1
+          fi
+
+          INPUT_BASE="${{ inputs.base_path }}"
+          if [[ -n "${INPUT_BASE}" ]]; then
+            BASE="${INPUT_BASE}"
+            if [[ "${BASE}" != */ ]]; then
+              BASE="${BASE}/"
+            fi
+            if [[ "${BASE}" != /* ]]; then
+              BASE="/${BASE}"
+            fi
+          else
+            BASE="/${{ github.event.repository.name }}/"
+          fi
+
+          echo "Using base href: ${BASE}"
+          sed -i "s|<base href=\"/\" />|<base href=\"${BASE}\" />|g" "${WWWROOT}/index.html"
+          cp "${WWWROOT}/index.html" "${WWWROOT}/404.html"
+
+      - name: Upload Pages artifact
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: gh-pages-publish/wwwroot
+
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/master' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
