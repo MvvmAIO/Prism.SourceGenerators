@@ -1,0 +1,27 @@
+@using Prism.SourceGenerators.DocsSite.Services
+@inject LocalizationService Loc
+@inject IJSRuntime JS
+
+<div class="docs-lang btn-group btn-group-sm" role="group" aria-label="@Loc.T("common.language")">
+    <button type="button" class="btn @(Active("en"))" @onclick='() => ApplyAsync("en")'>EN</button>
+    <button type="button" class="btn @(Active("zh-CN"))" @onclick='() => ApplyAsync("zh-CN")'>中文</button>
+    <button type="button" class="btn @(Active("ja"))" @onclick='() => ApplyAsync("ja")'>日本語</button>
+</div>
+
+@code {
+    private string Active(string c) =>
+        string.Equals(Loc.Culture, c, StringComparison.OrdinalIgnoreCase) ? "btn-primary" : "btn-outline-secondary";
+
+    private async Task ApplyAsync(string culture)
+    {
+        await Loc.SetCultureAsync(culture);
+        try
+        {
+            await JS.InvokeVoidAsync("localStorage.setItem", "docsLocale", culture);
+        }
+        catch
+        {
+            // ignore storage failures (private mode, etc.)
+        }
+    }
+}

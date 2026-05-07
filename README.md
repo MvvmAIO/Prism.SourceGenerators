@@ -17,7 +17,7 @@ Roslyn source generators for the [Prism](https://github.com/PrismLibrary/Prism) 
 
 ## Web documentation (Blazor + GitHub Pages)
 
-A Blazor WebAssembly shell for richer docs UI lives in [`DocsSite/`](DocsSite/). It is built and deployed by [`.github/workflows/github-pages.yml`](.github/workflows/github-pages.yml) when **Settings → Pages → Build and deployment** uses **GitHub Actions** (one-time setup). The default project-site URL is `https://<owner>.github.io/<repository>/`.
+A Blazor WebAssembly shell for richer docs UI lives in [`DocsSite/`](DocsSite/) (English / 简体中文 / 日本語 UI strings, JSON under `wwwroot/locales/`). It is built and deployed by [`.github/workflows/github-pages.yml`](.github/workflows/github-pages.yml) when **Settings → Pages → Build and deployment** uses **GitHub Actions** (one-time setup). The default project-site URL is `https://<owner>.github.io/<repository>/`.
 
 ## Project Structure
 

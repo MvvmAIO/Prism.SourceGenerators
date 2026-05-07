@@ -1,0 +1,77 @@
+{
+  "nav": {
+    "home": "概览",
+    "gettingStarted": "快速开始",
+    "generators": "源生成器",
+    "reference": "参考与链接"
+  },
+  "common": {
+    "siteTitle": "Prism.SourceGenerators",
+    "siteSubtitle": "面向 Prism MVVM 的 Roslyn 源生成器",
+    "openGitHub": "GitHub 仓库",
+    "openSamples": "示例应用",
+    "openDeepWiki": "DeepWiki（AI 索引文档）",
+    "openNuGet": "NuGet 包",
+    "language": "语言"
+  },
+  "home": {
+    "pageTitle": "概览 — Prism.SourceGenerators",
+    "heroTitle": "Prism 的编译期 MVVM",
+    "heroLead": "MvvmAIO.Prism.SourceGenerators 在保留 BindableBase 语义的前提下，为可观察属性、命令与容器注册消除样板代码。",
+    "sectionWhat": "能力一览",
+    "whatObservable": "支持字段与 C# 13 partial property 的 ObservableProperty，含 OnChanging / OnChanged 钩子及 NotifyPropertyChangedFor。",
+    "whatCommands": "从方法生成 DelegateCommand 与 AsyncDelegateCommand，包含 ValueTask 等现代异步形态。",
+    "whatRegistration": "如 RegisterForNavigation、RegisterSingleton 等特性，生成 IContainerRegistry 注册代码。",
+    "whatDiagnostics": "PSG 诊断与代码修复（例如 MakePartial），在需要时由生成器引导你修正代码。",
+    "sectionLayout": "仓库结构",
+    "layoutShared": "Prism.SourceGenerators/ — 共享生成器逻辑（.shproj / .projitems）。",
+    "layoutCore": "Prism.SourceGenerators.Core/ — 应用引用的特性程序集，并为生成器所见。",
+    "layoutRoslyn": "Prism.SourceGenerators.Roslyn* — 针对不同 Roslyn 版本的编译目标，用于 NuGet 兼容。",
+    "layoutBcl": "Prism.Bcl.Commands/ — 可选的 Prism 8 AsyncDelegateCommand 兼容包。",
+    "layoutSamples": "Avalonia 示例应用位于独立的 Prism.SourceGenerators.Samples 仓库。",
+    "sectionMore": "延伸阅读",
+    "moreDeepWiki": "DeepWiki 以可浏览目录组织本仓库（架构、流水线、诊断、打包等）。",
+    "moreReadme": "GitHub README 仍是功能列表与 API 示例的主要来源。"
+  },
+  "gettingStarted": {
+    "pageTitle": "快速开始",
+    "title": "安装与引用",
+    "lead": "在基于 BindableBase（或兼容基类）的 Prism 应用中添加 NuGet 包。生成器要求处请使用 partial 类型。",
+    "stepPackageTitle": "1. 添加包",
+    "stepPackageBody": "从 NuGet 安装 MvvmAIO.Prism.SourceGenerators，其中已捆绑 Core 特性程序集。",
+    "stepPartialTitle": "2. 使用 partial 类型",
+    "stepPartialBody": "为需要生成的类使用 partial，便于生成器扩展。出现 PSG0001–PSG0004 时可使用 MakePartial 等代码修复。",
+    "stepPrismTitle": "3. Prism 8 与 9",
+    "stepPrismBody": "在 Prism.Core 8.1.97 上若需 AsyncDelegateCommand，可能还要安装 MvvmAIO.Prism.Bcl.Commands。Prism 9 已内置异步命令。",
+    "stepSamplesTitle": "4. 运行示例",
+    "stepSamplesBody": "克隆 Prism.SourceGenerators.Samples 查看针对 Prism 8 / 9 的 Avalonia 示例。"
+  },
+  "generators": {
+    "pageTitle": "源生成器",
+    "title": "生成器范围",
+    "lead": "下列主题与 DeepWiki 目录及 README 中的生成器章节大致对应。",
+    "obsTitle": "ObservableProperty",
+    "obsBody": "字段与 partial property 两种模式、PropertyAccess、使用 property: 转发特性，以及与 NotifyPropertyChangedFor / NotifyCanExecuteChangedFor 的配合。",
+    "cmdTitle": "命令",
+    "cmdBody": "从方法生成 DelegateCommand 与 AsyncDelegateCommand；支持 CanExecute 及命令刷新依赖。",
+    "regTitle": "容器注册",
+    "regBody": "分析注册相关特性，为 Prism IContainerRegistry 发出 Register / RegisterForNavigation 等调用。",
+    "diagTitle": "诊断与修复",
+    "diagBody": "针对无法解析符号、无效签名、partial 要求等的 PSG 代码；许多在 IDE 中附带代码修复。"
+  },
+  "reference": {
+    "pageTitle": "参考与链接",
+    "title": "外部文档",
+    "lead": "请与本站搭配使用。DeepWiki 内容由社区/AI 根据仓库索引，可能晚于主线。",
+    "cardWikiTitle": "DeepWiki",
+    "cardWikiBody": "主题包括：增量生成器流水线、共享辅助、打包、多 Roslyn 目标、CI 与测试等。",
+    "cardGitHubTitle": "GitHub",
+    "cardGitHubBody": "MvvmAIO/Prism.SourceGenerators 的源码、议题、PR 与 CI 徽章。",
+    "cardSamplesTitle": "示例仓库",
+    "cardSamplesBody": "Prism.SourceGenerators.Samples — 引用本包的 Avalonia 工程。"
+  },
+  "notFound": {
+    "title": "页面未找到",
+    "body": "此地址不属于文档站。请使用侧栏导航。"
+  }
+}

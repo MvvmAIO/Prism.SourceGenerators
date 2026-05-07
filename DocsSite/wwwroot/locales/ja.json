@@ -1,0 +1,77 @@
+{
+  "nav": {
+    "home": "概要",
+    "gettingStarted": "はじめに",
+    "generators": "ソースジェネレータ",
+    "reference": "参考・リンク"
+  },
+  "common": {
+    "siteTitle": "Prism.SourceGenerators",
+    "siteSubtitle": "Prism MVVM 向け Roslyn ソースジェネレータ",
+    "openGitHub": "GitHub リポジトリ",
+    "openSamples": "サンプルアプリ",
+    "openDeepWiki": "DeepWiki（AI インデックス）",
+    "openNuGet": "NuGet パッケージ",
+    "language": "言語"
+  },
+  "home": {
+    "pageTitle": "概要 — Prism.SourceGenerators",
+    "heroTitle": "Prism のコンパイル時 MVVM",
+    "heroLead": "MvvmAIO.Prism.SourceGenerators は、BindableBase の意味論を保ちながら、Observable プロパティ・コマンド・コンテナ登録のボイラープレートを削減します。",
+    "sectionWhat": "主な機能",
+    "whatObservable": "フィールドと C# 13 partial property に対応する ObservableProperty、OnChanging / OnChanged、NotifyPropertyChangedFor など。",
+    "whatCommands": "メソッドから DelegateCommand / AsyncDelegateCommand を生成。ValueTask など非同期パターンに対応。",
+    "whatRegistration": "RegisterForNavigation や RegisterSingleton などの属性から IContainerRegistry 登録コードを生成。",
+    "whatDiagnostics": "PSG 診断とコードフィックス（MakePartial など）でジェネレータがガイド。",
+    "sectionLayout": "リポジトリ構成",
+    "layoutShared": "Prism.SourceGenerators/ — 共有ジェネレータロジック（.shproj / .projitems）。",
+    "layoutCore": "Prism.SourceGenerators.Core/ — アプリが参照する属性アセンブリ。",
+    "layoutRoslyn": "Prism.SourceGenerators.Roslyn* — NuGet 互換のための Roslyn バージョン別ターゲット。",
+    "layoutBcl": "Prism.Bcl.Commands/ — Prism 8 向け AsyncDelegateCommand 互換（任意）。",
+    "layoutSamples": "Avalonia サンプルは別リポジトリ Prism.SourceGenerators.Samples にあります。",
+    "sectionMore": "さらに深く",
+    "moreDeepWiki": "DeepWiki ではアーキテクチャ、パイプライン、診断、パッケージングなどを階層表示します。",
+    "moreReadme": "機能一覧と API 例の一次情報は GitHub README を参照してください。"
+  },
+  "gettingStarted": {
+    "pageTitle": "はじめに",
+    "title": "インストールと参照",
+    "lead": "BindableBase（または互換ベース）を使う Prism アプリに NuGet パッケージを追加します。ジェネレータが要求する箇所は partial 型を使います。",
+    "stepPackageTitle": "1. パッケージを追加",
+    "stepPackageBody": "NuGet から MvvmAIO.Prism.SourceGenerators をインストール。Core 属性アセンブリが同梱されます。",
+    "stepPartialTitle": "2. partial 型を使う",
+    "stepPartialBody": "ジェネレータが拡張できるよう partial クラスにします。PSG0001–PSG0004 には MakePartial などのコードフィックスが利用できます。",
+    "stepPrismTitle": "3. Prism 8 と 9",
+    "stepPrismBody": "Prism.Core 8.1.97 では AsyncDelegateCommand に MvvmAIO.Prism.Bcl.Commands が必要な場合があります。Prism 9 では非同期コマンドが標準です。",
+    "stepSamplesTitle": "4. サンプルを動かす",
+    "stepSamplesBody": "Prism.SourceGenerators.Samples をクローンし、Prism 8 / 9 向け Avalonia デモを参照します。"
+  },
+  "generators": {
+    "pageTitle": "ソースジェネレータ",
+    "title": "ジェネレータの範囲",
+    "lead": "以下は DeepWiki の目次や README のジェネレータ節に概ね対応します。",
+    "obsTitle": "ObservableProperty",
+    "obsBody": "フィールド／partial property、PropertyAccess、property: による属性転送、NotifyPropertyChangedFor / NotifyCanExecuteChangedFor との連携。",
+    "cmdTitle": "コマンド",
+    "cmdBody": "メソッドから DelegateCommand / AsyncDelegateCommand。CanExecute やコマンド更新の依存関係。",
+    "regTitle": "コンテナ登録",
+    "regBody": "登録属性を解析し、Prism IContainerRegistry 向けの Register / RegisterForNavigation 呼び出しを生成。",
+    "diagTitle": "診断とフィックス",
+    "diagBody": "未解決シンボル、無効なシグネチャ、partial 要件などの PSG コード。多くは IDE コードフィックス付き。"
+  },
+  "reference": {
+    "pageTitle": "参考・リンク",
+    "title": "外部ドキュメント",
+    "lead": "本サイトと併用してください。DeepWiki の内容はコミュニティ／AI によるインデックスで、本流より遅れる場合があります。",
+    "cardWikiTitle": "DeepWiki",
+    "cardWikiBody": "インクリメンタルジェネレータパイプライン、共有ヘルパー、パッケージング、マルチ Roslyn、CI、テストなど。",
+    "cardGitHubTitle": "GitHub",
+    "cardGitHubBody": "MvvmAIO/Prism.SourceGenerators のソース、Issue、PR、CI バッジ。",
+    "cardSamplesTitle": "サンプルリポジトリ",
+    "cardSamplesBody": "Prism.SourceGenerators.Samples — パッケージを利用する Avalonia プロジェクト。"
+  },
+  "notFound": {
+    "title": "ページが見つかりません",
+    "body": "この URL はドキュメントサイトにありません。サイドバーから移動してください。"
+  }
+}

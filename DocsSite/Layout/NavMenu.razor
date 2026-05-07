@@ -1,27 +1,39 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">Prism.SourceGenerators</a>
-        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+﻿@implements IDisposable
+@using Prism.SourceGenerators.DocsSite.Services
+@inject LocalizationService Loc
+
+<div class="top-row ps-3 navbar navbar-dark border-bottom border-secondary border-opacity-25">
+    <div class="container-fluid flex-column align-items-stretch py-2">
+        <div class="d-flex align-items-center justify-content-between">
+            <a class="navbar-brand fw-semibold mb-0" href="">@Loc.T("common.siteTitle")</a>
+            <button title="Navigation menu" type="button" class="navbar-toggler" @onclick="ToggleNavMenu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+        </div>
+        <div class="small text-white-50 mt-1">@Loc.T("common.siteSubtitle")</div>
     </div>
 </div>
 
 <div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
-    <nav class="nav flex-column">
+    <nav class="nav flex-column py-2">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+                <span class="docs-nav-dot" aria-hidden="true"></span>@Loc.T("nav.home")
             </NavLink>
         </div>
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
+            <NavLink class="nav-link" href="getting-started">
+                <span class="docs-nav-dot" aria-hidden="true"></span>@Loc.T("nav.gettingStarted")
             </NavLink>
         </div>
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
+            <NavLink class="nav-link" href="generators">
+                <span class="docs-nav-dot" aria-hidden="true"></span>@Loc.T("nav.generators")
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="reference">
+                <span class="docs-nav-dot" aria-hidden="true"></span>@Loc.T("nav.reference")
             </NavLink>
         </div>
     </nav>
@@ -32,8 +44,20 @@
 
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
+    protected override void OnInitialized()
+    {
+        Loc.CultureChanged += OnCultureChanged;
+    }
+
+    private void OnCultureChanged() => InvokeAsync(StateHasChanged);
+
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
+    }
+
+    public void Dispose()
+    {
+        Loc.CultureChanged -= OnCultureChanged;
     }
 }

@@ -1,0 +1,33 @@
+@page "/generators"
+@using Prism.SourceGenerators.DocsSite.Services
+@inject LocalizationService Loc
+
+<PageTitle>@Loc.T("generators.pageTitle")</PageTitle>
+
+<h1 class="mb-3">@Loc.T("generators.title")</h1>
+<p class="lead text-muted">@Loc.T("generators.lead")</p>
+
+<p class="small text-muted mb-4">
+    Topics align with the
+    <a href="https://deepwiki.com/MvvmAIO/Prism.SourceGenerators" target="_blank" rel="noopener noreferrer">DeepWiki</a>
+    outline (incremental generator pipeline, command generators, registration internals, PSG diagnostics, packaging).
+</p>
+
+<div class="vstack gap-3 mt-4">
+    <section class="docs-panel p-4 rounded-3 border">
+        <h2 class="h5 mb-2">@Loc.T("generators.obsTitle")</h2>
+        <p class="mb-0">@Loc.T("generators.obsBody")</p>
+    </section>
+    <section class="docs-panel p-4 rounded-3 border">
+        <h2 class="h5 mb-2">@Loc.T("generators.cmdTitle")</h2>
+        <p class="mb-0">@Loc.T("generators.cmdBody")</p>
+    </section>
+    <section class="docs-panel p-4 rounded-3 border">
+        <h2 class="h5 mb-2">@Loc.T("generators.regTitle")</h2>
+        <p class="mb-0">@Loc.T("generators.regBody")</p>
+    </section>
+    <section class="docs-panel p-4 rounded-3 border">
+        <h2 class="h5 mb-2">@Loc.T("generators.diagTitle")</h2>
+        <p class="mb-0">@Loc.T("generators.diagBody")</p>
+    </section>
+</div>

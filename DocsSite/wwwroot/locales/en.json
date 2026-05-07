@@ -1,0 +1,77 @@
+{
+  "nav": {
+    "home": "Overview",
+    "gettingStarted": "Getting started",
+    "generators": "Generators",
+    "reference": "Reference & links"
+  },
+  "common": {
+    "siteTitle": "Prism.SourceGenerators",
+    "siteSubtitle": "Roslyn source generators for Prism MVVM",
+    "openGitHub": "GitHub repository",
+    "openSamples": "Sample apps",
+    "openDeepWiki": "DeepWiki (AI-generated docs)",
+    "openNuGet": "NuGet package",
+    "language": "Language"
+  },
+  "home": {
+    "pageTitle": "Overview — Prism.SourceGenerators",
+    "heroTitle": "Compile-time MVVM for Prism",
+    "heroLead": "MvvmAIO.Prism.SourceGenerators eliminates boilerplate for observable properties, commands, and container registration while preserving BindableBase semantics.",
+    "sectionWhat": "What you get",
+    "whatObservable": "ObservableProperty for fields and C# 13 partial properties, with OnChanging / OnChanged hooks and NotifyPropertyChangedFor.",
+    "whatCommands": "DelegateCommand and AsyncDelegateCommand generation from methods, including ValueTask support.",
+    "whatRegistration": "Attributes such as RegisterForNavigation and RegisterSingleton to emit IContainerRegistry registration code.",
+    "whatDiagnostics": "PSG diagnostics with code fixes (for example MakePartial) where the generator can guide you.",
+    "sectionLayout": "Repository layout",
+    "layoutShared": "Prism.SourceGenerators/ — shared generator logic (.shproj / .projitems).",
+    "layoutCore": "Prism.SourceGenerators.Core/ — attributes consumed by your app and seen by the generator.",
+    "layoutRoslyn": "Prism.SourceGenerators.Roslyn* — version-specific compiler targets for NuGet compatibility.",
+    "layoutBcl": "Prism.Bcl.Commands/ — optional Prism 8 AsyncDelegateCommand compatibility package.",
+    "layoutSamples": "Sample Avalonia apps live in the separate Prism.SourceGenerators.Samples repository.",
+    "sectionMore": "Go deeper",
+    "moreDeepWiki": "DeepWiki mirrors this repo with a navigable outline (architecture, pipeline, diagnostics, packaging).",
+    "moreReadme": "The GitHub README remains the authoritative feature list and API examples."
+  },
+  "gettingStarted": {
+    "pageTitle": "Getting started",
+    "title": "Install and reference",
+    "lead": "Add the NuGet package to a Prism app that uses BindableBase (or compatible base). Use partial types where the generator requires them.",
+    "stepPackageTitle": "1. Add the package",
+    "stepPackageBody": "Install MvvmAIO.Prism.SourceGenerators from NuGet. It bundles the Core attributes assembly.",
+    "stepPartialTitle": "2. Use partial types",
+    "stepPartialBody": "Annotate partial classes so the generator can extend them. Fix PSG0001–PSG0004 with the MakePartial code fix when offered.",
+    "stepPrismTitle": "3. Prism 8 vs 9",
+    "stepPrismBody": "On Prism.Core 8.1.97 you may also need MvvmAIO.Prism.Bcl.Commands for AsyncDelegateCommand. Prism 9 includes async commands in-box.",
+    "stepSamplesTitle": "4. Run the samples",
+    "stepSamplesBody": "Clone Prism.SourceGenerators.Samples for Avalonia demos targeting Prism 8 and Prism 9."
+  },
+  "generators": {
+    "pageTitle": "Generators",
+    "title": "Generator surface area",
+    "lead": "The following areas map closely to the DeepWiki table of contents and the README generator sections.",
+    "obsTitle": "ObservableProperty",
+    "obsBody": "Field-backed and partial-property modes, PropertyAccess, forwarding attributes with property: target, and coordination with NotifyPropertyChangedFor / NotifyCanExecuteChangedFor.",
+    "cmdTitle": "Commands",
+    "cmdBody": "DelegateCommand and AsyncDelegateCommand from methods; can-execute patterns and command dependency refresh.",
+    "regTitle": "Container registration",
+    "regBody": "Registration attributes analyzed to emit Register / RegisterForNavigation calls for Prism IContainerRegistry.",
+    "diagTitle": "Diagnostics & fixes",
+    "diagBody": "PSG codes for unresolved symbols, invalid signatures, and partial-class requirements — many include IDE code fixes."
+  },
+  "reference": {
+    "pageTitle": "Reference & links",
+    "title": "External documentation",
+    "lead": "Use these alongside this micro-site. Content on DeepWiki is community/AI indexed from the repository and may lag behind main.",
+    "cardWikiTitle": "DeepWiki",
+    "cardWikiBody": "Structured topics: incremental generator pipeline, shared helpers, packaging, multi-Roslyn targeting, CI, and testing.",
+    "cardGitHubTitle": "GitHub",
+    "cardGitHubBody": "Source, issues, pull requests, and CI badges for MvvmAIO/Prism.SourceGenerators.",
+    "cardSamplesTitle": "Samples repo",
+    "cardSamplesBody": "Prism.SourceGenerators.Samples — Avalonia projects consuming the package."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "body": "This URL is not part of the documentation site. Use the sidebar to navigate."
+  }
+}

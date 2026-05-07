@@ -1,16 +1,68 @@
 ﻿@inherits LayoutComponentBase
+@implements IDisposable
+@using Prism.SourceGenerators.DocsSite.Services
+@using Prism.SourceGenerators.DocsSite.Components
+@inject LocalizationService Loc
+@inject IJSRuntime JS
+
 <div class="page">
     <div class="sidebar">
         <NavMenu />
     </div>
 
     <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+        <div class="top-row docs-top-row px-4 d-flex flex-wrap align-items-center gap-2 justify-content-between">
+            <div class="d-flex flex-wrap align-items-center gap-3">
+                <a class="docs-top-link" href="https://deepwiki.com/MvvmAIO/Prism.SourceGenerators" target="_blank" rel="noopener noreferrer">@Loc.T("common.openDeepWiki")</a>
+                <a class="docs-top-link" href="https://github.com/MvvmAIO/Prism.SourceGenerators" target="_blank" rel="noopener noreferrer">@Loc.T("common.openGitHub")</a>
+                <a class="docs-top-link" href="https://github.com/MvvmAIO/Prism.SourceGenerators.Samples" target="_blank" rel="noopener noreferrer">@Loc.T("common.openSamples")</a>
+                <a class="docs-top-link" href="https://www.nuget.org/packages/MvvmAIO.Prism.SourceGenerators" target="_blank" rel="noopener noreferrer">@Loc.T("common.openNuGet")</a>
+            </div>
+            <LanguageSwitcher />
         </div>
 
-        <article class="content px-4">
+        <article class="content px-4 pb-5">
             @Body
         </article>
     </main>
 </div>
+
+@code {
+    private bool _cultureBootstrapped;
+
+    protected override void OnInitialized()
+    {
+        Loc.CultureChanged += OnCultureChanged;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Loc.SetCultureAsync("en").ConfigureAwait(false);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || _cultureBootstrapped)
+            return;
+        _cultureBootstrapped = true;
+        try
+        {
+            var stored = await JS.InvokeAsync<string?>("localStorage.getItem", "docsLocale").ConfigureAwait(false);
+            var browser = await JS.InvokeAsync<string?>("eval", "(function(){return navigator.language||'';})()").ConfigureAwait(false);
+            await Loc.ApplyBrowserAndStorageAsync(stored, browser).ConfigureAwait(false);
+        }
+        catch
+        {
+            await Loc.SetCultureAsync("en").ConfigureAwait(false);
+        }
+
+        StateHasChanged();
+    }
+
+    private void OnCultureChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        Loc.CultureChanged -= OnCultureChanged;
+    }
+}

@@ -113,3 +113,59 @@ code {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+/* --- Documentation site --- */
+.docs-hero {
+    background: linear-gradient(125deg, #052767 0%, #3a0647 55%, #0d6efd 100%);
+    box-shadow: 0 0.5rem 1.5rem rgba(5, 39, 103, 0.25);
+}
+
+.docs-card {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.docs-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.35rem 1rem rgba(0, 0, 0, 0.08);
+}
+
+.docs-panel {
+    background: var(--bs-body-bg);
+}
+
+.docs-code {
+    background: rgba(0, 0, 0, 0.05);
+    font-size: 0.875rem;
+}
+
+.docs-list li {
+    margin-bottom: 0.35rem;
+}
+
+.docs-nav-dot {
+    display: inline-block;
+    width: 0.35rem;
+    height: 0.35rem;
+    border-radius: 50%;
+    background: currentColor;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+    opacity: 0.85;
+}
+
+.top-row.docs-top-row {
+    height: auto !important;
+    min-height: 3.5rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.top-row.docs-top-row .docs-top-link {
+    margin-left: 0;
+    margin-right: 0.75rem;
+    font-weight: 500;
+}
+
+.docs-lang .btn {
+    min-width: 2.75rem;
+}
