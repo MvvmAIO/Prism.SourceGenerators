@@ -121,6 +121,28 @@ public sealed class ValidationTests
     }
 
     [Fact]
+    public void NotifyDataErrorInfo_on_non_validator_does_not_emit_ValidateProperty()
+    {
+        const string source = """
+            namespace Demo;
+
+            public partial class Vm : Prism.Mvvm.BindableBase
+            {
+                [ObservableProperty]
+                [NotifyDataErrorInfo]
+                private string _name = "";
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source);
+
+        GeneratedSource propertySource = Assert.Single(
+            output.GeneratedSources.Where(s => s.HintName.EndsWith(".Name.g.cs")));
+
+        Assert.DoesNotContain("ValidateProperty", propertySource.Source);
+    }
+
+    [Fact]
     public void NotifyDataErrorInfo_class_level_on_non_validator_reports_PSG5001()
     {
         const string source = """

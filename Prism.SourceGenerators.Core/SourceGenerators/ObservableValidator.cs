@@ -212,9 +212,24 @@ public abstract class ObservableValidator : INotifyPropertyChanged, INotifyDataE
             allPropertyNames.Add(key);
         }
 
+        // Snapshot which properties had errors before updating the dictionary
+        Dictionary<string, bool> hadErrorsSnapshot = new();
         foreach (string propName in allPropertyNames)
         {
-            bool hadPropErrors = errors.TryGetValue(propName, out List<ValidationResult>? oldList) && oldList!.Count > 0;
+            hadErrorsSnapshot[propName] = errors.TryGetValue(propName, out List<ValidationResult>? oldList) && oldList!.Count > 0;
+        }
+
+        // Update the errors dictionary BEFORE raising events so subscribers see current data
+        errors.Clear();
+        foreach (KeyValuePair<string, List<ValidationResult>> kvp in newErrors)
+        {
+            errors[kvp.Key] = kvp.Value;
+        }
+
+        // Now raise events based on the snapshot vs current state
+        foreach (string propName in allPropertyNames)
+        {
+            bool hadPropErrors = hadErrorsSnapshot[propName];
             bool hasPropErrors = newErrors.TryGetValue(propName, out List<ValidationResult>? newList) && newList!.Count > 0;
 
             if (hasPropErrors && !hadPropErrors)
@@ -231,12 +246,6 @@ public abstract class ObservableValidator : INotifyPropertyChanged, INotifyDataE
             {
                 OnErrorsChanged(propName);
             }
-        }
-
-        errors.Clear();
-        foreach (KeyValuePair<string, List<ValidationResult>> kvp in newErrors)
-        {
-            errors[kvp.Key] = kvp.Value;
         }
     }
 

@@ -153,6 +153,9 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
         ImmutableArray<DiagnosticInfo> validationDiagnostics = ValidateNotifyDataErrorInfo(
             notifyDataErrorInfo, containingType, fieldSymbol, context.SemanticModel.Compilation);
 
+        if (!validationDiagnostics.IsEmpty)
+            notifyDataErrorInfo = false;
+
         ImmutableArray<DiagnosticInfo> allDiagnostics = commandDiagnostics.AddRange(validationDiagnostics);
 
         return new Result<PropertyGenerationInfo>(
@@ -216,6 +219,9 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
         bool notifyDataErrorInfo = HasNotifyDataErrorInfo(propertySymbol, containingType);
         ImmutableArray<DiagnosticInfo> validationDiagnostics = ValidateNotifyDataErrorInfo(
             notifyDataErrorInfo, containingType, propertySymbol, context.SemanticModel.Compilation);
+
+        if (!validationDiagnostics.IsEmpty)
+            notifyDataErrorInfo = false;
 
         ImmutableArray<DiagnosticInfo> allDiagnostics = commandDiagnostics.AddRange(validationDiagnostics);
 
