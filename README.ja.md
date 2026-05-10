@@ -285,6 +285,50 @@ public partial class SimpleViewModel
 
 クラスがすでに `BindableBase` を継承している場合、または基底クラスが `INotifyPropertyChanged` を実装している場合、コードは生成されません。
 
+### `[NotifyDataErrorInfo]`（バリデーション）
+
+`INotifyDataErrorInfo` によるプロパティバリデーションサポートを有効にします。`[NotifyDataErrorInfo]` を個々のフィールド/プロパティ（`[ObservableProperty]` と併用）またはクラス自体に適用して、すべての生成プロパティのバリデーションを有効にします。
+
+含まれる型は `ObservableValidator` を継承する必要があり、`INotifyDataErrorInfo` 実装、`ValidateProperty()`、`ValidateAllProperties()`、`ClearErrors()` メソッドを提供します。
+
+```csharp
+using System.ComponentModel.DataAnnotations;
+using Prism.SourceGenerators;
+
+public partial class RegistrationViewModel : ObservableValidator
+{
+    [ObservableProperty]
+    [NotifyDataErrorInfo]
+    [Required]
+    [MinLength(2)]
+    public partial string Username { get; set; }
+
+    [ObservableProperty]
+    [NotifyDataErrorInfo]
+    [Required]
+    [EmailAddress]
+    public partial string Email { get; set; }
+}
+```
+
+生成された setter は値を設定した後、自動的に `ValidateProperty(value, nameof(Property))` を呼び出します。バリデーションエラーはプロパティごとに追跡され、エラー状態が変化すると `ErrorsChanged` イベントが発生します。
+
+クラスレベルでの使用は、すべての `[ObservableProperty]` メンバーにバリデーションを適用します：
+
+```csharp
+[NotifyDataErrorInfo]
+public partial class FormViewModel : ObservableValidator
+{
+    [ObservableProperty]
+    [Required]
+    public partial string FirstName { get; set; }
+
+    [ObservableProperty]
+    [Required]
+    public partial string LastName { get; set; }
+}
+```
+
 ## 診断
 
 | ID | 説明 |
@@ -302,6 +346,7 @@ public partial class SimpleViewModel
 | PSG2005 | `[NotifyCanExecuteChangedFor]` が参照するコマンドが見つかりません |
 | PSG2006 | `CanExecute` が指すメンバーのシグネチャがコマンドと互換性がありません |
 | PSG3002 | `AsyncDelegateCommand` が見つかりません。**`MvvmAIO.Prism.SourceGenerators`** を使用し、Prism.Core 8.1.97 では **`MvvmAIO.Prism.Bcl.Commands`** を追加するか、Prism 9+ にアップグレードしてください |
+| PSG5001 | `[NotifyDataErrorInfo]` は `ObservableValidator` を継承する型が必要です |
 
 > **クイックフィックス：** PSG0001〜PSG0004 にはすべて IDE のコードフィックスが用意されており、欠落している `partial` 修飾子を自動的に挿入します（波線上で Ctrl+. / Alt+Enter を押すか、「ドキュメント/プロジェクト/ソリューション内のすべての問題を修正」でコードベース全体に一括適用できます）。
 

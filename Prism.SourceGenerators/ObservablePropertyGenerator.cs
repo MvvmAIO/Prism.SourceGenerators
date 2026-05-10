@@ -36,6 +36,8 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
     private const string NotifyCanExecuteChangedForAttributeName = "Prism.SourceGenerators.NotifyCanExecuteChangedForAttribute";
     private const string DelegateCommandAttributeName = "Prism.SourceGenerators.DelegateCommandAttribute";
     private const string AsyncDelegateCommandAttributeName = "Prism.SourceGenerators.AsyncDelegateCommandAttribute";
+    private const string NotifyDataErrorInfoAttributeName = "Prism.SourceGenerators.NotifyDataErrorInfoAttribute";
+    private const string ObservableValidatorMetadataName = "Prism.SourceGenerators.ObservableValidator";
 
     /// <inheritdoc/>
     public void Initialize(IncrementalGeneratorInitializationContext context)
@@ -147,10 +149,16 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
             fieldSymbol,
             context.SemanticModel.Compilation);
 
+        bool notifyDataErrorInfo = HasNotifyDataErrorInfo(fieldSymbol, containingType);
+        ImmutableArray<DiagnosticInfo> validationDiagnostics = ValidateNotifyDataErrorInfo(
+            notifyDataErrorInfo, containingType, fieldSymbol, context.SemanticModel.Compilation);
+
+        ImmutableArray<DiagnosticInfo> allDiagnostics = commandDiagnostics.AddRange(validationDiagnostics);
+
         return new Result<PropertyGenerationInfo>(
             new PropertyGenerationInfo(hierarchy, fieldName, propertyName, fieldType,
-                IsPartialProperty: false, generatedPropertyAccessibility, Accessibility.NotApplicable, notifyProps, notifyCommands, forwardedAttributes),
-            commandDiagnostics);
+                IsPartialProperty: false, generatedPropertyAccessibility, Accessibility.NotApplicable, notifyProps, notifyCommands, forwardedAttributes, notifyDataErrorInfo),
+            allDiagnostics);
     }
 
     private static Result<PropertyGenerationInfo> ExtractPropertyInfo(
@@ -205,10 +213,16 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
         ImmutableArray<string> forwardedAttributes = CollectForwardedAttributesFromProperty(
             propertySyntax, context.SemanticModel, token);
 
+        bool notifyDataErrorInfo = HasNotifyDataErrorInfo(propertySymbol, containingType);
+        ImmutableArray<DiagnosticInfo> validationDiagnostics = ValidateNotifyDataErrorInfo(
+            notifyDataErrorInfo, containingType, propertySymbol, context.SemanticModel.Compilation);
+
+        ImmutableArray<DiagnosticInfo> allDiagnostics = commandDiagnostics.AddRange(validationDiagnostics);
+
         return new Result<PropertyGenerationInfo>(
             new PropertyGenerationInfo(hierarchy, propertyName, propertyName, fieldType,
-                IsPartialProperty: true, propertySymbol.DeclaredAccessibility, setterAccessibility, notifyProps, notifyCommands, forwardedAttributes),
-            commandDiagnostics);
+                IsPartialProperty: true, propertySymbol.DeclaredAccessibility, setterAccessibility, notifyProps, notifyCommands, forwardedAttributes, notifyDataErrorInfo),
+            allDiagnostics);
     }
 
     private static ImmutableArray<string> CollectNotifyPropertyChangedFor(ISymbol symbol) =>
@@ -374,7 +388,8 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
                 string fqn = attributeType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
                 if (fqn == "global::" + AttributeName
                     || fqn == "global::" + NotifyPropertyChangedForAttributeName
-                    || fqn == "global::" + NotifyCanExecuteChangedForAttributeName)
+                    || fqn == "global::" + NotifyCanExecuteChangedForAttributeName
+                    || fqn == "global::" + NotifyDataErrorInfoAttributeName)
                 {
                     continue;
                 }
@@ -489,6 +504,73 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
         if (fieldName.StartsWith("_") && fieldName.Length > 1)
             return char.ToUpperInvariant(fieldName[1]) + fieldName.Substring(2);
         return char.ToUpperInvariant(fieldName[0]) + fieldName.Substring(1);
+    }
+
+    /// <summary>
+    /// Determines whether the member or its containing type has <c>[NotifyDataErrorInfo]</c>.
+    /// The attribute can be applied at field/property level or at class level.
+    /// </summary>
+    private static bool HasNotifyDataErrorInfo(ISymbol memberSymbol, INamedTypeSymbol containingType)
+    {
+        // Check member-level attribute
+        foreach (AttributeData attr in memberSymbol.GetAttributes())
+        {
+            if (attr.AttributeClass?.ToDisplayString() == NotifyDataErrorInfoAttributeName)
+                return true;
+        }
+
+        // Check class-level attribute (walk up the hierarchy for inherited class-level)
+        for (INamedTypeSymbol? current = containingType; current is not null; current = current.BaseType)
+        {
+            foreach (AttributeData attr in current.GetAttributes())
+            {
+                if (attr.AttributeClass?.ToDisplayString() == NotifyDataErrorInfoAttributeName)
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Validates that when <c>[NotifyDataErrorInfo]</c> is used, the containing type inherits from
+    /// <c>ObservableValidator</c>. If not, reports <see cref="DiagnosticDescriptors.NotifyDataErrorInfoOnNonValidator"/>.
+    /// </summary>
+    private static ImmutableArray<DiagnosticInfo> ValidateNotifyDataErrorInfo(
+        bool notifyDataErrorInfo,
+        INamedTypeSymbol containingType,
+        ISymbol attributedSymbol,
+        Compilation compilation)
+    {
+        if (!notifyDataErrorInfo)
+            return ImmutableArray<DiagnosticInfo>.Empty;
+
+        if (InheritsFromObservableValidator(containingType, compilation))
+            return ImmutableArray<DiagnosticInfo>.Empty;
+
+        return ImmutableArray.Create(
+            DiagnosticInfo.Create(
+                DiagnosticDescriptors.NotifyDataErrorInfoOnNonValidator,
+                attributedSymbol,
+                containingType.Name));
+    }
+
+    /// <summary>
+    /// Checks whether a type inherits from <c>Prism.SourceGenerators.ObservableValidator</c>.
+    /// </summary>
+    private static bool InheritsFromObservableValidator(INamedTypeSymbol type, Compilation compilation)
+    {
+        INamedTypeSymbol? validatorType = compilation.GetTypeByMetadataName(ObservableValidatorMetadataName);
+        if (validatorType is null)
+            return false;
+
+        for (INamedTypeSymbol? current = type; current is not null; current = current.BaseType)
+        {
+            if (SymbolEqualityComparer.Default.Equals(current, validatorType))
+                return true;
+        }
+
+        return false;
     }
 }
 

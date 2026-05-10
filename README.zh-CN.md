@@ -286,6 +286,50 @@ public partial class SimpleViewModel
 
 如果类已经继承了 `BindableBase` 或其基类已实现 `INotifyPropertyChanged`，则不会生成任何代码。
 
+### `[NotifyDataErrorInfo]`（验证）
+
+通过 `INotifyDataErrorInfo` 启用属性验证支持。将 `[NotifyDataErrorInfo]` 应用于单个字段/属性（与 `[ObservableProperty]` 一起使用），或应用于类本身以启用所有生成属性的验证。
+
+包含类型必须继承自 `ObservableValidator`，它提供 `INotifyDataErrorInfo` 实现、`ValidateProperty()`、`ValidateAllProperties()` 和 `ClearErrors()` 方法。
+
+```csharp
+using System.ComponentModel.DataAnnotations;
+using Prism.SourceGenerators;
+
+public partial class RegistrationViewModel : ObservableValidator
+{
+    [ObservableProperty]
+    [NotifyDataErrorInfo]
+    [Required]
+    [MinLength(2)]
+    public partial string Username { get; set; }
+
+    [ObservableProperty]
+    [NotifyDataErrorInfo]
+    [Required]
+    [EmailAddress]
+    public partial string Email { get; set; }
+}
+```
+
+生成的 setter 会在设置值后自动调用 `ValidateProperty(value, nameof(Property))`。验证错误按属性跟踪，错误状态变化时触发 `ErrorsChanged` 事件。
+
+类级别用法会对所有 `[ObservableProperty]` 成员启用验证：
+
+```csharp
+[NotifyDataErrorInfo]
+public partial class FormViewModel : ObservableValidator
+{
+    [ObservableProperty]
+    [Required]
+    public partial string FirstName { get; set; }
+
+    [ObservableProperty]
+    [Required]
+    public partial string LastName { get; set; }
+}
+```
+
 ## 诊断
 
 | ID | 描述 |
@@ -303,6 +347,7 @@ public partial class SimpleViewModel
 | PSG2005 | `[NotifyCanExecuteChangedFor]` 引用的命令未找到 |
 | PSG2006 | `CanExecute` 所指向的成员签名与命令不兼容 |
 | PSG3002 | 未找到 `AsyncDelegateCommand`；请安装 **`MvvmAIO.Prism.SourceGenerators`**，且在 Prism.Core 8.1.97 上安装 **`MvvmAIO.Prism.Bcl.Commands`**（或升级到 Prism 9+） |
+| PSG5001 | `[NotifyDataErrorInfo]` 要求包含类型继承自 `ObservableValidator` |
 
 > **快速修复：** PSG0001–PSG0004 都提供 IDE 代码修复，会自动插入缺失的 `partial` 修饰符（在波浪线处按 Ctrl+. / Alt+Enter，或使用"修复文档/项目/解决方案中的所有问题"在整个代码库中批量应用）。
 
