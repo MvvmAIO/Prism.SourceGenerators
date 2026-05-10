@@ -208,4 +208,146 @@ public sealed class ValidationTests
         Assert.Contains("ValidateProperty(value, nameof(FirstName));", propertySource.Source);
         Assert.Contains("RaisePropertyChanged(nameof(FullName));", propertySource.Source);
     }
+
+    [Fact]
+    public void NotifyDataErrorInfo_partial_property_on_non_validator_reports_PSG5001_and_suppresses()
+    {
+        const string source = """
+            namespace Demo;
+
+            public partial class Vm : Prism.Mvvm.BindableBase
+            {
+                [ObservableProperty]
+                [NotifyDataErrorInfo]
+                public partial string Name { get; set; }
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source);
+
+        Assert.Contains(output.Diagnostics, d => d.Id == "PSG5001");
+
+        GeneratedSource propertySource = Assert.Single(
+            output.GeneratedSources.Where(s => s.HintName.EndsWith(".Name.g.cs")));
+
+        Assert.DoesNotContain("ValidateProperty", propertySource.Source);
+    }
+
+    [Fact]
+    public void NotifyDataErrorInfo_class_level_and_member_level_mixed()
+    {
+        const string source = """
+            namespace Demo;
+
+            [NotifyDataErrorInfo]
+            public partial class Vm : Prism.SourceGenerators.ObservableValidator
+            {
+                [ObservableProperty]
+                private string _firstName = "";
+
+                [ObservableProperty]
+                [NotifyDataErrorInfo]
+                private string _lastName = "";
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source);
+
+        GeneratedSource firstNameSource = Assert.Single(
+            output.GeneratedSources.Where(s => s.HintName.EndsWith(".FirstName.g.cs")));
+        GeneratedSource lastNameSource = Assert.Single(
+            output.GeneratedSources.Where(s => s.HintName.EndsWith(".LastName.g.cs")));
+
+        Assert.Contains("ValidateProperty(value, nameof(FirstName));", firstNameSource.Source);
+        Assert.Contains("ValidateProperty(value, nameof(LastName));", lastNameSource.Source);
+
+        Assert.DoesNotContain(output.Diagnostics, d => d.Id == "PSG5001");
+    }
+
+    [Fact]
+    public void NotifyDataErrorInfo_PSG5001_message_contains_type_name()
+    {
+        const string source = """
+            namespace Demo;
+
+            public partial class LoginForm : Prism.Mvvm.BindableBase
+            {
+                [ObservableProperty]
+                [NotifyDataErrorInfo]
+                private string _email = "";
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source);
+
+        Diagnostic[] psg5001 = output.Diagnostics.Where(d => d.Id == "PSG5001").ToArray();
+        Assert.NotEmpty(psg5001);
+        Assert.All(psg5001, d =>
+        {
+            Assert.Contains("LoginForm", d.GetMessage());
+            Assert.Contains("ObservableValidator", d.GetMessage());
+        });
+    }
+
+    [Fact]
+    public void NotifyDataErrorInfo_ValidateProperty_appears_after_command_notifications()
+    {
+        const string source = """
+            namespace Demo;
+
+            public partial class Vm : Prism.SourceGenerators.ObservableValidator
+            {
+                [ObservableProperty]
+                [NotifyDataErrorInfo]
+                [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+                private string _name = "";
+
+                [DelegateCommand]
+                private void Save() { }
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source);
+
+        GeneratedSource propertySource = Assert.Single(
+            output.GeneratedSources.Where(s => s.HintName.EndsWith(".Name.g.cs")));
+
+        string src = propertySource.Source;
+        int commandIdx = src.IndexOf("RaiseCanExecuteChanged");
+        int validateIdx = src.IndexOf("ValidateProperty(value, nameof(Name))");
+
+        Assert.True(commandIdx >= 0, "Expected RaiseCanExecuteChanged in generated source");
+        Assert.True(validateIdx >= 0, "Expected ValidateProperty in generated source");
+        Assert.True(validateIdx > commandIdx, "ValidateProperty should appear after command notifications");
+    }
+
+    [Fact]
+    public void NotifyDataErrorInfo_on_validator_no_PSG5001()
+    {
+        const string source = """
+            namespace Demo;
+
+            public partial class Vm : Prism.SourceGenerators.ObservableValidator
+            {
+                [ObservableProperty]
+                [NotifyDataErrorInfo]
+                private string _name = "";
+
+                [ObservableProperty]
+                private int _age;
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source);
+
+        Assert.DoesNotContain(output.Diagnostics, d => d.Id == "PSG5001");
+
+        GeneratedSource nameSource = Assert.Single(
+            output.GeneratedSources.Where(s => s.HintName.EndsWith(".Name.g.cs")));
+        GeneratedSource ageSource = Assert.Single(
+            output.GeneratedSources.Where(s => s.HintName.EndsWith(".Age.g.cs")));
+
+        Assert.Contains("ValidateProperty", nameSource.Source);
+        Assert.DoesNotContain("ValidateProperty", ageSource.Source);
+    }
 }

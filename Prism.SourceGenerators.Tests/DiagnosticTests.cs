@@ -143,6 +143,38 @@ public sealed class DiagnosticTests
             private int CanSave() => 1;
         }
         """)]
+    [InlineData("PSG5001", """
+        namespace Demo;
+
+        public partial class Foo : Prism.Mvvm.BindableBase
+        {
+            [ObservableProperty]
+            [NotifyDataErrorInfo]
+            private string _name = "";
+        }
+        """)]
+    [InlineData("PSG5001", """
+        namespace Demo;
+
+        [NotifyDataErrorInfo]
+        public partial class Foo : Prism.Mvvm.BindableBase
+        {
+            [ObservableProperty]
+            private string _name = "";
+        }
+        """)]
+    [InlineData("PSG0002", """
+        namespace Demo;
+
+        public class Foo : Prism.Mvvm.BindableBase
+        {
+            [AsyncDelegateCommand]
+            private async System.Threading.Tasks.Task RunAsync()
+            {
+                await System.Threading.Tasks.Task.CompletedTask;
+            }
+        }
+        """)]
     public void Reports_expected_diagnostic_for_invalid_input(string diagnosticId, string source)
     {
         GeneratorRunOutput output = GeneratorTestHarness.Run(source);
@@ -152,6 +184,141 @@ public sealed class DiagnosticTests
         Assert.True(
             containsExpectedDiagnostic,
             $"Expected diagnostic '{diagnosticId}' was not reported. Actual diagnostics: {string.Join(", ", output.Diagnostics.Select(d => d.Id))}");
+    }
+
+    [Theory]
+    [InlineData("""
+        namespace Demo;
+
+        public partial class Foo : Prism.Mvvm.BindableBase
+        {
+            [ObservableProperty]
+            private string _name = "";
+        }
+        """)]
+    [InlineData("""
+        namespace Demo;
+
+        public partial class Foo : Prism.Mvvm.BindableBase
+        {
+            [DelegateCommand]
+            private void Save()
+            {
+            }
+        }
+        """)]
+    [InlineData("""
+        namespace Demo;
+
+        public partial class Foo : Prism.SourceGenerators.ObservableValidator
+        {
+            [ObservableProperty]
+            [NotifyDataErrorInfo]
+            private string _name = "";
+        }
+        """)]
+    public void Valid_code_does_not_report_PSG_diagnostics(string source)
+    {
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source);
+
+        Diagnostic[] psgDiagnostics = output.Diagnostics
+            .Where(d => d.Id.StartsWith("PSG", System.StringComparison.Ordinal))
+            .ToArray();
+
+        Assert.Empty(psgDiagnostics);
+    }
+
+    [Fact]
+    public void PSG5001_message_format_includes_type_name()
+    {
+        const string source = """
+            namespace Demo;
+
+            public partial class MyViewModel : Prism.Mvvm.BindableBase
+            {
+                [ObservableProperty]
+                [NotifyDataErrorInfo]
+                private string _name = "";
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source);
+
+        Diagnostic[] psg5001 = output.Diagnostics.Where(d => d.Id == "PSG5001").ToArray();
+        Assert.NotEmpty(psg5001);
+        Assert.All(psg5001, d =>
+        {
+            Assert.Contains("MyViewModel", d.GetMessage());
+            Assert.Contains("ObservableValidator", d.GetMessage());
+        });
+    }
+
+    [Fact]
+    public void Multiple_diagnostics_reported_on_same_type()
+    {
+        const string source = """
+            namespace Demo;
+
+            public class Foo : Prism.Mvvm.BindableBase
+            {
+                [ObservableProperty]
+                private string _name = "";
+
+                [DelegateCommand]
+                private void Save()
+                {
+                }
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source);
+
+        Assert.Contains(output.Diagnostics, d => d.Id == "PSG0001");
+        Assert.Contains(output.Diagnostics, d => d.Id == "PSG0002");
+    }
+
+    [Fact]
+    public void PSG5001_on_partial_property_non_validator()
+    {
+        const string source = """
+            namespace Demo;
+
+            public partial class Foo : Prism.Mvvm.BindableBase
+            {
+                [ObservableProperty]
+                [NotifyDataErrorInfo]
+                public partial string Name { get; set; }
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source);
+
+        Assert.Contains(output.Diagnostics, d => d.Id == "PSG5001");
+    }
+
+    [Fact]
+    public void PSG2005_message_format_includes_command_and_type_names()
+    {
+        const string source = """
+            namespace Demo;
+
+            public partial class MyVm : Prism.Mvvm.BindableBase
+            {
+                [ObservableProperty]
+                [NotifyCanExecuteChangedFor("MissingCmd")]
+                private string _name = "";
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source);
+
+        Diagnostic[] psg2005 = output.Diagnostics.Where(d => d.Id == "PSG2005").ToArray();
+        Assert.NotEmpty(psg2005);
+        Assert.All(psg2005, d =>
+        {
+            Assert.Contains("MissingCmd", d.GetMessage());
+            Assert.Contains("MyVm", d.GetMessage());
+        });
     }
 
     [Fact]

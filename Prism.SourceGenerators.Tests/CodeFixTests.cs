@@ -111,6 +111,102 @@ public class CodeFixTests
                 """);
 
     [Fact]
+    public Task PSG0002_inserts_partial_on_class_with_async_delegate_command() =>
+        AssertFixAsync(
+            diagnosticId: "PSG0002",
+            source: """
+                namespace Demo;
+
+                public class Vm : Prism.Mvvm.BindableBase
+                {
+                    [AsyncDelegateCommand]
+                    private async System.Threading.Tasks.Task RunAsync()
+                    {
+                        await System.Threading.Tasks.Task.CompletedTask;
+                    }
+                }
+                """,
+            expected: """
+                namespace Demo;
+
+                public partial class Vm : Prism.Mvvm.BindableBase
+                {
+                    [AsyncDelegateCommand]
+                    private async System.Threading.Tasks.Task RunAsync()
+                    {
+                        await System.Threading.Tasks.Task.CompletedTask;
+                    }
+                }
+                """);
+
+    [Fact]
+    public Task PSG0001_inserts_partial_on_sealed_class() =>
+        AssertFixAsync(
+            diagnosticId: "PSG0001",
+            source: """
+                namespace Demo;
+
+                public sealed class Vm : Prism.Mvvm.BindableBase
+                {
+                    [ObservableProperty]
+                    private string _name = "";
+                }
+                """,
+            expected: """
+                namespace Demo;
+
+                public sealed partial class Vm : Prism.Mvvm.BindableBase
+                {
+                    [ObservableProperty]
+                    private string _name = "";
+                }
+                """);
+
+    [Fact]
+    public Task PSG0003_inserts_partial_on_internal_property() =>
+        AssertFixAsync(
+            diagnosticId: "PSG0003",
+            source: """
+                namespace Demo;
+
+                public partial class Vm : Prism.Mvvm.BindableBase
+                {
+                    [ObservableProperty]
+                    internal string Title { get; set; }
+                }
+                """,
+            expected: """
+                namespace Demo;
+
+                public partial class Vm : Prism.Mvvm.BindableBase
+                {
+                    [ObservableProperty]
+                    internal partial string Title { get; set; }
+                }
+                """);
+
+    [Fact]
+    public Task PSG0004_inserts_partial_on_internal_class() =>
+        AssertFixAsync(
+            diagnosticId: "PSG0004",
+            source: """
+                namespace Demo;
+
+                [BindableBase]
+                internal class Vm
+                {
+                }
+                """,
+            expected: """
+                namespace Demo;
+
+                [BindableBase]
+                internal partial class Vm
+                {
+                }
+                """);
+
+    [Fact]
     public async Task PSG0001_does_not_register_fix_when_class_already_partial()
     {
         const string source = """
@@ -128,6 +224,89 @@ public class CodeFixTests
         // The partial keyword is already present, so the analyzer should not even fire — but defensively,
         // ensure no fix is registered (and no exception thrown if we *did* try to apply it).
         Assert.Empty(actions);
+    }
+
+    [Fact]
+    public async Task PSG0002_does_not_register_fix_when_class_already_partial()
+    {
+        const string source = """
+            namespace Demo;
+
+            public partial class Vm : Prism.Mvvm.BindableBase
+            {
+                [DelegateCommand]
+                private void Hello() { }
+            }
+            """;
+
+        ImmutableArray<CodeAction> actions = await GetCodeActionsAsync(source, "PSG0002");
+        Assert.Empty(actions);
+    }
+
+    [Fact]
+    public async Task PSG0003_does_not_register_fix_when_property_already_partial()
+    {
+        const string source = """
+            namespace Demo;
+
+            public partial class Vm : Prism.Mvvm.BindableBase
+            {
+                [ObservableProperty]
+                public partial string Name { get; set; }
+            }
+            """;
+
+        ImmutableArray<CodeAction> actions = await GetCodeActionsAsync(source, "PSG0003");
+        Assert.Empty(actions);
+    }
+
+    [Fact]
+    public async Task PSG0004_does_not_register_fix_when_class_already_partial()
+    {
+        const string source = """
+            namespace Demo;
+
+            [BindableBase]
+            public partial class Vm
+            {
+            }
+            """;
+
+        ImmutableArray<CodeAction> actions = await GetCodeActionsAsync(source, "PSG0004");
+        Assert.Empty(actions);
+    }
+
+    [Fact]
+    public Task PSG0001_and_PSG0002_on_same_class_both_fixable()
+    {
+        // Class has both [ObservableProperty] and [DelegateCommand] → PSG0001 + PSG0002
+        // Fixing PSG0001 inserts partial, which also resolves PSG0002
+        return AssertFixAsync(
+            diagnosticId: "PSG0001",
+            source: """
+                namespace Demo;
+
+                public class Vm : Prism.Mvvm.BindableBase
+                {
+                    [ObservableProperty]
+                    private string _name = "";
+
+                    [DelegateCommand]
+                    private void Save() { }
+                }
+                """,
+            expected: """
+                namespace Demo;
+
+                public partial class Vm : Prism.Mvvm.BindableBase
+                {
+                    [ObservableProperty]
+                    private string _name = "";
+
+                    [DelegateCommand]
+                    private void Save() { }
+                }
+                """);
     }
 
     private static async Task AssertFixAsync(string diagnosticId, string source, string expected)
