@@ -1,3 +1,5 @@
+**[权威文档站点（English / 中文 / 日本語）](https://mvvmaio.github.io/Prism.SourceGenerators.Docs/)**
+
 **[首页](Home)**
 
 ### 使用指南
@@ -14,4 +16,5 @@
 ### 仓库链接
 - [README（英文）](https://github.com/MvvmAIO/Prism.SourceGenerators/blob/master/README.md)
 - [README（简体中文）](https://github.com/MvvmAIO/Prism.SourceGenerators/blob/master/README.zh-CN.md)
+- [README（日本語）](https://github.com/MvvmAIO/Prism.SourceGenerators/blob/master/README.ja.md)
 - [CHANGELOG](https://github.com/MvvmAIO/Prism.SourceGenerators/blob/master/CHANGELOG.md)

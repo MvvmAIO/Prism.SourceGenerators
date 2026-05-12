@@ -42,7 +42,7 @@ dotnet run --project build/_build.csproj -- --target Publish --configuration Rel
 
 ## 四、把主仓库里的 `wiki/` 同步到 GitHub Wiki
 
-Wiki 内容维护在主仓库的 **`wiki/`** 目录（与 **`.wiki.git`** 远程分离，便于 PR 与 Code Review）。
+**完整、多语言的权威说明**以 **[文档站点](https://mvvmaio.github.io/Prism.SourceGenerators.Docs/)** 为准；本 Wiki 与 README 仅作简要介绍。主仓库 **`wiki/`** 目录与 **`.wiki.git`** 远程分离，便于 PR 与 Code Review；下面说明如何推送到 GitHub Wiki。
 
 **一次性克隆 Wiki 仓库：**
 

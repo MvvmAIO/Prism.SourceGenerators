@@ -12,7 +12,7 @@ Thank you for your interest in this project. The following guidelines help keep 
 - Maintainers merge with **Squash and merge** for routine PRs. Write commit messages and PR titles so the squashed commit message stays readable.
 - **CI must pass** before merge unless a maintainer explicitly agrees to an exception.
 
-Chinese-language docs and wiki live in the repository and [GitHub Wiki](https://github.com/MvvmAIO/Prism.SourceGenerators/wiki); technical discussion in issues and PRs may be in English or Chinese.
+The **canonical product manual** is the static documentation site **[Prism.SourceGenerators.Docs](https://mvvmaio.github.io/Prism.SourceGenerators.Docs/)** (repo **[Prism.SourceGenerators.Docs](https://github.com/MvvmAIO/Prism.SourceGenerators.Docs)**). This repository’s **README** files and **[GitHub Wiki](https://github.com/MvvmAIO/Prism.SourceGenerators/wiki)** (tracked under [`wiki/`](https://github.com/MvvmAIO/Prism.SourceGenerators/tree/master/wiki)) are **short entry points** only. Technical discussion in issues and PRs may be in English or Chinese.
 
 ---
 
@@ -106,4 +106,4 @@ Do not commit **secrets** (NuGet API keys, PATs, private feed URLs with credenti
 
 ## Questions
 
-Open a [discussion-style issue](https://github.com/MvvmAIO/Prism.SourceGenerators/issues/new/choose) or ask in your PR. For consumer usage (not hacking on this repo), see **[README.md](README.md)** and the **[Wiki](https://github.com/MvvmAIO/Prism.SourceGenerators/wiki)**.
+Open a [discussion-style issue](https://github.com/MvvmAIO/Prism.SourceGenerators/issues/new/choose) or ask in your PR. For consumer usage (not hacking on this repo), see the **[documentation site](https://mvvmaio.github.io/Prism.SourceGenerators.Docs/)**, then **[README.md](README.md)** and the **[Wiki](https://github.com/MvvmAIO/Prism.SourceGenerators/wiki)** for brief notes.

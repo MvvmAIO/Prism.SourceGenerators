@@ -13,6 +13,14 @@
 - `Tests` 徽章会直接显示最新通过/失败/跳过数量。
 - 运行还会上传 `test-results`（`.trx`）制品，可用于查看详细测试报告。
 
+## 文档说明（README、Wiki、文档站点）
+
+| 渠道 | 说明 |
+|------|------|
+| **[文档站点](https://mvvmaio.github.io/Prism.SourceGenerators.Docs/)**（[源码仓库](https://github.com/MvvmAIO/Prism.SourceGenerators.Docs)） | **权威**：多语言、完整生成器参考、**PSG** 诊断表、架构与 CI 等。深读与交叉链接请以本站为准。 |
+| **本 README** / [English](README.md) / [日本語](README.ja.md) | 仓库首屏简介与常用代码片段，**不作**完整手册。 |
+| **[GitHub Wiki](https://github.com/MvvmAIO/Prism.SourceGenerators/wiki)**（主仓库 [`wiki/`](https://github.com/MvvmAIO/Prism.SourceGenerators/tree/master/wiki) 目录同步，便于 PR） | 中文导读与条目化笔记，**不是**编译器诊断或 API 的合同文本。 |
+
 ## 项目结构
 
 ```
