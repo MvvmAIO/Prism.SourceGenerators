@@ -69,6 +69,11 @@ internal static class ObservablePropertySyntax
             propertySource.AppendLine($"            {commandName}?.RaiseCanExecuteChanged();");
         }
 
+        if (info.NotifyDataErrorInfo)
+        {
+            propertySource.AppendLine($"            ValidateProperty(value, nameof({info.PropertyName}));");
+        }
+
         propertySource.AppendLine("        }");
         propertySource.AppendLine("    }");
         propertySource.AppendLine("}");

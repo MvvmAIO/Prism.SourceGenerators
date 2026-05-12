@@ -298,6 +298,50 @@ public partial class SimpleViewModel
 
 If the class already inherits from `BindableBase` or a base class that implements `INotifyPropertyChanged`, no code is generated.
 
+### `[NotifyDataErrorInfo]` (Validation)
+
+Enables property validation support via `INotifyDataErrorInfo`. Apply `[NotifyDataErrorInfo]` to individual fields/properties (alongside `[ObservableProperty]`) or to the class itself to enable validation for all generated properties.
+
+The containing type must inherit from `ObservableValidator`, which provides `INotifyDataErrorInfo` implementation, `ValidateProperty()`, `ValidateAllProperties()`, and `ClearErrors()` methods.
+
+```csharp
+using System.ComponentModel.DataAnnotations;
+using Prism.SourceGenerators;
+
+public partial class RegistrationViewModel : ObservableValidator
+{
+    [ObservableProperty]
+    [NotifyDataErrorInfo]
+    [Required]
+    [MinLength(2)]
+    public partial string Username { get; set; }
+
+    [ObservableProperty]
+    [NotifyDataErrorInfo]
+    [Required]
+    [EmailAddress]
+    public partial string Email { get; set; }
+}
+```
+
+The generated setter automatically calls `ValidateProperty(value, nameof(Property))` after setting the value. Validation errors are tracked per-property and the `ErrorsChanged` event is raised when the error state changes.
+
+Class-level usage applies validation to all `[ObservableProperty]` members:
+
+```csharp
+[NotifyDataErrorInfo]
+public partial class FormViewModel : ObservableValidator
+{
+    [ObservableProperty]
+    [Required]
+    public partial string FirstName { get; set; }
+
+    [ObservableProperty]
+    [Required]
+    public partial string LastName { get; set; }
+}
+```
+
 ## Diagnostics
 
 | ID | Description |
@@ -315,6 +359,7 @@ If the class already inherits from `BindableBase` or a base class that implement
 | PSG2005 | `[NotifyCanExecuteChangedFor]` references a command that was not found |
 | PSG2006 | `CanExecute` names a member whose signature is not compatible with the command |
 | PSG3002 | `AsyncDelegateCommand` not found; install **`MvvmAIO.Prism.SourceGenerators`** and, on Prism.Core 8.1.97, **`MvvmAIO.Prism.Bcl.Commands`** (or upgrade to Prism 9+) |
+| PSG5001 | `[NotifyDataErrorInfo]` requires the containing type to inherit from `ObservableValidator` |
 
 > **Quick fix:** PSG0001–PSG0004 all have an IDE code fix that inserts the missing `partial` modifier (Ctrl+. / Alt+Enter on the squiggle, or "Fix all in document/project/solution" to apply across the whole codebase).
 
