@@ -20,7 +20,8 @@ internal static class PropertyChangingAnalysis
             return false;
 
         if (TypeHasBindableBaseAttribute(containingType, compilation)
-            && !InheritsPrismMvvmBindableBase(containingType, compilation))
+            && !InheritsPrismMvvmBindableBase(containingType, compilation)
+            && !BindableValidatorMetadataExtractor.TypeHasBindableValidatorAttribute(containingType, compilation))
         {
             return false;
         }

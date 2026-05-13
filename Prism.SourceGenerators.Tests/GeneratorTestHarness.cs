@@ -69,8 +69,10 @@ internal static class GeneratorTestHarness
 
             namespace Prism.Mvvm
             {
-                public abstract class BindableBase
+                public abstract class BindableBase : System.ComponentModel.INotifyPropertyChanged
                 {
+                    public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+
                     protected bool SetProperty<T>(ref T storage, T value, string? propertyName = null)
                     {
                         if (System.Collections.Generic.EqualityComparer<T>.Default.Equals(storage, value))
@@ -134,6 +136,7 @@ internal static class GeneratorTestHarness
 
         IIncrementalGenerator[] generators =
         {
+            new BindableValidatorGenerator(),
             new ObservablePropertyGenerator(),
             new PropertyChangingGenerator(),
             new DelegateCommandGenerator(),

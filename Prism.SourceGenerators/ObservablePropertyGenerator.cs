@@ -591,7 +591,7 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
         if (!notifyDataErrorInfo)
             return ImmutableArray<DiagnosticInfo>.Empty;
 
-        if (InheritsFromBindableValidator(containingType, compilation))
+        if (TypeSupportsNotifyDataErrorInfoValidation(containingType, compilation))
             return ImmutableArray<DiagnosticInfo>.Empty;
 
         return ImmutableArray.Create(
@@ -599,6 +599,17 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
                 DiagnosticDescriptors.NotifyDataErrorInfoOnNonValidator,
                 attributedSymbol,
                 containingType.Name));
+    }
+
+    /// <summary>
+    /// Whether <c>[NotifyDataErrorInfo]</c> can emit <c>ValidateProperty</c> for this type (inherits <c>BindableValidator</c> or uses <c>[BindableValidator]</c>).
+    /// </summary>
+    private static bool TypeSupportsNotifyDataErrorInfoValidation(INamedTypeSymbol type, Compilation compilation)
+    {
+        if (InheritsFromBindableValidator(type, compilation))
+            return true;
+
+        return BindableValidatorMetadataExtractor.TypeHasBindableValidatorAttribute(type, compilation);
     }
 
     /// <summary>

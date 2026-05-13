@@ -14,6 +14,11 @@ namespace Prism.SourceGenerators;
 /// properties contained in it.
 /// </para>
 /// <para>
+/// Alternatively, apply <see cref="BindableValidatorAttribute"/> to a partial class so the generator supplies
+/// <see cref="BindableValidator"/> (when the type has no declared base) or <see cref="System.ComponentModel.INotifyDataErrorInfo"/>
+/// support when the type already inherits another base class.
+/// </para>
+/// <para>
 /// Example usage:
 /// <code>
 /// partial class MyViewModel : BindableValidator
