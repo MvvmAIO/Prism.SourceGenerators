@@ -37,7 +37,7 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
     private const string DelegateCommandAttributeName = "Prism.SourceGenerators.DelegateCommandAttribute";
     private const string AsyncDelegateCommandAttributeName = "Prism.SourceGenerators.AsyncDelegateCommandAttribute";
     private const string NotifyDataErrorInfoAttributeName = "Prism.SourceGenerators.NotifyDataErrorInfoAttribute";
-    private const string ObservableValidatorMetadataName = "Prism.SourceGenerators.ObservableValidator";
+    private const string BindableValidatorMetadataName = "Prism.SourceGenerators.BindableValidator";
 
     /// <inheritdoc/>
     public void Initialize(IncrementalGeneratorInitializationContext context)
@@ -330,9 +330,10 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
     }
 
     /// <summary>
-    /// Collects attributes attached to a field via the explicit <c>[property: Xxx]</c> target so they can be
-    /// forwarded onto the generated property. Each attribute is rendered with a fully-qualified type name;
-    /// argument-list syntax is preserved verbatim (literals, <c>nameof</c>/<c>typeof</c>, etc.).
+    /// Collects attributes on a field that should appear on the generated property: untargeted lists and
+    /// <c>[property: …]</c>. Lists explicitly targeting <c>field</c> only are skipped; other explicit targets
+    /// (e.g. <c>method</c>) are skipped. Generator-owned attributes are excluded so DataAnnotations and similar
+    /// metadata on the field are forwarded for reflection-based APIs (e.g. <c>Validator.TryValidateObject</c>).
     /// </summary>
     private static ImmutableArray<string> CollectForwardedAttributesFromField(
         VariableDeclaratorSyntax declarator,
@@ -346,8 +347,16 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
 
         foreach (AttributeListSyntax list in field.AttributeLists)
         {
-            if (list.Target?.Identifier.IsKind(SyntaxKind.PropertyKeyword) != true)
+            // [field: …] stays on the user's backing field only.
+            if (list.Target is { } target && target.Identifier.IsKind(SyntaxKind.FieldKeyword))
                 continue;
+
+            // Only forward lists meant for the generated property (untargeted or [property: …]).
+            if (list.Target is { } nonPropertyTarget
+                && !nonPropertyTarget.Identifier.IsKind(SyntaxKind.PropertyKeyword))
+            {
+                continue;
+            }
 
             foreach (AttributeSyntax attribute in list.Attributes)
             {
@@ -366,7 +375,10 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
     /// <summary>
     /// Collects attributes attached to a partial property declaration so they can be forwarded onto the
     /// generated implementing declaration. Generator-owned attributes (<c>[ObservableProperty]</c>,
-    /// <c>[NotifyPropertyChangedFor]</c>, <c>[NotifyCanExecuteChangedFor]</c>) are filtered out.
+    /// <c>[NotifyPropertyChangedFor]</c>, <c>[NotifyCanExecuteChangedFor]</c>, <c>[NotifyDataErrorInfo]</c>) are
+    /// omitted. Attributes inheriting from <c>System.ComponentModel.DataAnnotations.ValidationAttribute</c> are
+    /// <b>not</b> forwarded: they remain on your partial declaration only, avoiding duplicate metadata on the
+    /// generated implementing partial (CS0579). Other attributes (e.g. <c>[JsonIgnore]</c>) are still forwarded.
     /// </summary>
     private static ImmutableArray<string> CollectForwardedAttributesFromProperty(
         PropertyDeclarationSyntax property,
@@ -374,6 +386,7 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
         System.Threading.CancellationToken token)
     {
         ImmutableArray<string>.Builder? builder = null;
+        Compilation compilation = semanticModel.Compilation;
 
         foreach (AttributeListSyntax list in property.AttributeLists)
         {
@@ -388,26 +401,50 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
             foreach (AttributeSyntax attribute in list.Attributes)
             {
                 INamedTypeSymbol? attributeType = ResolveAttributeType(attribute, semanticModel, token);
-                if (attributeType is null)
+                if (attributeType is not null && InheritsFromDataAnnotationsValidationAttribute(attributeType, compilation))
                     continue;
 
-                string fqn = attributeType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-                if (fqn == "global::" + AttributeName
-                    || fqn == "global::" + NotifyPropertyChangedForAttributeName
-                    || fqn == "global::" + NotifyCanExecuteChangedForAttributeName
-                    || fqn == "global::" + NotifyDataErrorInfoAttributeName)
-                {
+                string? rendered = RenderForwardedAttribute(attribute, semanticModel, token);
+                if (rendered is null)
                     continue;
-                }
 
-                string argsText = attribute.ArgumentList?.ToString() ?? "";
                 builder ??= ImmutableArray.CreateBuilder<string>();
-                builder.Add($"[{fqn}{argsText}]");
+                builder.Add(rendered);
             }
         }
 
         return builder?.ToImmutable() ?? ImmutableArray<string>.Empty;
     }
+
+    /// <summary>
+    /// Returns whether <paramref name="attributeClass"/> inherits from
+    /// <c>System.ComponentModel.DataAnnotations.ValidationAttribute</c> (e.g. <c>Required</c>, <c>EmailAddress</c>).
+    /// Uses symbol equality when <see cref="Compilation.GetTypeByMetadataName"/> resolves the base type, and
+    /// falls back to fully-qualified display names on the inheritance chain so skipping still works when that
+    /// lookup returns null (some compilation / reference layouts).
+    /// </summary>
+    private static bool InheritsFromDataAnnotationsValidationAttribute(INamedTypeSymbol attributeClass, Compilation compilation)
+    {
+        INamedTypeSymbol? validationBase = compilation.GetTypeByMetadataName("System.ComponentModel.DataAnnotations.ValidationAttribute");
+        const string validationFullyQualifiedDisplay = "global::System.ComponentModel.DataAnnotations.ValidationAttribute";
+
+        for (INamedTypeSymbol? t = attributeClass; t is not null; t = t.BaseType)
+        {
+            if (validationBase is not null && SymbolEqualityComparer.Default.Equals(t, validationBase))
+                return true;
+
+            if (t.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == validationFullyQualifiedDisplay)
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsGeneratorOwnedObservablePropertyAttribute(string fullyQualifiedMetadataName) =>
+        fullyQualifiedMetadataName == "global::" + AttributeName
+        || fullyQualifiedMetadataName == "global::" + NotifyPropertyChangedForAttributeName
+        || fullyQualifiedMetadataName == "global::" + NotifyCanExecuteChangedForAttributeName
+        || fullyQualifiedMetadataName == "global::" + NotifyDataErrorInfoAttributeName;
 
     private static string? RenderForwardedAttribute(
         AttributeSyntax attribute,
@@ -419,6 +456,9 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
             return null;
 
         string fqn = attributeType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        if (IsGeneratorOwnedObservablePropertyAttribute(fqn))
+            return null;
+
         string argsText = attribute.ArgumentList?.ToString() ?? "";
         return $"[{fqn}{argsText}]";
     }
@@ -540,7 +580,7 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
 
     /// <summary>
     /// Validates that when <c>[NotifyDataErrorInfo]</c> is used, the containing type inherits from
-    /// <c>ObservableValidator</c>. If not, reports <see cref="DiagnosticDescriptors.NotifyDataErrorInfoOnNonValidator"/>.
+    /// <c>BindableValidator</c>. If not, reports <see cref="DiagnosticDescriptors.NotifyDataErrorInfoOnNonValidator"/>.
     /// </summary>
     private static ImmutableArray<DiagnosticInfo> ValidateNotifyDataErrorInfo(
         bool notifyDataErrorInfo,
@@ -551,7 +591,7 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
         if (!notifyDataErrorInfo)
             return ImmutableArray<DiagnosticInfo>.Empty;
 
-        if (InheritsFromObservableValidator(containingType, compilation))
+        if (InheritsFromBindableValidator(containingType, compilation))
             return ImmutableArray<DiagnosticInfo>.Empty;
 
         return ImmutableArray.Create(
@@ -562,11 +602,11 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
     }
 
     /// <summary>
-    /// Checks whether a type inherits from <c>Prism.SourceGenerators.ObservableValidator</c>.
+    /// Checks whether a type inherits from <c>Prism.SourceGenerators.BindableValidator</c>.
     /// </summary>
-    private static bool InheritsFromObservableValidator(INamedTypeSymbol type, Compilation compilation)
+    private static bool InheritsFromBindableValidator(INamedTypeSymbol type, Compilation compilation)
     {
-        INamedTypeSymbol? validatorType = compilation.GetTypeByMetadataName(ObservableValidatorMetadataName);
+        INamedTypeSymbol? validatorType = compilation.GetTypeByMetadataName(BindableValidatorMetadataName);
         if (validatorType is null)
             return false;
 

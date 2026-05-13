@@ -185,15 +185,15 @@ internal static class DiagnosticDescriptors
     // --- Validation diagnostics ---
 
     /// <summary>
-    /// PSG5001: [NotifyDataErrorInfo] requires the containing type to inherit from ObservableValidator.
+    /// PSG5001: [NotifyDataErrorInfo] requires the containing type to inherit from BindableValidator.
     /// </summary>
     public static readonly DiagnosticDescriptor NotifyDataErrorInfoOnNonValidator = new(
         id: "PSG5001",
-        title: "[NotifyDataErrorInfo] requires ObservableValidator base type",
-        messageFormat: "The type '{0}' uses [NotifyDataErrorInfo] but does not inherit from ObservableValidator; validation calls will not be emitted",
+        title: "[NotifyDataErrorInfo] requires BindableValidator base type",
+        messageFormat: "The type '{0}' uses [NotifyDataErrorInfo] but does not inherit from BindableValidator; validation calls will not be emitted",
         category: Category,
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
-        description: "[NotifyDataErrorInfo] is only effective when the containing type inherits from Prism.SourceGenerators.ObservableValidator. Without this base type, the generated setter will not call ValidateProperty.",
+        description: "[NotifyDataErrorInfo] is only effective when the containing type inherits from Prism.SourceGenerators.BindableValidator. Without this base type, the generated setter will not call ValidateProperty.",
         helpLinkUri: HelpLink);
 }

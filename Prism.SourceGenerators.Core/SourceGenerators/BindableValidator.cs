@@ -17,7 +17,7 @@ namespace Prism.SourceGenerators;
 /// generated setters automatically call <see cref="ValidateProperty(object?, string)"/> after setting the value.
 /// </para>
 /// </summary>
-public abstract class ObservableValidator : INotifyPropertyChanged, INotifyDataErrorInfo
+public abstract class BindableValidator : INotifyPropertyChanged, INotifyDataErrorInfo
 {
     /// <summary>
     /// The <see cref="ValidationContext"/> instance currently in use.
@@ -42,28 +42,28 @@ public abstract class ObservableValidator : INotifyPropertyChanged, INotifyDataE
     public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ObservableValidator"/> class.
+    /// Initializes a new instance of the <see cref="BindableValidator"/> class.
     /// </summary>
-    protected ObservableValidator()
+    protected BindableValidator()
     {
         validationContext = new ValidationContext(this);
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ObservableValidator"/> class.
+    /// Initializes a new instance of the <see cref="BindableValidator"/> class.
     /// </summary>
     /// <param name="items">A set of key/value pairs to make available to consumers.</param>
-    protected ObservableValidator(IDictionary<object, object?>? items)
+    protected BindableValidator(IDictionary<object, object?>? items)
     {
         validationContext = new ValidationContext(this, items);
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ObservableValidator"/> class.
+    /// Initializes a new instance of the <see cref="BindableValidator"/> class.
     /// </summary>
     /// <param name="serviceProvider">An <see cref="IServiceProvider"/> instance to make available during validation.</param>
     /// <param name="items">A set of key/value pairs to make available to consumers.</param>
-    protected ObservableValidator(IServiceProvider? serviceProvider, IDictionary<object, object?>? items)
+    protected BindableValidator(IServiceProvider? serviceProvider, IDictionary<object, object?>? items)
     {
         validationContext = new ValidationContext(this, serviceProvider, items);
     }

@@ -17,7 +17,7 @@ namespace Prism.SourceGenerators.Models;
 /// <param name="NotifyPropertyChangedFor">Property names to also raise <c>PropertyChanged</c> for when this property changes.</param>
 /// <param name="NotifyCanExecuteChangedFor">Command property names whose <c>RaiseCanExecuteChanged()</c> should be invoked when this property changes.</param>
 /// <param name="ForwardedAttributes">Attributes (rendered as fully-qualified C# source) to emit on the generated property declaration. From <c>[property: Xxx]</c> on the field, or from any non-generator attribute on the partial property.</param>
-/// <param name="NotifyDataErrorInfo">Whether the generated setter should call <c>ValidateProperty</c> after setting the value (requires the containing type to inherit from <c>ObservableValidator</c>).</param>
+/// <param name="NotifyDataErrorInfo">Whether the generated setter should call <c>ValidateProperty</c> after setting the value (requires the containing type to inherit from <c>BindableValidator</c>).</param>
 internal sealed record PropertyGenerationInfo(
     HierarchyInfo Hierarchy,
     string FieldName,

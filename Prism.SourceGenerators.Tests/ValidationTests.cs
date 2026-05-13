@@ -13,7 +13,7 @@ public sealed class ValidationTests
         const string source = """
             namespace Demo;
 
-            public partial class Vm : Prism.SourceGenerators.ObservableValidator
+            public partial class Vm : Prism.SourceGenerators.BindableValidator
             {
                 [ObservableProperty]
                 [NotifyDataErrorInfo]
@@ -36,7 +36,7 @@ public sealed class ValidationTests
         const string source = """
             namespace Demo;
 
-            public partial class Vm : Prism.SourceGenerators.ObservableValidator
+            public partial class Vm : Prism.SourceGenerators.BindableValidator
             {
                 [ObservableProperty]
                 [NotifyDataErrorInfo]
@@ -59,7 +59,7 @@ public sealed class ValidationTests
             namespace Demo;
 
             [NotifyDataErrorInfo]
-            public partial class Vm : Prism.SourceGenerators.ObservableValidator
+            public partial class Vm : Prism.SourceGenerators.BindableValidator
             {
                 [ObservableProperty]
                 private string _firstName = "";
@@ -167,7 +167,7 @@ public sealed class ValidationTests
         const string source = """
             namespace Demo;
 
-            public partial class Vm : Prism.SourceGenerators.ObservableValidator
+            public partial class Vm : Prism.SourceGenerators.BindableValidator
             {
                 [ObservableProperty]
                 [NotifyDataErrorInfo]
@@ -189,7 +189,7 @@ public sealed class ValidationTests
         const string source = """
             namespace Demo;
 
-            public partial class Vm : Prism.SourceGenerators.ObservableValidator
+            public partial class Vm : Prism.SourceGenerators.BindableValidator
             {
                 [ObservableProperty]
                 [NotifyDataErrorInfo]
@@ -240,7 +240,7 @@ public sealed class ValidationTests
             namespace Demo;
 
             [NotifyDataErrorInfo]
-            public partial class Vm : Prism.SourceGenerators.ObservableValidator
+            public partial class Vm : Prism.SourceGenerators.BindableValidator
             {
                 [ObservableProperty]
                 private string _firstName = "";
@@ -285,7 +285,7 @@ public sealed class ValidationTests
         Assert.All(psg5001, d =>
         {
             Assert.Contains("LoginForm", d.GetMessage());
-            Assert.Contains("ObservableValidator", d.GetMessage());
+            Assert.Contains("BindableValidator", d.GetMessage());
         });
     }
 
@@ -295,7 +295,7 @@ public sealed class ValidationTests
         const string source = """
             namespace Demo;
 
-            public partial class Vm : Prism.SourceGenerators.ObservableValidator
+            public partial class Vm : Prism.SourceGenerators.BindableValidator
             {
                 [ObservableProperty]
                 [NotifyDataErrorInfo]
@@ -327,7 +327,7 @@ public sealed class ValidationTests
         const string source = """
             namespace Demo;
 
-            public partial class Vm : Prism.SourceGenerators.ObservableValidator
+            public partial class Vm : Prism.SourceGenerators.BindableValidator
             {
                 [ObservableProperty]
                 [NotifyDataErrorInfo]

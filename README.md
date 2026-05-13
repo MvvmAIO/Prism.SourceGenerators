@@ -161,14 +161,14 @@ The generated setter calls `SaveCommand?.RaiseCanExecuteChanged()` after `RaiseP
 
 ### Forwarding attributes to the generated property
 
-For **field** targets, attributes you write with the explicit `[property: Xxx]` target are forwarded onto the generated property:
+For **field** targets, attributes on the **same line as the field** (no target, or `[property: …]`) are forwarded onto the generated property, except generator-owned attributes (`[ObservableProperty]`, `[NotifyPropertyChangedFor]`, `[NotifyCanExecuteChangedFor]`, `[NotifyDataErrorInfo]`). Lists explicitly targeting **`[field: …]`** stay on your backing field only.
 
 ```csharp
 public partial class Vm : BindableBase
 {
     [ObservableProperty]
-    [property: System.Text.Json.Serialization.JsonIgnore]
-    [property: System.ComponentModel.DataAnnotations.Required]
+    [System.ComponentModel.DataAnnotations.Required] // forwarded (DataAnnotations / validation)
+    [property: System.Text.Json.Serialization.JsonIgnore] // forwarded
     private string _password = "";
 }
 ```
@@ -176,12 +176,12 @@ public partial class Vm : BindableBase
 becomes
 
 ```csharp
-[global::System.Text.Json.Serialization.JsonIgnoreAttribute]
 [global::System.ComponentModel.DataAnnotations.RequiredAttribute]
+[global::System.Text.Json.Serialization.JsonIgnoreAttribute]
 public string Password { get { ... } set { ... } }
 ```
 
-For **partial property** targets, every attribute you put on the partial declaration is forwarded onto the implementing declaration (with the exception of generator-owned attributes — `[ObservableProperty]`, `[NotifyPropertyChangedFor]`, `[NotifyCanExecuteChangedFor]` — which are stripped). Forwarded attributes are emitted with fully-qualified type names so they do not depend on `using` directives present in the generated file.
+For **partial property** targets, attributes inheriting from **`ValidationAttribute`** (e.g. `[Required]`, `[EmailAddress]`, `[Range]`) stay on **your** partial declaration only; the generator does **not** copy them onto the implementing partial, so **`Validator`** / **`BindableValidator`** still see them once and you avoid **CS0579** duplicate attributes. Other attributes (e.g. `[JsonIgnore]`) are still forwarded onto the generated implementation.
 
 > Argument expressions inside the forwarded attribute are emitted verbatim. Use literal/`nameof`/`typeof` arguments or fully-qualified type references in argument positions if your `using` directives aren't visible to the generated file.
 
@@ -302,13 +302,13 @@ If the class already inherits from `BindableBase` or a base class that implement
 
 Enables property validation support via `INotifyDataErrorInfo`. Apply `[NotifyDataErrorInfo]` to individual fields/properties (alongside `[ObservableProperty]`) or to the class itself to enable validation for all generated properties.
 
-The containing type must inherit from `ObservableValidator`, which provides `INotifyDataErrorInfo` implementation, `ValidateProperty()`, `ValidateAllProperties()`, and `ClearErrors()` methods.
+The containing type must inherit from `BindableValidator`, which provides `INotifyDataErrorInfo` implementation, `ValidateProperty()`, `ValidateAllProperties()`, and `ClearErrors()` methods.
 
 ```csharp
 using System.ComponentModel.DataAnnotations;
 using Prism.SourceGenerators;
 
-public partial class RegistrationViewModel : ObservableValidator
+public partial class RegistrationViewModel : BindableValidator
 {
     [ObservableProperty]
     [NotifyDataErrorInfo]
@@ -330,7 +330,7 @@ Class-level usage applies validation to all `[ObservableProperty]` members:
 
 ```csharp
 [NotifyDataErrorInfo]
-public partial class FormViewModel : ObservableValidator
+public partial class FormViewModel : BindableValidator
 {
     [ObservableProperty]
     [Required]
@@ -359,7 +359,7 @@ public partial class FormViewModel : ObservableValidator
 | PSG2005 | `[NotifyCanExecuteChangedFor]` references a command that was not found |
 | PSG2006 | `CanExecute` names a member whose signature is not compatible with the command |
 | PSG3002 | `AsyncDelegateCommand` not found; install **`MvvmAIO.Prism.SourceGenerators`** and, on Prism.Core 8.1.97, **`MvvmAIO.Prism.Bcl.Commands`** (or upgrade to Prism 9+) |
-| PSG5001 | `[NotifyDataErrorInfo]` requires the containing type to inherit from `ObservableValidator` |
+| PSG5001 | `[NotifyDataErrorInfo]` requires the containing type to inherit from `BindableValidator` |
 
 > **Quick fix:** PSG0001–PSG0004 all have an IDE code fix that inserts the missing `partial` modifier (Ctrl+. / Alt+Enter on the squiggle, or "Fix all in document/project/solution" to apply across the whole codebase).
 

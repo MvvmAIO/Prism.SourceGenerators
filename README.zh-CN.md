@@ -157,14 +157,14 @@ public partial class EditorViewModel : BindableBase
 
 ### 转发属性到生成的属性
 
-对于**字段**目标，使用显式 `[property: Xxx]` 标注的属性会被转发到生成的属性上：
+对于**字段**目标，与字段写在同一特性列表中、**无目标**或 **`[property: …]`** 的属性会转发到生成的属性上（生成器自有属性 `[ObservableProperty]`、`[NotifyPropertyChangedFor]`、`[NotifyCanExecuteChangedFor]`、`[NotifyDataErrorInfo]` 会被过滤）。显式 **`[field: …]`** 目标的列表仅保留在后备字段上。
 
 ```csharp
 public partial class Vm : BindableBase
 {
     [ObservableProperty]
-    [property: System.Text.Json.Serialization.JsonIgnore]
-    [property: System.ComponentModel.DataAnnotations.Required]
+    [System.ComponentModel.DataAnnotations.Required] // 转发（校验 / DataAnnotations）
+    [property: System.Text.Json.Serialization.JsonIgnore] // 转发
     private string _password = "";
 }
 ```
@@ -172,12 +172,12 @@ public partial class Vm : BindableBase
 会生成
 
 ```csharp
-[global::System.Text.Json.Serialization.JsonIgnoreAttribute]
 [global::System.ComponentModel.DataAnnotations.RequiredAttribute]
+[global::System.Text.Json.Serialization.JsonIgnoreAttribute]
 public string Password { get { ... } set { ... } }
 ```
 
-对于**部分属性（partial property）**目标，写在部分属性声明上的所有属性都会转发到实现声明上（生成器自身的属性 `[ObservableProperty]`、`[NotifyPropertyChangedFor]`、`[NotifyCanExecuteChangedFor]` 会被过滤掉）。转发的属性以完全限定类型名输出，因此不依赖生成文件中的 `using` 指令。
+对于**部分属性（partial property）**目标，继承自 **`ValidationAttribute`** 的特性（如 `[Required]`、`[EmailAddress]`、`[Range]`）只保留在**你写的** partial 声明上；生成器**不会**再抄写到实现 partial，这样 **`Validator`** / **`BindableValidator`** 仍只见到一份元数据，并避免 **CS0579** 特性重复。其它特性（如 `[JsonIgnore]`）仍会转发到生成的实现声明上。生成器自有特性（`[ObservableProperty]`、`[NotifyPropertyChangedFor]`、`[NotifyCanExecuteChangedFor]`、`[NotifyDataErrorInfo]`）会被过滤。转发的属性以完全限定类型名输出，因此不依赖生成文件中的 `using` 指令。
 
 > 转发属性的参数表达式会按原样输出。如果生成文件无法看到 `using` 指令，请使用字面量 / `nameof` / `typeof`，或在参数位置使用完全限定的类型引用。
 
@@ -298,13 +298,13 @@ public partial class SimpleViewModel
 
 通过 `INotifyDataErrorInfo` 启用属性验证支持。将 `[NotifyDataErrorInfo]` 应用于单个字段/属性（与 `[ObservableProperty]` 一起使用），或应用于类本身以启用所有生成属性的验证。
 
-包含类型必须继承自 `ObservableValidator`，它提供 `INotifyDataErrorInfo` 实现、`ValidateProperty()`、`ValidateAllProperties()` 和 `ClearErrors()` 方法。
+包含类型必须继承自 `BindableValidator`，它提供 `INotifyDataErrorInfo` 实现、`ValidateProperty()`、`ValidateAllProperties()` 和 `ClearErrors()` 方法。
 
 ```csharp
 using System.ComponentModel.DataAnnotations;
 using Prism.SourceGenerators;
 
-public partial class RegistrationViewModel : ObservableValidator
+public partial class RegistrationViewModel : BindableValidator
 {
     [ObservableProperty]
     [NotifyDataErrorInfo]
@@ -326,7 +326,7 @@ public partial class RegistrationViewModel : ObservableValidator
 
 ```csharp
 [NotifyDataErrorInfo]
-public partial class FormViewModel : ObservableValidator
+public partial class FormViewModel : BindableValidator
 {
     [ObservableProperty]
     [Required]
@@ -355,7 +355,7 @@ public partial class FormViewModel : ObservableValidator
 | PSG2005 | `[NotifyCanExecuteChangedFor]` 引用的命令未找到 |
 | PSG2006 | `CanExecute` 所指向的成员签名与命令不兼容 |
 | PSG3002 | 未找到 `AsyncDelegateCommand`；请安装 **`MvvmAIO.Prism.SourceGenerators`**，且在 Prism.Core 8.1.97 上安装 **`MvvmAIO.Prism.Bcl.Commands`**（或升级到 Prism 9+） |
-| PSG5001 | `[NotifyDataErrorInfo]` 要求包含类型继承自 `ObservableValidator` |
+| PSG5001 | `[NotifyDataErrorInfo]` 要求包含类型继承自 `BindableValidator` |
 
 > **快速修复：** PSG0001–PSG0004 都提供 IDE 代码修复，会自动插入缺失的 `partial` 修饰符（在波浪线处按 Ctrl+. / Alt+Enter，或使用"修复文档/项目/解决方案中的所有问题"在整个代码库中批量应用）。
 

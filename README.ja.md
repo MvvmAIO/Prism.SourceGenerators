@@ -156,14 +156,14 @@ public partial class EditorViewModel : BindableBase
 
 ### 生成されるプロパティへの属性転送
 
-**フィールド**ターゲットでは、明示的な `[property: Xxx]` ターゲット付きで書かれた属性が、生成されたプロパティに転送されます：
+**フィールド**ターゲットでは、フィールドと同じ属性リストで書かれた **ターゲットなし** または **`[property: …]`** の属性が生成されたプロパティに転送されます（ジェネレーター自身の属性 `[ObservableProperty]`、`[NotifyPropertyChangedFor]`、`[NotifyCanExecuteChangedFor]`、`[NotifyDataErrorInfo]` は除外）。明示的な **`[field: …]`** ターゲットのリストはバッキングフィールド側にのみ残ります。
 
 ```csharp
 public partial class Vm : BindableBase
 {
     [ObservableProperty]
-    [property: System.Text.Json.Serialization.JsonIgnore]
-    [property: System.ComponentModel.DataAnnotations.Required]
+    [System.ComponentModel.DataAnnotations.Required] // 転送（検証 / DataAnnotations）
+    [property: System.Text.Json.Serialization.JsonIgnore] // 転送
     private string _password = "";
 }
 ```
@@ -171,12 +171,12 @@ public partial class Vm : BindableBase
 は次のように生成されます：
 
 ```csharp
-[global::System.Text.Json.Serialization.JsonIgnoreAttribute]
 [global::System.ComponentModel.DataAnnotations.RequiredAttribute]
+[global::System.Text.Json.Serialization.JsonIgnoreAttribute]
 public string Password { get { ... } set { ... } }
 ```
 
-**partial プロパティ**ターゲットでは、partial 宣言に付けたすべての属性が実装宣言に転送されます（ジェネレーター自身の属性 `[ObservableProperty]`、`[NotifyPropertyChangedFor]`、`[NotifyCanExecuteChangedFor]` は除外されます）。転送される属性は完全修飾型名で出力されるため、生成ファイル内の `using` ディレクティブに依存しません。
+**partial プロパティ**ターゲットでは、**`ValidationAttribute`** を継承する属性（`[Required]`、`[EmailAddress]`、`[Range]` など）は、ユーザーが書いた partial 宣言側にのみ残し、生成される実装 partial には**転送しません**（**CS0579** の重複を避け、`Validator` / `BindableValidator` には 1 回だけメタデータが見える）。それ以外（例：`[JsonIgnore]`）は従来どおり実装宣言へ転送します。ジェネレーター自身の属性（`[ObservableProperty]`、`[NotifyPropertyChangedFor]`、`[NotifyCanExecuteChangedFor]`、`[NotifyDataErrorInfo]`）は除外されます。転送される属性は完全修飾型名で出力されるため、生成ファイル内の `using` ディレクティブに依存しません。
 
 > 転送される属性の引数式はそのまま出力されます。生成ファイルから `using` ディレクティブが見えない場合は、リテラル / `nameof` / `typeof`、または引数位置で完全修飾型参照を使用してください。
 
@@ -297,13 +297,13 @@ public partial class SimpleViewModel
 
 `INotifyDataErrorInfo` によるプロパティバリデーションサポートを有効にします。`[NotifyDataErrorInfo]` を個々のフィールド/プロパティ（`[ObservableProperty]` と併用）またはクラス自体に適用して、すべての生成プロパティのバリデーションを有効にします。
 
-含まれる型は `ObservableValidator` を継承する必要があり、`INotifyDataErrorInfo` 実装、`ValidateProperty()`、`ValidateAllProperties()`、`ClearErrors()` メソッドを提供します。
+含まれる型は `BindableValidator` を継承する必要があり、`INotifyDataErrorInfo` 実装、`ValidateProperty()`、`ValidateAllProperties()`、`ClearErrors()` メソッドを提供します。
 
 ```csharp
 using System.ComponentModel.DataAnnotations;
 using Prism.SourceGenerators;
 
-public partial class RegistrationViewModel : ObservableValidator
+public partial class RegistrationViewModel : BindableValidator
 {
     [ObservableProperty]
     [NotifyDataErrorInfo]
@@ -325,7 +325,7 @@ public partial class RegistrationViewModel : ObservableValidator
 
 ```csharp
 [NotifyDataErrorInfo]
-public partial class FormViewModel : ObservableValidator
+public partial class FormViewModel : BindableValidator
 {
     [ObservableProperty]
     [Required]
@@ -354,7 +354,7 @@ public partial class FormViewModel : ObservableValidator
 | PSG2005 | `[NotifyCanExecuteChangedFor]` が参照するコマンドが見つかりません |
 | PSG2006 | `CanExecute` が指すメンバーのシグネチャがコマンドと互換性がありません |
 | PSG3002 | `AsyncDelegateCommand` が見つかりません。**`MvvmAIO.Prism.SourceGenerators`** を使用し、Prism.Core 8.1.97 では **`MvvmAIO.Prism.Bcl.Commands`** を追加するか、Prism 9+ にアップグレードしてください |
-| PSG5001 | `[NotifyDataErrorInfo]` は `ObservableValidator` を継承する型が必要です |
+| PSG5001 | `[NotifyDataErrorInfo]` は `BindableValidator` を継承する型が必要です |
 
 > **クイックフィックス：** PSG0001〜PSG0004 にはすべて IDE のコードフィックスが用意されており、欠落している `partial` 修飾子を自動的に挿入します（波線上で Ctrl+. / Alt+Enter を押すか、「ドキュメント/プロジェクト/ソリューション内のすべての問題を修正」でコードベース全体に一括適用できます）。
 

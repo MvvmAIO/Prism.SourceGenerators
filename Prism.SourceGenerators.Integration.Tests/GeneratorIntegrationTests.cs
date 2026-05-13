@@ -422,7 +422,7 @@ public sealed class GeneratorIntegrationTests
     #region Validation (NotifyDataErrorInfo)
 
     [Fact]
-    public void NotifyDataErrorInfo_field_target_compiles_with_real_ObservableValidator()
+    public void NotifyDataErrorInfo_field_target_compiles_with_real_BindableValidator()
     {
         const string source = """
             #nullable enable
@@ -430,7 +430,7 @@ public sealed class GeneratorIntegrationTests
 
             namespace Demo;
 
-            public partial class Vm : ObservableValidator
+            public partial class Vm : BindableValidator
             {
                 [ObservableProperty]
                 [NotifyDataErrorInfo]
@@ -457,7 +457,7 @@ public sealed class GeneratorIntegrationTests
 
             namespace Demo;
 
-            public partial class Vm : ObservableValidator
+            public partial class Vm : BindableValidator
             {
                 [ObservableProperty]
                 [NotifyDataErrorInfo]
@@ -476,6 +476,38 @@ public sealed class GeneratorIntegrationTests
     }
 
     [Fact]
+    public void NotifyDataErrorInfo_partial_property_with_DataAnnotations_compiles()
+    {
+        const string source = """
+            #nullable enable
+            using System.ComponentModel.DataAnnotations;
+            using Prism.SourceGenerators;
+
+            namespace Demo;
+
+            public partial class Vm : BindableValidator
+            {
+                [ObservableProperty]
+                [NotifyDataErrorInfo]
+                [Required]
+                [EmailAddress]
+                public partial string Email { get; set; } = "";
+            }
+            """;
+
+        GeneratorRunOutput output = RunAllGenerators(source, LanguageVersion.Preview);
+
+        AssertNoPsgErrors(output);
+
+        GeneratedSource emailSource = AssertSingleHintNameEnding(output, ".Email.g.cs");
+        Assert.DoesNotContain("[global::System.ComponentModel.DataAnnotations.RequiredAttribute]", emailSource.Source);
+        Assert.DoesNotContain("[global::System.ComponentModel.DataAnnotations.EmailAddressAttribute]", emailSource.Source);
+        Assert.Contains("ValidateProperty(value, nameof(Email))", emailSource.Source);
+
+        AssertOutputCompiles(output, source, languageVersion: LanguageVersion.Preview);
+    }
+
+    [Fact]
     public void NotifyDataErrorInfo_class_level_applies_to_all_properties()
     {
         const string source = """
@@ -485,7 +517,7 @@ public sealed class GeneratorIntegrationTests
             namespace Demo;
 
             [NotifyDataErrorInfo]
-            public partial class Vm : ObservableValidator
+            public partial class Vm : BindableValidator
             {
                 [ObservableProperty]
                 private string _first = "";
@@ -638,7 +670,7 @@ public sealed class GeneratorIntegrationTests
             namespace Demo;
 
             [NotifyDataErrorInfo]
-            public partial class FormViewModel : ObservableValidator
+            public partial class FormViewModel : BindableValidator
             {
                 [ObservableProperty]
                 [NotifyCanExecuteChangedFor(nameof(SubmitCommand))]

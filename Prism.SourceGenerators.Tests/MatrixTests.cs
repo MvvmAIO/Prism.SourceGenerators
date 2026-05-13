@@ -495,7 +495,7 @@ public sealed class MatrixTests
     }
 
     [Fact]
-    public void Partial_property_forwards_user_attributes_and_filters_generator_attributes()
+    public void Partial_property_does_not_duplicate_DataAnnotations_on_generated_implementation()
     {
         const string source = """
             namespace Demo;
@@ -515,8 +515,8 @@ public sealed class MatrixTests
 
         GeneratedSource propertySource = Assert.Single(output.GeneratedSources.Where(s => s.HintName.EndsWith(".Name.g.cs")));
 
-        // [Required] is forwarded
-        Assert.Contains("[global::System.ComponentModel.DataAnnotations.RequiredAttribute]", propertySource.Source);
+        // [Required] stays on the user's partial declaration; do not re-emit on the implementing partial (CS0579).
+        Assert.DoesNotContain("[global::System.ComponentModel.DataAnnotations.RequiredAttribute]", propertySource.Source);
 
         // Generator-owned attributes are filtered out
         Assert.DoesNotContain("ObservablePropertyAttribute]", propertySource.Source);
@@ -524,7 +524,7 @@ public sealed class MatrixTests
     }
 
     [Fact]
-    public void Field_attributes_without_property_target_are_not_forwarded()
+    public void Field_attributes_without_property_target_are_forwarded_to_generated_property()
     {
         const string source = """
             namespace Demo;
@@ -541,8 +541,7 @@ public sealed class MatrixTests
 
         GeneratedSource propertySource = Assert.Single(output.GeneratedSources.Where(s => s.HintName.EndsWith(".Age.g.cs")));
 
-        // [Required] without [property: ...] target stays on the field; the generator does NOT auto-forward it
-        Assert.DoesNotContain("RequiredAttribute", propertySource.Source);
+        Assert.Contains("[global::System.ComponentModel.DataAnnotations.RequiredAttribute]", propertySource.Source);
     }
 
     [Fact]

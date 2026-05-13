@@ -65,7 +65,7 @@ public partial class MainViewModel : BindableBase
 using System.ComponentModel.DataAnnotations;
 using Prism.SourceGenerators;
 
-public partial class FormViewModel : ObservableValidator
+public partial class FormViewModel : BindableValidator
 {
     [ObservableProperty]
     [NotifyDataErrorInfo]
@@ -79,7 +79,7 @@ public partial class FormViewModel : ObservableValidator
 }
 ```
 
-The generated setter calls `ValidateProperty(value, nameof(Property))` after setting the value. `ObservableValidator` implements `INotifyDataErrorInfo` with `ValidateProperty()`, `ValidateAllProperties()`, `ClearErrors()`, and `ClearAllErrors()`.
+The generated setter calls `ValidateProperty(value, nameof(Property))` after setting the value. `BindableValidator` implements `INotifyDataErrorInfo` with `ValidateProperty()`, `ValidateAllProperties()`, `ClearErrors()`, and `ClearAllErrors()`.
 
 ### Property Change Notifications & Command Refresh
 
@@ -130,7 +130,7 @@ public partial class LightViewModel
 | PSG3002 | Error | `AsyncDelegateCommand` type not found (install `MvvmAIO.Prism.Bcl.Commands` for Prism 8) |
 | PSG4001 | Warning | ServiceType not assignable from implementation |
 | PSG4002 | Warning | ViewModelType could not be resolved |
-| PSG5001 | Warning | `[NotifyDataErrorInfo]` requires `ObservableValidator` base type |
+| PSG5001 | Warning | `[NotifyDataErrorInfo]` requires `BindableValidator` base type |
 
 **PSG0001–PSG0004** have IDE quick fixes: **Ctrl+.** → add `partial` (supports "Fix all in document/project/solution").
 
@@ -149,7 +149,7 @@ public partial class LightViewModel
 This NuGet package includes:
 
 - **Roslyn analyzers** (multi-targeted: Roslyn 4.0 / 4.3 / 4.12 / 5.0)
-- **MvvmAIO.Prism.Core** library (attributes: `[ObservableProperty]`, `[DelegateCommand]`, `[AsyncDelegateCommand]`, `[BindableBase]`, `[NotifyPropertyChangedFor]`, `[NotifyCanExecuteChangedFor]`, `[ObservesProperty]`, `[NotifyDataErrorInfo]`, `ObservableValidator` base class)
+- **MvvmAIO.Prism.Core** library (attributes: `[ObservableProperty]`, `[DelegateCommand]`, `[AsyncDelegateCommand]`, `[BindableBase]`, `[NotifyPropertyChangedFor]`, `[NotifyCanExecuteChangedFor]`, `[ObservesProperty]`, `[NotifyDataErrorInfo]`, `BindableValidator` base class)
 - This is a **development dependency** — no runtime DLLs are added to your output
 
 ## Resources

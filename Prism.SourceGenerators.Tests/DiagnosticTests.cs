@@ -210,7 +210,7 @@ public sealed class DiagnosticTests
     [InlineData("""
         namespace Demo;
 
-        public partial class Foo : Prism.SourceGenerators.ObservableValidator
+        public partial class Foo : Prism.SourceGenerators.BindableValidator
         {
             [ObservableProperty]
             [NotifyDataErrorInfo]
@@ -249,7 +249,7 @@ public sealed class DiagnosticTests
         Assert.All(psg5001, d =>
         {
             Assert.Contains("MyViewModel", d.GetMessage());
-            Assert.Contains("ObservableValidator", d.GetMessage());
+            Assert.Contains("BindableValidator", d.GetMessage());
         });
     }
 

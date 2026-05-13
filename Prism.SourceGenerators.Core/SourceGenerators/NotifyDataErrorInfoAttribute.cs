@@ -3,7 +3,7 @@ namespace Prism.SourceGenerators;
 /// <summary>
 /// An attribute that can be used to support <see cref="ObservablePropertyAttribute"/> in generated properties,
 /// when applied to fields or partial properties contained in a type that inherits from
-/// <see cref="Prism.SourceGenerators.ObservableValidator"/> and uses validation attributes
+/// <see cref="Prism.SourceGenerators.BindableValidator"/> and uses validation attributes
 /// (e.g. <c>[Required]</c>, <c>[MinLength]</c>).
 /// <para>
 /// When this attribute is used, the generated property setter will also call
@@ -16,7 +16,7 @@ namespace Prism.SourceGenerators;
 /// <para>
 /// Example usage:
 /// <code>
-/// partial class MyViewModel : ObservableValidator
+/// partial class MyViewModel : BindableValidator
 /// {
 ///     [ObservableProperty]
 ///     [NotifyDataErrorInfo]
