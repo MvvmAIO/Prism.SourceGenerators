@@ -64,6 +64,32 @@ internal static class DiagnosticDescriptors
         description: "The [BindableBase] attribute generates INotifyPropertyChanged implementation into the target type, which must be partial.",
         helpLinkUri: HelpLink);
 
+    /// <summary>
+    /// PSG0005: Class with [BindableValidator] must be partial.
+    /// </summary>
+    public static readonly DiagnosticDescriptor NonPartialClassWithBindableValidator = new(
+        id: "PSG0005",
+        title: "Class with [BindableValidator] must be partial",
+        messageFormat: "The class '{0}' has [BindableValidator] but is not declared as partial",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "The [BindableValidator] attribute merges generated members or a generated base declaration into the target type, which must be partial.",
+        helpLinkUri: HelpLink);
+
+    /// <summary>
+    /// PSG0006: [BindableValidator] is only supported on classes.
+    /// </summary>
+    public static readonly DiagnosticDescriptor BindableValidatorOnNonClass = new(
+        id: "PSG0006",
+        title: "[BindableValidator] is only supported on classes",
+        messageFormat: "The type '{0}' has [BindableValidator] but is not a class; remove the attribute or change the declaration to a partial class",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "[BindableValidator] generates class partials that inherit BindableValidator or implement INotifyDataErrorInfo; it cannot be applied to structs, records, or interfaces.",
+        helpLinkUri: HelpLink);
+
     public static readonly DiagnosticDescriptor InvalidDelegateCommandMethodSignature = new(
         id: "PSG1001",
         title: "Invalid [DelegateCommand] method signature",
@@ -190,10 +216,10 @@ internal static class DiagnosticDescriptors
     public static readonly DiagnosticDescriptor NotifyDataErrorInfoOnNonValidator = new(
         id: "PSG5001",
         title: "[NotifyDataErrorInfo] requires BindableValidator base type",
-        messageFormat: "The type '{0}' uses [NotifyDataErrorInfo] but does not inherit from BindableValidator; validation calls will not be emitted",
+        messageFormat: "The type '{0}' uses [NotifyDataErrorInfo] but does not inherit from BindableValidator or use [BindableValidator]; validation calls will not be emitted",
         category: Category,
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
-        description: "[NotifyDataErrorInfo] is only effective when the containing type inherits from Prism.SourceGenerators.BindableValidator. Without this base type, the generated setter will not call ValidateProperty.",
+        description: "[NotifyDataErrorInfo] is only effective when the containing type inherits from Prism.SourceGenerators.BindableValidator or is annotated with [BindableValidator]. Otherwise the generated setter will not call ValidateProperty.",
         helpLinkUri: HelpLink);
 }

@@ -46,6 +46,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Models\CommandGenerationInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\PropertyGenerationInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\BindableBaseGenerationInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\BindableValidatorGenerationInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\PropertyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Result.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\TypeInfo.cs" />
@@ -54,6 +55,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)BindableBaseGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BindableBaseSyntax.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BindableBaseMetadataExtractor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BindableValidatorGenerator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BindableValidatorMetadataExtractor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BindableValidatorSyntax.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ContainerRegistryRegistrationGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PropertyChangingAnalysis.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PropertyChangingGenerator.cs" />

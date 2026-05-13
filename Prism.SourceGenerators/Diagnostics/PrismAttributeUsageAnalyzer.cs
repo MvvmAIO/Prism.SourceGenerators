@@ -14,13 +14,15 @@ public sealed class PrismAttributeUsageAnalyzer : DiagnosticAnalyzer
     private const string DelegateCommandAttributeName = "Prism.SourceGenerators.DelegateCommandAttribute";
     private const string AsyncDelegateCommandAttributeName = "Prism.SourceGenerators.AsyncDelegateCommandAttribute";
     private const string BindableBaseAttributeName = "Prism.SourceGenerators.BindableBaseAttribute";
+    private const string BindableValidatorAttributeName = "Prism.SourceGenerators.BindableValidatorAttribute";
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
         ImmutableArray.Create(
             DiagnosticDescriptors.NonPartialClassWithObservableProperty,
             DiagnosticDescriptors.NonPartialClassWithDelegateCommand,
             DiagnosticDescriptors.NonPartialPropertyWithObservableProperty,
-            DiagnosticDescriptors.NonPartialClassWithBindableBase);
+            DiagnosticDescriptors.NonPartialClassWithBindableBase,
+            DiagnosticDescriptors.NonPartialClassWithBindableValidator);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -44,6 +46,14 @@ public sealed class PrismAttributeUsageAnalyzer : DiagnosticAnalyzer
         {
             context.ReportDiagnostic(Diagnostic.Create(
                 DiagnosticDescriptors.NonPartialClassWithBindableBase,
+                type.Locations.FirstOrDefault(),
+                type.Name));
+        }
+
+        if (HasAttribute(type, BindableValidatorAttributeName))
+        {
+            context.ReportDiagnostic(Diagnostic.Create(
+                DiagnosticDescriptors.NonPartialClassWithBindableValidator,
                 type.Locations.FirstOrDefault(),
                 type.Name));
         }

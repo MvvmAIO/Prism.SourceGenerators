@@ -794,6 +794,7 @@ public sealed class GeneratorIntegrationTests
 
         ImmutableArray<IIncrementalGenerator> generators =
             ImmutableArray.Create<IIncrementalGenerator>(
+                new BindableValidatorGenerator(),
                 new ObservablePropertyGenerator(),
                 new PropertyChangingGenerator(),
                 new DelegateCommandGenerator(),

@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -349,5 +350,93 @@ public sealed class ValidationTests
 
         Assert.Contains("ValidateProperty", nameSource.Source);
         Assert.DoesNotContain("ValidateProperty", ageSource.Source);
+    }
+
+    [Fact]
+    public void BindableValidator_attribute_object_base_emits_inherit_BindableValidator()
+    {
+        const string source = """
+            namespace Demo;
+
+            [BindableValidator]
+            public partial class Vm
+            {
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source);
+
+        GeneratedSource gen = Assert.Single(
+            output.GeneratedSources.Where(s => s.HintName.EndsWith(".BindableValidator.g.cs", StringComparison.Ordinal)));
+
+        Assert.Contains(": global::Prism.SourceGenerators.BindableValidator", gen.Source);
+    }
+
+    [Fact]
+    public void BindableValidator_attribute_on_Prism_bindable_base_emits_INotifyDataErrorInfo_only()
+    {
+        const string source = """
+            namespace Demo;
+
+            [BindableValidator]
+            public partial class Vm : Prism.Mvvm.BindableBase
+            {
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source);
+
+        GeneratedSource gen = Assert.Single(
+            output.GeneratedSources.Where(s => s.HintName.EndsWith(".BindableValidator.g.cs", StringComparison.Ordinal)));
+
+        Assert.Contains("global::System.ComponentModel.INotifyDataErrorInfo", gen.Source);
+        Assert.DoesNotContain("global::System.ComponentModel.INotifyPropertyChanged", gen.Source);
+        Assert.Contains("__psg_ValidationContext", gen.Source);
+    }
+
+    [Fact]
+    public void NotifyDataErrorInfo_with_BindableValidator_attribute_on_bindable_base_emits_ValidateProperty()
+    {
+        const string source = """
+            namespace Demo;
+
+            [BindableValidator]
+            public partial class LoginForm : Prism.Mvvm.BindableBase
+            {
+                [ObservableProperty]
+                [NotifyDataErrorInfo]
+                private string _email = "";
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source);
+
+        Assert.DoesNotContain(output.Diagnostics, d => d.Id == "PSG5001");
+
+        GeneratedSource emailSource = Assert.Single(
+            output.GeneratedSources.Where(s => s.HintName.EndsWith(".Email.g.cs")));
+
+        Assert.Contains("ValidateProperty(value, nameof(Email));", emailSource.Source);
+    }
+
+    [Fact]
+    public void BindableBase_suppressed_when_BindableValidator_attribute_present()
+    {
+        const string source = """
+            namespace Demo;
+
+            [BindableBase]
+            [BindableValidator]
+            public partial class Vm
+            {
+                [ObservableProperty]
+                private int _x;
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source);
+
+        Assert.DoesNotContain(output.GeneratedSources, s => s.HintName.EndsWith(".BindableBase.g.cs", StringComparison.Ordinal));
+        Assert.Contains(output.GeneratedSources, s => s.HintName.EndsWith(".BindableValidator.g.cs", StringComparison.Ordinal));
     }
 }

@@ -41,6 +41,13 @@ internal static class BindableBaseMetadataExtractor
                         classSymbol.Name)));
         }
 
+        Compilation compilation = context.SemanticModel.Compilation;
+
+        if (BindableValidatorMetadataExtractor.TypeHasBindableValidatorAttribute(classSymbol, compilation))
+        {
+            return new Result<BindableBaseGenerationInfo>(default!, ImmutableArray<DiagnosticInfo>.Empty);
+        }
+
         bool inheritsBindableBase = false;
         for (INamedTypeSymbol? baseType = classSymbol.BaseType; baseType is not null; baseType = baseType.BaseType)
         {
@@ -78,7 +85,6 @@ internal static class BindableBaseMetadataExtractor
             }
         }
 
-        Compilation compilation = context.SemanticModel.Compilation;
         bool emitChangingInterfaceAndMembers = !TypeOrBaseImplementsINotifyPropertyChanging(classSymbol, compilation);
         HierarchyInfo hierarchy = HierarchyInfo.From(classSymbol);
 
