@@ -277,6 +277,64 @@ public class CodeFixTests
     }
 
     [Fact]
+    public Task PSG0005_inserts_partial_on_class_with_bindable_validator() =>
+        AssertFixAsync(
+            diagnosticId: "PSG0005",
+            source: """
+                namespace Demo;
+
+                [BindableValidator]
+                public class Vm
+                {
+                }
+                """,
+            expected: """
+                namespace Demo;
+
+                [BindableValidator]
+                public partial class Vm
+                {
+                }
+                """);
+
+    [Fact]
+    public Task PSG0005_inserts_partial_on_internal_class_with_bindable_validator() =>
+        AssertFixAsync(
+            diagnosticId: "PSG0005",
+            source: """
+                namespace Demo;
+
+                [BindableValidator]
+                internal class Vm
+                {
+                }
+                """,
+            expected: """
+                namespace Demo;
+
+                [BindableValidator]
+                internal partial class Vm
+                {
+                }
+                """);
+
+    [Fact]
+    public async Task PSG0005_does_not_register_fix_when_class_already_partial()
+    {
+        const string source = """
+            namespace Demo;
+
+            [BindableValidator]
+            public partial class Vm
+            {
+            }
+            """;
+
+        ImmutableArray<CodeAction> actions = await GetCodeActionsAsync(source, "PSG0005");
+        Assert.Empty(actions);
+    }
+
+    [Fact]
     public Task PSG0001_and_PSG0002_on_same_class_both_fixable()
     {
         // Class has both [ObservableProperty] and [DelegateCommand] → PSG0001 + PSG0002
@@ -413,6 +471,9 @@ public class CodeFixTests
 
                 [System.AttributeUsage(System.AttributeTargets.Class)]
                 public sealed class BindableBaseAttribute : System.Attribute { }
+
+                [System.AttributeUsage(System.AttributeTargets.Class)]
+                public sealed class BindableValidatorAttribute : System.Attribute { }
             }
             """;
 
