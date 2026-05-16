@@ -4,27 +4,62 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
-### Changed
-- **Breaking:** `ObservableValidator` was renamed to **`BindableValidator`** (full metadata name `Prism.SourceGenerators.BindableValidator`). Update view model base types accordingly. Diagnostic **PSG5001** title and message now refer to `BindableValidator`.
-
-### Fixed
-- **Field-target `[ObservableProperty]`** forwards **untargeted** attributes (e.g. `System.ComponentModel.DataAnnotations`) onto the generated property, not only `[property: …]` lists, so `Validator` / **`BindableValidator`** see validation metadata. Attribute lists with an explicit **`[field: …]`** target remain on the backing field only.
-- **Partial property `[ObservableProperty]`**: attributes inheriting from **`System.ComponentModel.DataAnnotations.ValidationAttribute`** (e.g. `[Required]`, `[EmailAddress]`) are **not** re-emitted on the generated implementing partial; they remain on the user’s partial declaration only, avoiding **CS0579** while keeping **`Validator`** metadata correct.
-- **`MvvmAIO.Prism.Bcl.Commands` NuGet package** now ships a **package-scoped README** (`Prism.Bcl.Commands/README.md`) instead of the monorepo root README, so the gallery page describes Prism 8 async commands only and links to the main repo for full generator docs.
-
-### Changed
-- **`INotifyPropertyChanging`** behavior is aligned with **CommunityToolkit.Mvvm** **`ObservableObject`** / **`[ObservableProperty]`**: **`FeatureSwitches.EnableINotifyPropertyChangingSupport`** defaults to **`true`**; **`[BindableBase]`** always emits **`INotifyPropertyChanging`** (and helpers) when the type hierarchy does not already implement it; **`[ObservableProperty]`** always emits **`OnXxxChanging`** partials and invokes them before **`SetProperty`**, and **always** emits a guarded **`RaisePropertyChanging(nameof(...))`** in each generated setter. Types that have **`[ObservableProperty]`** but do not already get **`INotifyPropertyChanging`** from the hierarchy or from generated **`[BindableBase]`** also receive a companion **`*.ObservablePropertyChanging.g.cs`** with **`INotifyPropertyChanging`**, **`PropertyChanging`**, **`RaisePropertyChanging`**, and **`OnPropertyChanging`**. The two-parameter **`SetProperty`** overload from generated **`[BindableBase]`** raises **`PropertyChanging`**; the three-parameter overload does not (the observable setter raises it first, matching hook ordering). Set **`FeatureSwitches.EnableINotifyPropertyChangingSupport = false`** at startup to disable notifications at runtime (same performance trade-off as the toolkit).
+## [0.4.0] - 2026-05-14
 
 ### Added
 - **Validation support** via `[NotifyDataErrorInfo]` attribute and `BindableValidator` base class. Properties annotated with `[ObservableProperty]` and `[NotifyDataErrorInfo]` (or on a class with `[NotifyDataErrorInfo]`) automatically call `ValidateProperty(value, nameof(Property))` in the generated setter. `BindableValidator` implements `INotifyDataErrorInfo`, providing `ValidateProperty()`, `ValidateAllProperties()`, `ClearErrors()`, and `ClearAllErrors()` methods backed by `System.ComponentModel.DataAnnotations`.
 - New diagnostic **PSG5001** (Warning): `[NotifyDataErrorInfo]` is used but the containing type does not inherit from `BindableValidator`; validation calls will not be emitted.
-- **`PropertyAccess`** enum and **`PropertyAccess`** named/positional argument on `[ObservableProperty]` for **field** targets: choose the generated property's accessibility (`public` default, or `internal`, `protected`, `private`, `protected internal`, `private protected`). Partial property targets keep using the accessibility written on the property declaration.
-- `[DelegateCommand]` / `[AsyncDelegateCommand]` now accept execute methods returning **`ValueTask`** or **`ValueTask<TResult>`** (in addition to non-generic **`Task`**). The generator emits a lambda that calls **`.AsTask()`** so existing Prism `AsyncDelegateCommand` / `AsyncDelegateCommand<T>` constructors that take `Func<Task>` / `Func<T, Task>` keep working without requiring `Func<ValueTask>` overloads. Methods that take **`CancellationToken`** cannot combine with `ValueTask` / `ValueTask<TResult>` in this shape (**PSG1001**).
-- Diagnostic **PSG2006** (Warning): `CanExecute` references a member that exists but is not usable as `Func<bool>` / `Func<T, bool>` / `bool M()` / `bool M(T)` for the annotated execute method (wrong return type or parameters).
-- New `[NotifyCanExecuteChangedFor(nameof(SaveCommand), ...)]` attribute (in **`MvvmAIO.Prism.Core`**) for use alongside `[ObservableProperty]`. The generated property setter calls `XxxCommand?.RaiseCanExecuteChanged()` for each named command after raising `PropertyChanged`. Names are validated against existing members or the generated command of a `[DelegateCommand]`/`[AsyncDelegateCommand]` method on the same type.
+- New `[BindableValidator]` attribute: annotate a class with `[BindableValidator]` to generate the full `BindableValidator` base class implementation inline, without manual inheritance.
+
+### Changed
+- **Breaking:** `ObservableValidator` was renamed to **`BindableValidator`** (full metadata name `Prism.SourceGenerators.BindableValidator`). Update view model base types accordingly. Diagnostic **PSG5001** title and message now refer to `BindableValidator`.
+- **`MvvmAIO.Prism.Bcl.Commands`** now targets **`netstandard2.0`**, **`netstandard2.1`**, **`net8.0`**, and **`net10.0`** (previously `netstandard2.0` only).
+
+### Fixed
+- **Field-target `[ObservableProperty]`** forwards **untargeted** attributes (e.g. `System.ComponentModel.DataAnnotations`) onto the generated property, not only `[property: …]` lists, so `Validator` / **`BindableValidator`** see validation metadata. Attribute lists with an explicit **`[field: …]`** target remain on the backing field only.
+- **Partial property `[ObservableProperty]`**: attributes inheriting from **`System.ComponentModel.DataAnnotations.ValidationAttribute`** (e.g. `[Required]`, `[EmailAddress]`) are **not** re-emitted on the generated implementing partial; they remain on the user's partial declaration only, avoiding **CS0579** while keeping **`Validator`** metadata correct.
+
+## [0.3.1] - 2026-05-05
+
+### Fixed
+- **MSB3277** assembly conflict: `System.Threading.Tasks.Extensions` now correctly pinned for `netstandard2.0` target in `Prism.Bcl.Commands`.
+- `Microsoft.CodeAnalysis.CSharp` / `.Workspaces` package versions realigned across all multi-Roslyn projects to avoid version drift in CI.
+
+### Changed
+- **`MvvmAIO.Prism.Bcl.Commands`** NuGet package now ships a **package-scoped README** (`Prism.Bcl.Commands/README.md`) instead of the monorepo root README, so the gallery page describes Prism 8 async commands only.
+- Avalonia sample projects moved to the dedicated **`Prism.SourceGenerators.Samples`** repository.
+- Dependabot configured for NuGet and GitHub Actions version updates; Prism.Core version pinned from auto-updates.
+- `Microsoft.SourceLink.GitHub` bumped from `8.0.0` to `10.0.203`.
+- `Polyfill` consuming guidance aligned with SimonCropp/Polyfill recommendations.
+
+## [0.3.0] - 2026-05-05
+
+### Added
+- **`ContainerRegistryRegistrationGenerator`**: new `[Register]` attribute generates `IContainerRegistry` registration calls automatically. Supports `Name`, singleton/transient control, Prism 8 compatibility, and diagnostics for duplicate or invalid registrations.
+- **`[NotifyCanExecuteChangedFor(nameof(XxxCommand), …)]`** attribute (in **`MvvmAIO.Prism.Core`**) for use alongside `[ObservableProperty]`. The generated property setter calls `XxxCommand?.RaiseCanExecuteChanged()` for each named command after raising `PropertyChanged`. Names are validated against existing members or the generated command of a `[DelegateCommand]`/`[AsyncDelegateCommand]` method on the same type.
 - New diagnostic **PSG2005** (Warning): `[NotifyCanExecuteChangedFor]` references a name that cannot be resolved to a command property. The setter is still emitted so the project keeps compiling once the typo is fixed.
-- `[ObservableProperty]` now forwards user-supplied attributes onto the generated property. For **field** targets, untargeted attributes and `[property: Xxx]` lists are forwarded (generator-owned attributes are filtered). For **partial property** targets, the same applies **except** attributes inheriting **`ValidationAttribute`**, which stay on the user’s partial declaration only to avoid duplicate metadata (**CS0579**). The forwarded attributes are emitted with fully-qualified type names so they don't depend on `using` directives in the generated file.
-- New **code fix provider** for **PSG0001-PSG0004**: the IDE quick-fix bulb (Ctrl+. / Alt+Enter) now offers an **"Add 'partial' modifier"** action on the offending class or property. The fix supports the standard "Fix all in document/project/solution" workflows so multiple missing `partial` modifiers can be added in one operation.
+- New diagnostic **PSG2006** (Warning): `CanExecute` references a member that exists but is not usable as `Func<bool>` / `Func<T, bool>` / `bool M()` / `bool M(T)` for the annotated execute method (wrong return type or parameters).
+- **`PropertyAccess`** enum and **`PropertyAccess`** named/positional argument on `[ObservableProperty]` for **field** targets: choose the generated property's accessibility (`public` default, or `internal`, `protected`, `private`, `protected internal`, `private protected`). Partial property targets keep using the accessibility written on the property declaration.
+- `[DelegateCommand]` / `[AsyncDelegateCommand]` now accept execute methods returning **`ValueTask`** or **`ValueTask<TResult>`** (in addition to non-generic `Task`). The generator emits a lambda that calls `.AsTask()` so existing Prism `AsyncDelegateCommand` / `AsyncDelegateCommand<T>` constructors keep working. Methods that take `CancellationToken` cannot combine with `ValueTask` / `ValueTask<TResult>` in this shape (**PSG1001**).
+- New **code fix provider** for **PSG0001–PSG0004**: the IDE quick-fix bulb (Ctrl+. / Alt+Enter) now offers an **"Add 'partial' modifier"** action on the offending class or property. Supports "Fix all in document/project/solution" workflows.
+- `[ObservableProperty]` now forwards user-supplied attributes onto the generated property. For **field** targets, untargeted attributes and `[property: Xxx]` lists are forwarded (generator-owned attributes are filtered). For **partial property** targets, the same applies **except** attributes inheriting `ValidationAttribute`, which stay on the user's partial declaration only to avoid duplicate metadata (**CS0579**). Forwarded attributes use fully-qualified type names.
+- **`[ObservableProperty]`** emits `OnXxxChanging` partial methods alongside `OnXxxChanged`, and calls them before `SetProperty` in the generated setter.
+- **`INotifyPropertyChanging`** behavior aligned with CommunityToolkit.Mvvm: `[BindableBase]` always emits `INotifyPropertyChanging` when not already in the type hierarchy; `[ObservableProperty]` always emits `OnXxxChanging` partials and a guarded `RaisePropertyChanging(nameof(…))` call. Types using `[ObservableProperty]` without `[BindableBase]` receive a companion `*.ObservablePropertyChanging.g.cs`. Set `FeatureSwitches.EnableINotifyPropertyChangingSupport = false` to disable at runtime.
+- Type-shape matrix tests added for broad generator coverage.
+
+### Changed
+- All generators refactored to emit code via **syntax trees** instead of raw string interpolation.
+- `Prism.Core` directory renamed to `Prism.SourceGenerators.Core`.
+
+### Fixed
+- `[ObservableProperty]` generated setter now routes through **`SetProperty`** correctly (#19).
+- `[ObservableProperty]` preserves nullable reference type annotations in generated `OnXxxChanged` / `OnXxxChanging` API (#23).
+- Duplicate `IContainerRegistry` registrations prevented when a class carries multiple different `[Register]` attribute types.
+
+## [0.2.2] - 2026-05-02
+
+### Fixed
+- CI workflow updated to support **separate NuGet API keys** for `MvvmAIO.Prism.SourceGenerators` and `MvvmAIO.Prism.Bcl.Commands` package publishing.
 
 ## [0.2.0] - 2026-05-01
 
