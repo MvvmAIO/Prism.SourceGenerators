@@ -18,7 +18,7 @@ using Microsoft.CodeAnalysis.Formatting;
 namespace Prism.SourceGenerators.CodeFixes;
 
 /// <summary>
-/// Provides a code fix for PSG0001..PSG0004: insert the <c>partial</c> modifier on the offending type
+/// Provides a code fix for PSG0001..PSG0005: insert the <c>partial</c> modifier on the offending type
 /// or property declaration.
 /// </summary>
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(MakePartialCodeFixProvider))]
@@ -29,9 +29,10 @@ public sealed class MakePartialCodeFixProvider : CodeFixProvider
     private const string PSG0002 = "PSG0002";
     private const string PSG0003 = "PSG0003";
     private const string PSG0004 = "PSG0004";
+    private const string PSG0005 = "PSG0005";
 
     public override ImmutableArray<string> FixableDiagnosticIds { get; } =
-        ImmutableArray.Create(PSG0001, PSG0002, PSG0003, PSG0004);
+        ImmutableArray.Create(PSG0001, PSG0002, PSG0003, PSG0004, PSG0005);
 
     public override FixAllProvider? GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
 
@@ -56,6 +57,7 @@ public sealed class MakePartialCodeFixProvider : CodeFixProvider
                 case PSG0001:
                 case PSG0002:
                 case PSG0004:
+                case PSG0005:
                 {
                     TypeDeclarationSyntax? type = FindEnclosingTypeDeclaration(node);
                     if (type is null || HasPartialModifier(type.Modifiers))
