@@ -350,6 +350,8 @@ public partial class FormViewModel : BindableValidator
 | PSG0002 | Class with `[DelegateCommand]` / `[AsyncDelegateCommand]` method must be `partial` |
 | PSG0003 | Property with `[ObservableProperty]` must be declared as `partial` |
 | PSG0004 | Class with `[BindableBase]` must be `partial` |
+| PSG0005 | Class with `[BindableValidator]` must be `partial` |
+| PSG0006 | `[BindableValidator]` is only supported on classes |
 | PSG1001 | Method signature is invalid for `[DelegateCommand]` |
 | PSG1002 | Method signature is invalid for `[AsyncDelegateCommand]` |
 | PSG2001 | Catch handler member was not found |
@@ -358,15 +360,17 @@ public partial class FormViewModel : BindableValidator
 | PSG2004 | Observed property was not found |
 | PSG2005 | `[NotifyCanExecuteChangedFor]` references a command that was not found |
 | PSG2006 | `CanExecute` names a member whose signature is not compatible with the command |
-| PSG3002 | `AsyncDelegateCommand` not found; install **`MvvmAIO.Prism.SourceGenerators`** and, on Prism.Core 8.1.97, **`MvvmAIO.Prism.Bcl.Commands`** (or upgrade to Prism 9+) |
+| PSG3002 | `AsyncDelegateCommand` not found; install **`MvvmAIO.Prism.Bcl.Commands`** on Prism.Core 8.1.97, or upgrade to Prism 9+ |
+| PSG4001 | Service type is not assignable from the implementation type |
+| PSG4002 | ViewModelType could not be resolved |
 | PSG5001 | `[NotifyDataErrorInfo]` requires the containing type to inherit from `BindableValidator` |
 
-> **Quick fix:** PSG0001–PSG0004 all have an IDE code fix that inserts the missing `partial` modifier (Ctrl+. / Alt+Enter on the squiggle, or "Fix all in document/project/solution" to apply across the whole codebase).
+> **Quick fix:** PSG0001–PSG0005 all have an IDE code fix that inserts the missing `partial` modifier (Ctrl+. / Alt+Enter on the squiggle, or "Fix all in document/project/solution" to apply across the whole codebase).
 
 ## Installation
 
 ```xml
-<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.2.0" />
+<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.4.0" />
 ```
 
 Or:

@@ -346,6 +346,8 @@ public partial class FormViewModel : BindableValidator
 | PSG0002 | 包含 `[DelegateCommand]` / `[AsyncDelegateCommand]` 方法的类必须声明为 `partial` |
 | PSG0003 | 标注 `[ObservableProperty]` 的属性必须声明为 `partial` |
 | PSG0004 | 标注 `[BindableBase]` 的类必须声明为 `partial` |
+| PSG0005 | 标注 `[BindableValidator]` 的类必须声明为 `partial` |
+| PSG0006 | `[BindableValidator]` 仅支持 class，不支持 struct / interface |
 | PSG1001 | `[DelegateCommand]` 方法签名无效 |
 | PSG1002 | `[AsyncDelegateCommand]` 方法签名无效 |
 | PSG2001 | 未找到 Catch 处理程序成员 |
@@ -354,15 +356,17 @@ public partial class FormViewModel : BindableValidator
 | PSG2004 | 未找到被观察的属性 |
 | PSG2005 | `[NotifyCanExecuteChangedFor]` 引用的命令未找到 |
 | PSG2006 | `CanExecute` 所指向的成员签名与命令不兼容 |
-| PSG3002 | 未找到 `AsyncDelegateCommand`；请安装 **`MvvmAIO.Prism.SourceGenerators`**，且在 Prism.Core 8.1.97 上安装 **`MvvmAIO.Prism.Bcl.Commands`**（或升级到 Prism 9+） |
+| PSG3002 | 未找到 `AsyncDelegateCommand`；请安装 **`MvvmAIO.Prism.Bcl.Commands`**（Prism.Core 8.1.97），或升级到 Prism 9+ |
+| PSG4001 | ServiceType 与实现类型不兼容 |
+| PSG4002 | ViewModelType 无法解析 |
 | PSG5001 | `[NotifyDataErrorInfo]` 要求包含类型继承自 `BindableValidator` |
 
-> **快速修复：** PSG0001–PSG0004 都提供 IDE 代码修复，会自动插入缺失的 `partial` 修饰符（在波浪线处按 Ctrl+. / Alt+Enter，或使用"修复文档/项目/解决方案中的所有问题"在整个代码库中批量应用）。
+> **快速修复：** PSG0001–PSG0005 都提供 IDE 代码修复，会自动插入缺失的 `partial` 修饰符（在波浪线处按 Ctrl+. / Alt+Enter，或使用"修复文档/项目/解决方案中的所有问题"在整个代码库中批量应用）。
 
 ## 安装
 
 ```xml
-<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.2.0" />
+<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.4.0" />
 ```
 
 或：

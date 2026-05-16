@@ -345,6 +345,8 @@ public partial class FormViewModel : BindableValidator
 | PSG0002 | `[DelegateCommand]` / `[AsyncDelegateCommand]` メソッドを持つクラスは `partial` として宣言する必要があります |
 | PSG0003 | `[ObservableProperty]` を付与されたプロパティは `partial` として宣言する必要があります |
 | PSG0004 | `[BindableBase]` を付与されたクラスは `partial` として宣言する必要があります |
+| PSG0005 | `[BindableValidator]` を付与されたクラスは `partial` として宣言する必要があります |
+| PSG0006 | `[BindableValidator]` はクラスのみサポート（struct / interface は不可） |
 | PSG1001 | `[DelegateCommand]` メソッドのシグネチャが無効です |
 | PSG1002 | `[AsyncDelegateCommand]` メソッドのシグネチャが無効です |
 | PSG2001 | Catch ハンドラーのメンバーが見つかりません |
@@ -353,15 +355,17 @@ public partial class FormViewModel : BindableValidator
 | PSG2004 | 監視対象のプロパティが見つかりません |
 | PSG2005 | `[NotifyCanExecuteChangedFor]` が参照するコマンドが見つかりません |
 | PSG2006 | `CanExecute` が指すメンバーのシグネチャがコマンドと互換性がありません |
-| PSG3002 | `AsyncDelegateCommand` が見つかりません。**`MvvmAIO.Prism.SourceGenerators`** を使用し、Prism.Core 8.1.97 では **`MvvmAIO.Prism.Bcl.Commands`** を追加するか、Prism 9+ にアップグレードしてください |
+| PSG3002 | `AsyncDelegateCommand` が見つかりません。Prism.Core 8.1.97 では **`MvvmAIO.Prism.Bcl.Commands`** を追加するか、Prism 9+ にアップグレード |
+| PSG4001 | ServiceType が実装型と互換性がありません |
+| PSG4002 | ViewModelType が解決できませんでした |
 | PSG5001 | `[NotifyDataErrorInfo]` は `BindableValidator` を継承する型が必要です |
 
-> **クイックフィックス：** PSG0001〜PSG0004 にはすべて IDE のコードフィックスが用意されており、欠落している `partial` 修飾子を自動的に挿入します（波線上で Ctrl+. / Alt+Enter を押すか、「ドキュメント/プロジェクト/ソリューション内のすべての問題を修正」でコードベース全体に一括適用できます）。
+> **クイックフィックス：** PSG0001～PSG0005 にはすべて IDE のコードフィックスが用意されており、欠落している `partial` 修飾子を自動的に挿入します（波線上で Ctrl+. / Alt+Enter を押すか、「ドキュメント/プロジェクト/ソリューション内のすべての問題を修正」でコードベース全体に一括適用できます）。
 
 ## インストール
 
 ```xml
-<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.2.0" />
+<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.4.0" />
 ```
 
 または:
