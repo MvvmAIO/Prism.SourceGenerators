@@ -4,6 +4,11 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## [0.4.1] - 2026-05-16
+
+### Fixed
+- **Code fix provider** now covers **PSG0005** (`[BindableValidator]` class not partial) in addition to PSG0001–PSG0004. The IDE quick-fix bulb (Ctrl+. / Alt+Enter) will offer "Add 'partial' modifier" for all five diagnostics, and "Fix all in document/project/solution" works accordingly.
+
 ## [0.4.0] - 2026-05-14
 
 ### Added
