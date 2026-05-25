@@ -29,7 +29,8 @@ See `README.md` and `CONTRIBUTING.md` for issues, PR workflow, and packaging.
 | `Prism.SourceGenerators/` | Shared generator sources (`.shproj` / `.projitems`) |
 | `Prism.SourceGenerators.Roslyn4001` … `Roslyn5000` | Analyzer builds per Roslyn API band |
 | `Prism.SourceGenerators.Core` | `MvvmAIO.Prism.Core` attributes |
-| `Prism.SourceGenerators.Tests` | xUnit v3 + **Verify** snapshot tests |
+| `Prism.SourceGenerators.Tests` | xUnit v3 + **Verify** snapshot tests (Roslyn **4.12** host) |
+| `Prism.SourceGenerators.Tests.Roslyn5000` | Roslyn **5.0** smoke tests |
 | `Prism.SourceGenerators.Integration.Tests` | Packaging and analyzer scenarios |
 | `build/` | Nuke orchestration (`build.slnx`, `_build.csproj`) |
 

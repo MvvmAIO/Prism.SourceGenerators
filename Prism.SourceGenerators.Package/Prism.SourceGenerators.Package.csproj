@@ -10,7 +10,7 @@
     <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
 
     <PackageId>MvvmAIO.Prism.SourceGenerators</PackageId>
-    <Version>0.4.1</Version>
+    <Version>0.4.2</Version>
     <Authors>MvvmAIO;Skymly;wys0610</Authors>
     <Description>Roslyn source generators for the Prism MVVM library. Generates ObservableProperty, DelegateCommand, AsyncDelegateCommand, and BindableBase implementations. This package contains Prism.SourceGenerators analyzers and MvvmAIO.Prism.Core (attribute definitions). For Prism.Core 8.1.97 async commands, install MvvmAIO.Prism.Bcl.Commands manually.</Description>
     <PackageTags>prism;mvvm;source-generator;roslyn;wpf;observable-property;delegate-command</PackageTags>

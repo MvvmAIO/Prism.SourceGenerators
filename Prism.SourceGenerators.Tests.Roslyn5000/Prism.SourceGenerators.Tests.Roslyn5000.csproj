@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Host Microsoft.CodeAnalysis 5.x; must match Prism.SourceGenerators.Roslyn5000. -->
+    <PrismSourceGeneratorsTestsRoslynVersion>5.0.0</PrismSourceGeneratorsTestsRoslynVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.5.1" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(PrismSourceGeneratorsTestsRoslynVersion)" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(PrismSourceGeneratorsTestsRoslynVersion)" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="xunit.v3" Version="3.2.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Prism.SourceGenerators.Core\Prism.SourceGenerators.Core.csproj" />
+    <ProjectReference Include="..\Prism.SourceGenerators.Roslyn5000\Prism.SourceGenerators.Roslyn5000.csproj" />
+  </ItemGroup>
+
+</Project>

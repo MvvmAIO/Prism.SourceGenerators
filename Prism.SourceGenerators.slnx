@@ -9,6 +9,7 @@
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="Prism.SourceGenerators.Tests/Prism.SourceGenerators.Tests.csproj" />
+    <Project Path="Prism.SourceGenerators.Tests.Roslyn5000/Prism.SourceGenerators.Tests.Roslyn5000.csproj" />
     <Project Path="Prism.SourceGenerators.Integration.Tests/Prism.SourceGenerators.Integration.Tests.csproj" />
   </Folder>
   <Project Path="Prism.Bcl.Commands/Prism.Bcl.Commands.csproj" Id="202acabf-c79b-4f1e-a667-99df98caa0e3" />

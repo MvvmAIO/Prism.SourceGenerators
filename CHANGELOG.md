@@ -4,6 +4,18 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## [0.4.2] - 2026-05-25
+
+### Added
+
+- **`AGENTS.md`** — Cursor Cloud / automated agent development guide (build commands, layout, gotchas).
+- **`Prism.SourceGenerators.Tests.Roslyn5000`** — smoke tests running generators against the Roslyn 5.0 analyzer build.
+
+### Changed
+
+- **Dependency updates:** Polyfill 10.7.0, Verify.XunitV3 31.17.0, Microsoft.SourceLink.GitHub 10.0.300, NuGet.Packaging 7.6.0, System.Security.Cryptography.Xml 10.0.8 (Nuke build).
+- **`MvvmAIO.Prism.Bcl.Commands`** 0.4.2 — SourceLink 10.0.300 (no API changes).
+
 ## [0.4.1] - 2026-05-16
 
 ### Fixed

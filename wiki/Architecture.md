@@ -96,7 +96,7 @@ Avalonia 示例应用已迁至独立仓库 **[Prism.SourceGenerators.Samples](ht
 - **`PolyfillVersion`** — 全仓库 **Polyfill** 包版本（生成器与 **Core** 等一致）。  
 - **`PrismSourceGeneratorsTestsRoslynVersion`** — **单元测试 / 集成测试** 工程中 **`Microsoft.CodeAnalysis.*`** 的宿主版本，**必须与** 测试项目 **`ProjectReference`** 所指向的 **`Prism.SourceGenerators.Roslyn*`** 变体一致（当前默认 **4.12.0**，对应 **`Roslyn4120`**）。
 
-若将来增加「针对 **Roslyn5000** 的测试工程」，应同步把该属性改为 **5.0.0**（或拆多个测试工程分别引用不同变体）。
+**`Prism.SourceGenerators.Tests.Roslyn5000`** 对 **Roslyn5000** 做冒烟测试（工程内覆盖 `PrismSourceGeneratorsTestsRoslynVersion` 为 **5.0.0**）；完整快照与回归仍在 **`Prism.SourceGenerators.Tests`**（**4.12.0** / **Roslyn4120**）。
 
 ### 6.3 集成测试与 `Microsoft.Bcl.AsyncInterfaces`
 
