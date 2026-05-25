@@ -2,7 +2,7 @@
 
 **English** | [简体中文](README.zh-CN.md) | [日本語](README.ja.md)
 
-参与贡献见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+参与贡献见 [CONTRIBUTING.md](CONTRIBUTING.md)。自动化代理与 Cursor 的标准约束见 [AGENTS.md](AGENTS.md)。
 
 Roslyn source generators for the [Prism](https://github.com/PrismLibrary/Prism) MVVM library.
 
