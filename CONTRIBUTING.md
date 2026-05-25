@@ -2,6 +2,8 @@
 
 Thank you for your interest in this project. The following guidelines help keep reviews predictable and CI green.
 
+**Automated agents (Cursor, cloud agents):** the canonical constraint document is **[AGENTS.md](AGENTS.md)** at the repository root. It merges repository rules, build commands, and workflow expectations in one place; `.cursor/rules/` defers to it.
+
 ---
 
 ## Ground rules
