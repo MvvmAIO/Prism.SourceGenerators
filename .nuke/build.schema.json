@@ -104,6 +104,10 @@
   "allOf": [
     {
       "properties": {
+        "BclNuGetApiKey": {
+          "type": "string",
+          "description": "NuGet API key for MvvmAIO.Prism.Bcl.Commands (optional; falls back to --nuget-api-key)"
+        },
         "Configuration": {
           "type": "string",
           "description": "Build configuration (Debug/Release)"

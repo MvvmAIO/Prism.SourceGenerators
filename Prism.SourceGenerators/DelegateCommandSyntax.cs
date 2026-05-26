@@ -144,13 +144,20 @@ internal static class DelegateCommandSyntax
 
     private static string GetAsyncCommandExecuteArgument(CommandGenerationInfo info)
     {
-        if (!info.WrapAsyncExecuteWithAsTask)
+        if (info.WrapAsyncExecuteWithAwaitLambda)
         {
-            return info.MethodName;
+            return info.ParameterType is null
+                ? $"async () => await {info.MethodName}()"
+                : $"async (__p) => await {info.MethodName}(__p)";
         }
 
-        return info.ParameterType is null
-            ? $"() => {info.MethodName}().AsTask()"
-            : $"(__p) => {info.MethodName}(__p).AsTask()";
+        if (info.WrapAsyncExecuteWithAsTask)
+        {
+            return info.ParameterType is null
+                ? $"() => {info.MethodName}().AsTask()"
+                : $"(__p) => {info.MethodName}(__p).AsTask()";
+        }
+
+        return info.MethodName;
     }
 }

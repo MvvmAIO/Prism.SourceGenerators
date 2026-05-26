@@ -86,6 +86,31 @@ public sealed class MatrixTests
     }
 
     [Fact]
+    public void DelegateCommand_TaskOfT_execute_emits_await_wrapper()
+    {
+        const string source = """
+            namespace Demo;
+
+            public partial class Vm : Prism.Mvvm.BindableBase
+            {
+                [DelegateCommand]
+                private async System.Threading.Tasks.Task<int> CountAsync()
+                {
+                    await System.Threading.Tasks.Task.CompletedTask;
+                    return 1;
+                }
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source, languageVersion: LanguageVersion.Preview);
+        Assert.False(output.Diagnostics.Any(static d => d.Id is "PSG1001" or "PSG1002"));
+
+        GeneratedSource commandSource = Assert.Single(
+            output.GeneratedSources.Where(s => s.HintName.EndsWith(".CountCommand.g.cs")));
+        Assert.Contains("async () => await CountAsync()", commandSource.Source);
+    }
+
+    [Fact]
     public void AsyncDelegateCommand_ValueTaskOfT_execute_emits_parameterized_AsTask_wrapper()
     {
         const string source = """

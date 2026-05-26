@@ -12,7 +12,7 @@
 | `async Task` / `Task`（无泛型结果） | `AsyncDelegateCommand` / `AsyncDelegateCommand<T>` |
 | 返回 **`ValueTask`** / **`ValueTask<TResult>`** | 同上；生成代码通过 **`.AsTask()`** 接到 Prism 的 **`Func<Task>`** / **`Func<T, Task>`** 构造函数 |
 
-**不支持：** execute 返回 **`Task<TResult>`**（带泛型结果的任务）作为该路径的异步 execute。
+**`Task<TResult>`：** 生成代码通过 `async` lambda 等待 execute 方法（结果不暴露给命令）；与 **`CancellationToken`** 参数组合时仍报 **PSG1001**（与 `ValueTask` 族相同）。
 
 **限制（PSG1001）：** execute 方法若带 **`CancellationToken`** 参数，则**不能**与 **`ValueTask` / `ValueTask<TResult>`** 的返回类型组合（当前代码生成形状如此）。
 

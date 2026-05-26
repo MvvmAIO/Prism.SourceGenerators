@@ -4,6 +4,17 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## [0.5.0] - 2026-05-26
+
+### Added
+
+- **`[DelegateCommand]` / `[AsyncDelegateCommand]`** now support execute methods returning **`Task<TResult>`** (result is awaited; not surfaced on the command). Closes [#56](https://github.com/MvvmAIO/Prism.SourceGenerators/issues/56).
+- Additional **Roslyn 5.0** smoke tests for delegate commands.
+
+### Changed
+
+- Pack: suppress **NU5128** for bundled `MvvmAIO.Prism.Core` under `lib/netstandard2.0` (not a separate nuspec dependency).
+
 ## [0.4.3] - 2026-05-25
 
 ### Changed

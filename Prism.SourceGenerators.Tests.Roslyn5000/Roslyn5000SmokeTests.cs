@@ -37,15 +37,100 @@ public sealed class Roslyn5000SmokeTests
         Assert.Contains("public string Title", propertySource.Source);
         Assert.Contains("SetProperty", propertySource.Source);
     }
+
+    [Fact]
+    public void DelegateCommand_Task_execute_on_Roslyn5000_emits_AsyncDelegateCommand()
+    {
+        const string userSource = """
+            namespace Demo;
+
+            public partial class Vm : Prism.Mvvm.BindableBase
+            {
+                [DelegateCommand]
+                private async System.Threading.Tasks.Task SaveAsync()
+                {
+                    await System.Threading.Tasks.Task.CompletedTask;
+                }
+            }
+            """;
+
+        GeneratorRunOutput output = Roslyn5000TestHarness.Run(userSource, includeCommands: true);
+
+        Assert.Empty(output.Diagnostics.Where(static d =>
+            d.Severity >= DiagnosticSeverity.Error &&
+            d.Id.StartsWith("PSG", System.StringComparison.Ordinal)));
+
+        GeneratedSource commandSource = Assert.Single(
+            output.GeneratedSources.Where(s => s.HintName.EndsWith(".SaveCommand.g.cs")));
+
+        Assert.Contains("AsyncDelegateCommand", commandSource.Source);
+        Assert.Contains("SaveAsync", commandSource.Source);
+    }
+
+    [Fact]
+    public void DelegateCommand_TaskOfT_execute_on_Roslyn5000_emits_await_wrapper()
+    {
+        const string userSource = """
+            namespace Demo;
+
+            public partial class Vm : Prism.Mvvm.BindableBase
+            {
+                [DelegateCommand]
+                private async System.Threading.Tasks.Task<int> CountAsync()
+                {
+                    await System.Threading.Tasks.Task.CompletedTask;
+                    return 0;
+                }
+            }
+            """;
+
+        GeneratorRunOutput output = Roslyn5000TestHarness.Run(userSource, includeCommands: true);
+
+        Assert.Empty(output.Diagnostics.Where(static d =>
+            d.Severity >= DiagnosticSeverity.Error &&
+            d.Id.StartsWith("PSG", System.StringComparison.Ordinal)));
+
+        GeneratedSource commandSource = Assert.Single(
+            output.GeneratedSources.Where(s => s.HintName.EndsWith(".CountCommand.g.cs")));
+
+        Assert.Contains("async () => await CountAsync()", commandSource.Source);
+    }
 }
 
 internal static class Roslyn5000TestHarness
 {
-    internal static GeneratorRunOutput Run(string userSource)
+    internal static GeneratorRunOutput Run(string userSource, bool includeCommands = false)
     {
+        string commandStubs = includeCommands
+            ? """
+
+            namespace Prism.Commands
+            {
+                public class DelegateCommand
+                {
+                    public DelegateCommand(System.Action execute) { }
+                    public DelegateCommand(System.Func<System.Threading.Tasks.Task> execute) { }
+                }
+
+                public class AsyncDelegateCommand
+                {
+                    public AsyncDelegateCommand(System.Func<System.Threading.Tasks.Task> execute) { }
+                    public AsyncDelegateCommand(System.Func<System.Threading.Tasks.Task> execute, System.Func<bool> canExecute) { }
+                }
+
+                public class AsyncDelegateCommand<T>
+                {
+                    public AsyncDelegateCommand(System.Func<T, System.Threading.Tasks.Task> execute) { }
+                    public AsyncDelegateCommand(System.Func<T, System.Threading.Tasks.Task> execute, System.Func<T, bool> canExecute) { }
+                }
+            }
+            """
+            : string.Empty;
+
         string harness = """
             #nullable enable
             using System;
+            using System.Threading.Tasks;
             using Prism.SourceGenerators;
 
             namespace Prism.Mvvm
@@ -58,8 +143,7 @@ internal static class Roslyn5000TestHarness
                     protected void RaisePropertyChanged(string? propertyName = null) { }
                 }
             }
-
-            """ + userSource;
+            """ + commandStubs + userSource;
 
         SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(
             harness,
@@ -71,12 +155,20 @@ internal static class Roslyn5000TestHarness
             Roslyn5000MetadataReferences.Get(),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-        IIncrementalGenerator[] generators =
-        [
-            new ObservablePropertyGenerator(),
-            new PropertyChangingGenerator(),
-            new BindableBaseGenerator(),
-        ];
+        IIncrementalGenerator[] generators = includeCommands
+            ?
+            [
+                new ObservablePropertyGenerator(),
+                new PropertyChangingGenerator(),
+                new BindableBaseGenerator(),
+                new DelegateCommandGenerator(),
+            ]
+            :
+            [
+                new ObservablePropertyGenerator(),
+                new PropertyChangingGenerator(),
+                new BindableBaseGenerator(),
+            ];
 
         GeneratorDriver driver = CSharpGeneratorDriver.Create(
             generators.Select(static g => g.AsSourceGenerator()),

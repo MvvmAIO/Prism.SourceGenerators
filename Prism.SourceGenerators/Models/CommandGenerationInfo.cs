@@ -21,4 +21,5 @@ internal sealed record CommandGenerationInfo(
     bool EnableParallelExecution,
     EquatableArray<string> ObservesProperties,
     bool UseFieldKeyword,
-    bool WrapAsyncExecuteWithAsTask) : IEquatable<CommandGenerationInfo>;
+    bool WrapAsyncExecuteWithAsTask,
+    bool WrapAsyncExecuteWithAwaitLambda) : IEquatable<CommandGenerationInfo>;
