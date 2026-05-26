@@ -15,7 +15,7 @@ namespace Prism.SourceGenerators;
 /// from methods annotated with <c>[DelegateCommand]</c> or <c>[AsyncDelegateCommand]</c>.
 /// <para>
 /// For synchronous methods (<c>void</c>), generates <c>DelegateCommand</c> or <c>DelegateCommand&lt;T&gt;</c>.
-/// For asynchronous methods (<c>Task</c>, <c>ValueTask</c>, or <c>ValueTask&lt;TResult&gt;</c>), generates <c>AsyncDelegateCommand</c> or <c>AsyncDelegateCommand&lt;T&gt;</c>.
+/// For asynchronous methods (<c>Task</c>, <c>Task&lt;TResult&gt;</c>, <c>ValueTask</c>, or <c>ValueTask&lt;TResult&gt;</c>), generates <c>AsyncDelegateCommand</c> or <c>AsyncDelegateCommand&lt;T&gt;</c>.
 /// For Prism versions prior to 9.0, use NuGet <c>MvvmAIO.Prism.SourceGenerators</c> and install <c>MvvmAIO.Prism.Bcl.Commands</c> manually for Prism.Core 8.1.97 (see diagnostic PSG3002).
 /// </para>
 /// </summary>
@@ -168,6 +168,7 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
 
         bool useFieldKeyword = SupportsFieldKeyword(context);
         bool wrapAsyncExecuteWithAsTask = isAsync && IsValueTaskReturnFamily(methodSymbol.ReturnType, compilation);
+        bool wrapAsyncExecuteWithAwaitLambda = isAsync && IsTaskOfTReturnFamily(methodSymbol.ReturnType, compilation);
 
         if (canExecute is not null && !HasMember(containingType, canExecute))
         {
@@ -216,7 +217,8 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
                 EnableParallelExecution: false,
                 ObservesProperties: observesProperties,
                 UseFieldKeyword: useFieldKeyword,
-                WrapAsyncExecuteWithAsTask: wrapAsyncExecuteWithAsTask),
+                WrapAsyncExecuteWithAsTask: wrapAsyncExecuteWithAsTask,
+                WrapAsyncExecuteWithAwaitLambda: wrapAsyncExecuteWithAwaitLambda),
             diagnostics.ToImmutable());
     }
 
@@ -239,6 +241,7 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
         HierarchyInfo hierarchy = HierarchyInfo.From(containingType);
         bool useFieldKeyword = SupportsFieldKeyword(context);
         bool wrapAsyncExecuteWithAsTask = IsValueTaskReturnFamily(methodSymbol.ReturnType, compilation);
+        bool wrapAsyncExecuteWithAwaitLambda = IsTaskOfTReturnFamily(methodSymbol.ReturnType, compilation);
 
         ImmutableArray<Result<CommandGenerationInfo>>.Builder builder =
             ImmutableArray.CreateBuilder<Result<CommandGenerationInfo>>();
@@ -354,7 +357,8 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
                     enableParallelExecution,
                     observesProperties,
                     useFieldKeyword,
-                    WrapAsyncExecuteWithAsTask: wrapAsyncExecuteWithAsTask),
+                    WrapAsyncExecuteWithAsTask: wrapAsyncExecuteWithAsTask,
+                    WrapAsyncExecuteWithAwaitLambda: wrapAsyncExecuteWithAwaitLambda),
                 diagnostics.ToImmutable()));
         }
 
@@ -451,8 +455,7 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
         if (!IsBindingSupportedAsyncReturnType(methodSymbol.ReturnType, compilation))
             return false;
 
-        if (IsValueTaskReturnFamily(methodSymbol.ReturnType, compilation)
-            && methodSymbol.Parameters.Any(static p => IsCancellationToken(p.Type)))
+        if (UsesUnsupportedAsyncReturnWithCancellationToken(methodSymbol, compilation))
         {
             return false;
         }
@@ -471,8 +474,7 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
         if (!IsBindingSupportedAsyncReturnType(methodSymbol.ReturnType, compilation))
             return false;
 
-        if (IsValueTaskReturnFamily(methodSymbol.ReturnType, compilation)
-            && methodSymbol.Parameters.Any(static p => IsCancellationToken(p.Type)))
+        if (UsesUnsupportedAsyncReturnWithCancellationToken(methodSymbol, compilation))
         {
             return false;
         }
@@ -522,9 +524,7 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
     }
 
     /// <summary>
-    /// Async command binding supports non-generic <c>Task</c>, non-generic <c>ValueTask</c>, and <c>ValueTask&lt;TResult&gt;</c>
-    /// (Prism exposes matching <c>Func&lt;ValueTask&gt;</c> / <c>Func&lt;ValueTask&lt;TResult&gt;&gt;</c> overloads on <c>AsyncDelegateCommand</c>).
-    /// <c>Task&lt;TResult&gt;</c> is not supported for command execute methods (unchanged).
+    /// Async command binding supports non-generic <c>Task</c>, <c>Task&lt;TResult&gt;</c>, non-generic <c>ValueTask</c>, and <c>ValueTask&lt;TResult&gt;</c>.
     /// </summary>
     private static bool IsBindingSupportedAsyncReturnType(ITypeSymbol returnType, Compilation compilation)
     {
@@ -539,6 +539,11 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
             return true;
         }
 
+        if (IsTaskOfTReturnFamily(returnType, compilation))
+        {
+            return true;
+        }
+
         INamedTypeSymbol? valueTask = compilation.GetTypeByMetadataName("System.Threading.Tasks.ValueTask");
         if (valueTask is not null && !named.IsGenericType && SymbolEqualityComparer.Default.Equals(returnType, valueTask))
         {
@@ -549,6 +554,29 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
         return valueTaskOfT is not null
             && named.IsGenericType
             && SymbolEqualityComparer.Default.Equals(named.OriginalDefinition, valueTaskOfT);
+    }
+
+    private static bool IsTaskOfTReturnFamily(ITypeSymbol returnType, Compilation compilation)
+    {
+        if (returnType is not INamedTypeSymbol named || !named.IsGenericType)
+        {
+            return false;
+        }
+
+        INamedTypeSymbol? taskOfT = compilation.GetTypeByMetadataName("System.Threading.Tasks.Task`1");
+        return taskOfT is not null
+            && SymbolEqualityComparer.Default.Equals(named.OriginalDefinition, taskOfT);
+    }
+
+    private static bool UsesUnsupportedAsyncReturnWithCancellationToken(IMethodSymbol methodSymbol, Compilation compilation)
+    {
+        if (!methodSymbol.Parameters.Any(static p => IsCancellationToken(p.Type)))
+        {
+            return false;
+        }
+
+        return IsValueTaskReturnFamily(methodSymbol.ReturnType, compilation)
+            || IsTaskOfTReturnFamily(methodSymbol.ReturnType, compilation);
     }
 
     private static bool IsValueTaskReturnFamily(ITypeSymbol returnType, Compilation compilation)
