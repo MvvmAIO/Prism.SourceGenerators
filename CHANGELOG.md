@@ -4,9 +4,12 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## [0.4.3] - 2026-05-25
+
 ### Changed
 
 - **`AGENTS.md`** is now the canonical project constraint document (build/CI, `.slnx`, `.Temp/`, GitHub workflow, generator checklist). Cursor rules under `.cursor/rules/` defer to it.
+- README install examples updated to **MvvmAIO.Prism.SourceGenerators** 0.4.2.
 
 ## [0.4.2] - 2026-05-25
 
