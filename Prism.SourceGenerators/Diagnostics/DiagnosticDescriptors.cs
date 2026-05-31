@@ -1,7 +1,5 @@
 using Microsoft.CodeAnalysis;
 
-#pragma warning disable RS2008
-
 namespace Prism.SourceGenerators.Diagnostics;
 
 /// <summary>
