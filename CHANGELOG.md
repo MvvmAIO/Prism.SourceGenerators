@@ -4,6 +4,10 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+### Added
+
+- **Analyzer release tracking**: added `AnalyzerReleases.Shipped.md` / `AnalyzerReleases.Unshipped.md` for the analyzer/generator assembly and removed the `RS2008` suppression. All current diagnostics (**PSG0001–0006**, **PSG1001–1002**, **PSG2001–2006**, **PSG3002**, **PSG4001–4002**, **PSG5001**) are now tracked release-over-release. No change to emitted code or diagnostic behavior. Per-release attribution is reconstructed from `CHANGELOG`.
+
 ### Changed
 
 - README install examples: **MvvmAIO.Prism.SourceGenerators** **0.5.0**.
