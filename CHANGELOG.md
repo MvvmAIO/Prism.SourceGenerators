@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented in this file.
 
-## Unreleased
+## [0.5.1] - 2026-05-31
 
 ### Added
 
@@ -10,8 +10,7 @@ All notable changes to this project are documented in this file.
 
 ### Changed
 
-- README install examples: **MvvmAIO.Prism.SourceGenerators** **0.5.0**.
-- **`MvvmAIO.Prism.Bcl.Commands`** csproj default version aligned to **0.5.0** (matches Nuke publish `--version`; no API changes). Package README install examples updated.
+- **`MvvmAIO.Prism.SourceGenerators`** and **`MvvmAIO.Prism.Bcl.Commands`** package versions bumped to **0.5.1**; README / package install examples updated. **`MvvmAIO.Prism.Bcl.Commands`** has no API changes since 0.5.0.
 
 ## [0.5.0] - 2026-05-26
 

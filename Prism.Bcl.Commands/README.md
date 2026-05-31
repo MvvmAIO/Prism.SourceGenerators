@@ -18,7 +18,7 @@ Without this package on Prism 8, the analyzer reports **PSG3002** — `AsyncDele
 ## Installation
 
 ```xml
-<PackageReference Include="MvvmAIO.Prism.Bcl.Commands" Version="0.5.0" />
+<PackageReference Include="MvvmAIO.Prism.Bcl.Commands" Version="0.5.1" />
 ```
 
 Or:
@@ -76,9 +76,9 @@ Available fluent methods:
 ```xml
 <ItemGroup>
     <!-- Source generators + attributes -->
-    <PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.5.0" />
+    <PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.5.1" />
     <!-- Async command types for Prism 8 -->
-    <PackageReference Include="MvvmAIO.Prism.Bcl.Commands" Version="0.5.0" />
+    <PackageReference Include="MvvmAIO.Prism.Bcl.Commands" Version="0.5.1" />
     <!-- Prism framework -->
     <PackageReference Include="Prism.Core" Version="8.1.97" />
 </ItemGroup>
