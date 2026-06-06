@@ -364,6 +364,7 @@ FodyWeavers.xsd
 
 # Local scratch — temporary projects, experiments, and other disposable files
 .Temp/
+.Local/
 
 # JetBrains Rider / IntelliJ IDEA (user-specific and machine-local IDE metadata)
 .idea/
