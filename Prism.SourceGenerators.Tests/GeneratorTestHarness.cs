@@ -102,6 +102,33 @@ internal static class GeneratorTestHarness
                 }
             }
 
+            namespace Prism.Navigation.Regions
+            {
+                public sealed class NavigationContext { }
+
+                public interface INavigationAware
+                {
+                    void OnNavigatedTo(NavigationContext navigationContext);
+                    bool IsNavigationTarget(NavigationContext navigationContext);
+                    void OnNavigatedFrom(NavigationContext navigationContext);
+                }
+            }
+
+            namespace Prism.Services.Dialogs
+            {
+                public interface IDialogParameters { }
+                public interface IDialogResult { }
+
+                public interface IDialogAware
+                {
+                    string Title { get; }
+                    event System.Action<IDialogResult>? RequestClose;
+                    bool CanCloseDialog();
+                    void OnDialogClosed();
+                    void OnDialogOpened(IDialogParameters parameters);
+                }
+            }
+
             {{userSource}}
             """;
     }
@@ -141,7 +168,9 @@ internal static class GeneratorTestHarness
             new PropertyChangingGenerator(),
             new DelegateCommandGenerator(),
             new BindableBaseGenerator(),
-            new ContainerRegistryRegistrationGenerator()
+            new ContainerRegistryRegistrationGenerator(),
+            new NavigationAwareGenerator(),
+            new DialogAwareGenerator(),
         };
 
         GeneratorDriver driver = CSharpGeneratorDriver.Create(

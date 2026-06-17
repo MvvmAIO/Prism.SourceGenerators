@@ -88,6 +88,32 @@ internal static class DiagnosticDescriptors
         description: "[BindableValidator] generates class partials that inherit BindableValidator or implement INotifyDataErrorInfo; it cannot be applied to structs, records, or interfaces.",
         helpLinkUri: HelpLink);
 
+    /// <summary>
+    /// PSG0007: Class with [NavigationAware] must be partial.
+    /// </summary>
+    public static readonly DiagnosticDescriptor NonPartialClassWithNavigationAware = new(
+        id: "PSG0007",
+        title: "Class with [NavigationAware] must be partial",
+        messageFormat: "The class '{0}' has [NavigationAware] but is not declared as partial",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "The [NavigationAware] attribute generates INavigationAware members into the target type, which must be partial.",
+        helpLinkUri: HelpLink);
+
+    /// <summary>
+    /// PSG0008: Class with [DialogAware] must be partial.
+    /// </summary>
+    public static readonly DiagnosticDescriptor NonPartialClassWithDialogAware = new(
+        id: "PSG0008",
+        title: "Class with [DialogAware] must be partial",
+        messageFormat: "The class '{0}' has [DialogAware] but is not declared as partial",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "The [DialogAware] attribute generates IDialogAware members into the target type, which must be partial.",
+        helpLinkUri: HelpLink);
+
     public static readonly DiagnosticDescriptor InvalidDelegateCommandMethodSignature = new(
         id: "PSG1001",
         title: "Invalid [DelegateCommand] method signature",
@@ -219,5 +245,18 @@ internal static class DiagnosticDescriptors
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: "[NotifyDataErrorInfo] is only effective when the containing type inherits from Prism.SourceGenerators.BindableValidator or is annotated with [BindableValidator]. Otherwise the generated setter will not call ValidateProperty.",
+        helpLinkUri: HelpLink);
+
+    /// <summary>
+    /// PSG6001: Field-backed [ObservableProperty] can be converted to a partial property (C# 13+).
+    /// </summary>
+    public static readonly DiagnosticDescriptor UsePartialPropertyForObservableProperty = new(
+        id: "PSG6001",
+        title: "Use partial property for [ObservableProperty]",
+        messageFormat: "The field '{0}' can be converted to a partial property when using C# 13 or later",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "Partial properties with the field keyword provide a cleaner API than backing fields. Apply the code fix when LangVersion is 13.0 or higher.",
         helpLinkUri: HelpLink);
 }

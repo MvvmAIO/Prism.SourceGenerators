@@ -15,6 +15,8 @@ public sealed class PrismAttributeUsageAnalyzer : DiagnosticAnalyzer
     private const string AsyncDelegateCommandAttributeName = "Prism.SourceGenerators.AsyncDelegateCommandAttribute";
     private const string BindableBaseAttributeName = "Prism.SourceGenerators.BindableBaseAttribute";
     private const string BindableValidatorAttributeName = "Prism.SourceGenerators.BindableValidatorAttribute";
+    private const string NavigationAwareAttributeName = "Prism.SourceGenerators.NavigationAwareAttribute";
+    private const string DialogAwareAttributeName = "Prism.SourceGenerators.DialogAwareAttribute";
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
         ImmutableArray.Create(
@@ -22,7 +24,9 @@ public sealed class PrismAttributeUsageAnalyzer : DiagnosticAnalyzer
             DiagnosticDescriptors.NonPartialClassWithDelegateCommand,
             DiagnosticDescriptors.NonPartialPropertyWithObservableProperty,
             DiagnosticDescriptors.NonPartialClassWithBindableBase,
-            DiagnosticDescriptors.NonPartialClassWithBindableValidator);
+            DiagnosticDescriptors.NonPartialClassWithBindableValidator,
+            DiagnosticDescriptors.NonPartialClassWithNavigationAware,
+            DiagnosticDescriptors.NonPartialClassWithDialogAware);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -54,6 +58,22 @@ public sealed class PrismAttributeUsageAnalyzer : DiagnosticAnalyzer
         {
             context.ReportDiagnostic(Diagnostic.Create(
                 DiagnosticDescriptors.NonPartialClassWithBindableValidator,
+                type.Locations.FirstOrDefault(),
+                type.Name));
+        }
+
+        if (HasAttribute(type, NavigationAwareAttributeName))
+        {
+            context.ReportDiagnostic(Diagnostic.Create(
+                DiagnosticDescriptors.NonPartialClassWithNavigationAware,
+                type.Locations.FirstOrDefault(),
+                type.Name));
+        }
+
+        if (HasAttribute(type, DialogAwareAttributeName))
+        {
+            context.ReportDiagnostic(Diagnostic.Create(
+                DiagnosticDescriptors.NonPartialClassWithDialogAware,
                 type.Locations.FirstOrDefault(),
                 type.Name));
         }

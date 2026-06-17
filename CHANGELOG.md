@@ -2,6 +2,19 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.6.0] - 2026-06-17
+
+### Added
+
+- **`[NavigationAware]`** — generates `Prism.Navigation.Regions.INavigationAware` members with `OnNavigatedToCore` / `IsNavigationTargetCore` / `OnNavigatedFromCore` partial hooks.
+- **`[DialogAware]`** — generates `Prism.Services.Dialogs.IDialogAware` members (`Title`, `RequestClose`, dialog lifecycle hooks).
+- **PSG6001** (Info) + code fix — suggests converting field-backed `[ObservableProperty]` to a partial property when C# 13+ is enabled.
+- **PSG0007** / **PSG0008** — `[NavigationAware]` / `[DialogAware]` require partial classes (with code fix support).
+
+### Changed
+
+- Package version bumped to **0.6.0**.
+
 ## [0.5.1] - 2026-05-31
 
 ### Added
@@ -156,4 +169,3 @@ All notable changes to this project are documented in this file.
 
 ### Fixed
 - Resolved Polyfill System.Memory version warning by upgrading to a supported version.
-

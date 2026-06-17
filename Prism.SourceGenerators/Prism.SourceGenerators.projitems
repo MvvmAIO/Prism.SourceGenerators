@@ -10,8 +10,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)CodeFixes\MakePartialCodeFixProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CodeFixes\UsePartialPropertyForObservablePropertyCodeFixProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Diagnostics\DiagnosticDescriptors.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Diagnostics\PrismAttributeUsageAnalyzer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Diagnostics\UsePartialPropertyForObservablePropertyAnalyzer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\AccessibilityExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\AnalyzerConfigOptionsExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\AttributeDataExtensions.cs" />
@@ -47,6 +49,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Models\PropertyGenerationInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\BindableBaseGenerationInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\BindableValidatorGenerationInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\DialogAwareGenerationInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\PropertyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Result.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\TypeInfo.cs" />
@@ -59,6 +62,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)BindableValidatorMetadataExtractor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BindableValidatorSyntax.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ContainerRegistryRegistrationGenerator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DialogAwareGenerator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DialogAwareMetadataExtractor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DialogAwareSyntax.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NavigationAwareGenerator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NavigationAwareMetadataExtractor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NavigationAwareSyntax.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PropertyChangingAnalysis.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PropertyChangingGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PropertyChangingSyntax.cs" />

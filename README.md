@@ -370,7 +370,7 @@ public partial class FormViewModel : BindableValidator
 ## Installation
 
 ```xml
-<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.5.1" />
+<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.6.0" />
 ```
 
 Or:
@@ -410,5 +410,3 @@ dotnet run --project build/_build.csproj -- --target Publish --configuration Rel
 
 - .NET 10 SDK
 - Visual Studio 2022 17.13+ / Rider / VS Code with C# Dev Kit (for `.slnx` support)
-
-

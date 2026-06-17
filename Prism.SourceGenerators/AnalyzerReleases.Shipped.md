@@ -1,6 +1,16 @@
 ; Shipped analyzer releases
 ; https://github.com/dotnet/roslyn-analyzers/blob/main/src/Microsoft.CodeAnalysis.Analyzers/ReleaseTrackingAnalyzers.Help.md
 
+## Release 0.6.0
+
+### New Rules
+
+Rule ID | Category | Severity | Notes
+--------|----------|----------|-------
+PSG0007 | Prism.SourceGenerators | Error | Class with [NavigationAware] must be partial
+PSG0008 | Prism.SourceGenerators | Error | Class with [DialogAware] must be partial
+PSG6001 | Prism.SourceGenerators | Info | Use partial property for [ObservableProperty] (C# 13+)
+
 ## Release 0.4.0
 
 ### New Rules

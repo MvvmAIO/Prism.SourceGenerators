@@ -30,9 +30,11 @@ public sealed class MakePartialCodeFixProvider : CodeFixProvider
     private const string PSG0003 = "PSG0003";
     private const string PSG0004 = "PSG0004";
     private const string PSG0005 = "PSG0005";
+    private const string PSG0007 = "PSG0007";
+    private const string PSG0008 = "PSG0008";
 
     public override ImmutableArray<string> FixableDiagnosticIds { get; } =
-        ImmutableArray.Create(PSG0001, PSG0002, PSG0003, PSG0004, PSG0005);
+        ImmutableArray.Create(PSG0001, PSG0002, PSG0003, PSG0004, PSG0005, PSG0007, PSG0008);
 
     public override FixAllProvider? GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
 
@@ -58,6 +60,8 @@ public sealed class MakePartialCodeFixProvider : CodeFixProvider
                 case PSG0002:
                 case PSG0004:
                 case PSG0005:
+                case PSG0007:
+                case PSG0008:
                 {
                     TypeDeclarationSyntax? type = FindEnclosingTypeDeclaration(node);
                     if (type is null || HasPartialModifier(type.Modifiers))
