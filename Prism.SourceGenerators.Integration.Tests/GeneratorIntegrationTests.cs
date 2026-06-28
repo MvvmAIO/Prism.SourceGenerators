@@ -774,6 +774,88 @@ public sealed class GeneratorIntegrationTests
 
     #endregion
 
+    #region Navigation and Dialog
+
+    [Fact]
+    public void NavigationAware_compiles_with_real_Prism8_regions()
+    {
+        const string source = """
+            #nullable enable
+            using Prism.Mvvm;
+            using Prism.Regions;
+            using Prism.SourceGenerators;
+
+            namespace Demo;
+
+            [NavigationAware]
+            public partial class DashboardVm : BindableBase
+            {
+                partial void OnNavigatedToCore(NavigationContext navigationContext) { }
+            }
+            """;
+
+        GeneratorRunOutput output = RunAllGenerators(source);
+        AssertNoPsgErrors(output);
+        GeneratedSource nav = AssertSingleHintNameEnding(output, ".NavigationAware.g.cs");
+        Assert.Contains("global::Prism.Regions.INavigationAware", nav.Source);
+        AssertOutputCompiles(output, source);
+    }
+
+    [Fact]
+    public void DialogAware_compiles_with_real_Prism_core()
+    {
+        const string source = """
+            #nullable enable
+            using Prism.Mvvm;
+            using Prism.Services.Dialogs;
+            using Prism.SourceGenerators;
+
+            namespace Demo;
+
+            [DialogAware(Title = "Confirm")]
+            public partial class ConfirmVm : BindableBase
+            {
+                partial void OnDialogOpenedCore(IDialogParameters parameters) { }
+            }
+            """;
+
+        GeneratorRunOutput output = RunAllGenerators(source);
+        AssertNoPsgErrors(output);
+        GeneratedSource dialog = AssertSingleHintNameEnding(output, ".DialogAware.g.cs");
+        Assert.Contains("IDialogAware", dialog.Source);
+        AssertOutputCompiles(output, source);
+    }
+
+    [Fact]
+    public void NavigateCommand_compiles_with_real_Prism8_region_manager()
+    {
+        const string source = """
+            #nullable enable
+            using Prism.Mvvm;
+            using Prism.Regions;
+            using Prism.SourceGenerators;
+
+            namespace Demo;
+
+            public partial class ShellVm : BindableBase
+            {
+                private readonly IRegionManager _regionManager;
+
+                public ShellVm(IRegionManager regionManager) => _regionManager = regionManager;
+
+                [NavigateCommand(Region = "Content", Target = "Dashboard")]
+                private void GoDashboard() { }
+            }
+            """;
+
+        GeneratorRunOutput output = RunAllGenerators(source);
+        AssertNoPsgErrors(output);
+        AssertSingleHintNameEnding(output, ".GoDashboardCommand.g.cs");
+        AssertOutputCompiles(output, source);
+    }
+
+    #endregion
+
     #region Helpers
 
     private static GeneratorRunOutput RunAllGenerators(
@@ -799,7 +881,11 @@ public sealed class GeneratorIntegrationTests
                 new PropertyChangingGenerator(),
                 new DelegateCommandGenerator(),
                 new BindableBaseGenerator(),
-                new ContainerRegistryRegistrationGenerator());
+                new ContainerRegistryRegistrationGenerator(),
+                new NavigationAwareGenerator(),
+                new DialogAwareGenerator(),
+                new RegionNavigationGenerator(),
+                new DialogServiceCommandGenerator());
 
         GeneratorDriver driver = CSharpGeneratorDriver.Create(
             generators: generators.Select(static g => g.AsSourceGenerator()),
@@ -906,9 +992,14 @@ public sealed class GeneratorIntegrationTests
         if (!File.Exists(prismDll))
             throw new InvalidOperationException($"Prism.Core assembly not found: {prismDll}");
 
+        string prismContracts = Path.Combine(AppContext.BaseDirectory, "Prism.SourceGenerators.Integration.Contracts.dll");
+        if (!File.Exists(prismContracts))
+            throw new InvalidOperationException($"Required test reference not found: {prismContracts}");
+
         IEnumerable<MetadataReference> refs = platform
             .Append(MetadataReference.CreateFromFile(mvvmCore))
-            .Append(MetadataReference.CreateFromFile(prismDll));
+            .Append(MetadataReference.CreateFromFile(prismDll))
+            .Append(MetadataReference.CreateFromFile(prismContracts));
 
         if (!includeBclCommands)
             return refs;

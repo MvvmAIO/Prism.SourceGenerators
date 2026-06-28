@@ -12,7 +12,17 @@ namespace Prism.SourceGenerators.Tests;
 
 internal static class GeneratorTestHarness
 {
-    internal static string BuildHarnessDocument(string userSource, bool hasAsyncDelegateCommand = true)
+    internal enum HarnessRegionsApi
+    {
+        Both,
+        Prism8Only,
+        Prism9Only,
+    }
+
+    internal static string BuildHarnessDocument(
+        string userSource,
+        bool hasAsyncDelegateCommand = true,
+        HarnessRegionsApi regionsApi = HarnessRegionsApi.Both)
     {
         string asyncDelegateCommandStubs = hasAsyncDelegateCommand
             ? """
@@ -41,6 +51,48 @@ internal static class GeneratorTestHarness
                 }
                 """
             : string.Empty;
+
+        string prism9Regions = regionsApi is HarnessRegionsApi.Prism8Only
+            ? string.Empty
+            : """
+            namespace Prism.Navigation.Regions
+            {
+                public sealed class NavigationContext { }
+
+                public interface INavigationAware
+                {
+                    void OnNavigatedTo(NavigationContext navigationContext);
+                    bool IsNavigationTarget(NavigationContext navigationContext);
+                    void OnNavigatedFrom(NavigationContext navigationContext);
+                }
+
+                public interface IRegionManager
+                {
+                    void RequestNavigate(string regionName, string target);
+                }
+            }
+            """;
+
+        string prism8Regions = regionsApi is HarnessRegionsApi.Prism9Only
+            ? string.Empty
+            : """
+            namespace Prism.Regions
+            {
+                public sealed class NavigationContext { }
+
+                public interface INavigationAware
+                {
+                    void OnNavigatedTo(NavigationContext navigationContext);
+                    bool IsNavigationTarget(NavigationContext navigationContext);
+                    void OnNavigatedFrom(NavigationContext navigationContext);
+                }
+
+                public interface IRegionManager
+                {
+                    void RequestNavigate(string regionName, string target);
+                }
+            }
+            """;
 
         return $$"""
             #nullable enable
@@ -102,17 +154,9 @@ internal static class GeneratorTestHarness
                 }
             }
 
-            namespace Prism.Navigation.Regions
-            {
-                public sealed class NavigationContext { }
+            {{prism9Regions}}
 
-                public interface INavigationAware
-                {
-                    void OnNavigatedTo(NavigationContext navigationContext);
-                    bool IsNavigationTarget(NavigationContext navigationContext);
-                    void OnNavigatedFrom(NavigationContext navigationContext);
-                }
-            }
+            {{prism8Regions}}
 
             namespace Prism.Services.Dialogs
             {
@@ -127,6 +171,11 @@ internal static class GeneratorTestHarness
                     void OnDialogClosed();
                     void OnDialogOpened(IDialogParameters parameters);
                 }
+
+                public interface IDialogService
+                {
+                    void ShowDialog(string name, IDialogParameters? parameters, System.Action<IDialogResult>? callback);
+                }
             }
 
             {{userSource}}
@@ -136,9 +185,10 @@ internal static class GeneratorTestHarness
     internal static (CSharpCompilation Compilation, SyntaxTree Tree) CreateHarnessCompilation(
         string userSource,
         LanguageVersion languageVersion = LanguageVersion.Preview,
-        bool hasAsyncDelegateCommand = true)
+        bool hasAsyncDelegateCommand = true,
+        HarnessRegionsApi regionsApi = HarnessRegionsApi.Both)
     {
-        string source = BuildHarnessDocument(userSource, hasAsyncDelegateCommand);
+        string source = BuildHarnessDocument(userSource, hasAsyncDelegateCommand, regionsApi);
         CSharpParseOptions parseOptions = CSharpParseOptions.Default.WithLanguageVersion(languageVersion);
         SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(source, parseOptions);
 
@@ -154,10 +204,11 @@ internal static class GeneratorTestHarness
     public static GeneratorRunOutput Run(
         string userSource,
         LanguageVersion languageVersion = LanguageVersion.Preview,
-        bool hasAsyncDelegateCommand = true)
+        bool hasAsyncDelegateCommand = true,
+        HarnessRegionsApi regionsApi = HarnessRegionsApi.Both)
     {
         (CSharpCompilation compilation, _) =
-            CreateHarnessCompilation(userSource, languageVersion, hasAsyncDelegateCommand);
+            CreateHarnessCompilation(userSource, languageVersion, hasAsyncDelegateCommand, regionsApi);
 
         CSharpParseOptions parseOptions = CSharpParseOptions.Default.WithLanguageVersion(languageVersion);
 
@@ -171,6 +222,8 @@ internal static class GeneratorTestHarness
             new ContainerRegistryRegistrationGenerator(),
             new NavigationAwareGenerator(),
             new DialogAwareGenerator(),
+            new RegionNavigationGenerator(),
+            new DialogServiceCommandGenerator(),
         };
 
         GeneratorDriver driver = CSharpGeneratorDriver.Create(

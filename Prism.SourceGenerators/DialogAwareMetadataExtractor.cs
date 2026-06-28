@@ -23,7 +23,8 @@ internal static class DialogAwareMetadataExtractor
         }
 
         Compilation compilation = context.SemanticModel.Compilation;
-        if (!compilationHasDialogAware(compilation))
+        string? dialogsNamespace = PrismDialogsModel.ResolveDialogsNamespace(compilation);
+        if (dialogsNamespace is null)
         {
             return new Result<DialogAwareGenerationInfo>(default!, ImmutableArray<DiagnosticInfo>.Empty);
         }
@@ -36,7 +37,12 @@ internal static class DialogAwareMetadataExtractor
 
         string title = GetTitleFromAttribute(context.Attributes);
         return new Result<DialogAwareGenerationInfo>(
-            new DialogAwareGenerationInfo(HierarchyInfo.From(classSymbol), title),
+            new DialogAwareGenerationInfo(
+                HierarchyInfo.From(classSymbol),
+                title,
+                dialogsNamespace,
+                PrismDialogsModel.UsesDialogCloseListener(compilation, dialogsNamespace),
+                PrismDialogsModel.DialogAwareHasTitle(compilation, dialogsNamespace)),
             ImmutableArray<DiagnosticInfo>.Empty);
     }
 
@@ -79,7 +85,4 @@ internal static class DialogAwareMetadataExtractor
                 classSymbol,
                 classSymbol.Name));
     }
-
-    private static bool compilationHasDialogAware(Compilation compilation) =>
-        compilation.HasAccessibleTypeWithMetadataName("Prism.Services.Dialogs.IDialogAware");
 }

@@ -259,4 +259,78 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true,
         description: "Partial properties with the field keyword provide a cleaner API than backing fields. Apply the code fix when LangVersion is 13.0 or higher.",
         helpLinkUri: HelpLink);
+
+    // --- Region navigation diagnostics ---
+
+    public static readonly DiagnosticDescriptor RegionManagerMemberNotFound = new(
+        id: "PSG7001",
+        title: "IRegionManager member not found",
+        messageFormat: "The type '{0}' uses region navigation generation but no accessible IRegionManager field or property was found; declare one or set RegionManagerMember on the attribute",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "[NavigateCommand] and [NavigateOnChanged] require an IRegionManager instance on the containing type.",
+        helpLinkUri: HelpLink);
+
+    public static readonly DiagnosticDescriptor NavigateCommandRegionRequired = new(
+        id: "PSG7002",
+        title: "Region is required for [NavigateCommand]",
+        messageFormat: "The method '{0}' has [NavigateCommand] but Region is missing or empty",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "Set Region to the Prism region name passed to RequestNavigate.",
+        helpLinkUri: HelpLink);
+
+    public static readonly DiagnosticDescriptor NavigateCommandTargetRequired = new(
+        id: "PSG7003",
+        title: "Target is required for [NavigateCommand]",
+        messageFormat: "The method '{0}' has [NavigateCommand] but Target is missing or empty",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "Set Target to the view name passed to RequestNavigate.",
+        helpLinkUri: HelpLink);
+
+    public static readonly DiagnosticDescriptor NavigateOnChangedRequiresObservableProperty = new(
+        id: "PSG7004",
+        title: "[NavigateOnChanged] requires [ObservableProperty]",
+        messageFormat: "The member '{0}' has [NavigateOnChanged] but is not annotated with [ObservableProperty]",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "[NavigateOnChanged] must be applied to the same field or partial property as [ObservableProperty].",
+        helpLinkUri: HelpLink);
+
+    public static readonly DiagnosticDescriptor NavigateOnChangedTargetMemberRequired = new(
+        id: "PSG7005",
+        title: "TargetMember is required for [NavigateOnChanged]",
+        messageFormat: "The member '{0}' has [NavigateOnChanged] but TargetMember is missing or empty",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "Set TargetMember to the member path on the changed value used as the navigation target.",
+        helpLinkUri: HelpLink);
+
+    // --- Dialog service diagnostics ---
+
+    public static readonly DiagnosticDescriptor DialogServiceMemberNotFound = new(
+        id: "PSG7101",
+        title: "IDialogService member not found",
+        messageFormat: "The type '{0}' uses [ShowDialogCommand] but no accessible IDialogService field or property was found; declare one or set DialogServiceMember on the attribute",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "[ShowDialogCommand] requires an IDialogService instance on the containing type.",
+        helpLinkUri: HelpLink);
+
+    public static readonly DiagnosticDescriptor ShowDialogCommandNameRequired = new(
+        id: "PSG7102",
+        title: "Name is required for [ShowDialogCommand]",
+        messageFormat: "The method '{0}' has [ShowDialogCommand] but Name is missing or empty",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "Set Name to the dialog name registered with RegisterDialog.",
+        helpLinkUri: HelpLink);
 }
