@@ -197,16 +197,12 @@ internal static class RegionNavigationMetadataExtractor
 
     private static string GetPropertyNameFromField(string fieldName)
     {
-        if (fieldName.StartsWith('_'))
-        {
-            fieldName = fieldName.TrimStart('_');
-        }
-
-        if (fieldName.Length == 0)
-        {
-            return fieldName;
-        }
-
+        // Align with ObservablePropertyGenerator.GetPropertyName so [NavigateOnChanged]
+        // emits the same On{Property}Changed hook that [ObservableProperty] generates.
+        if (fieldName.StartsWith("m_") && fieldName.Length > 2)
+            return char.ToUpperInvariant(fieldName[2]) + fieldName.Substring(3);
+        if (fieldName.StartsWith('_') && fieldName.Length > 1)
+            return char.ToUpperInvariant(fieldName[1]) + fieldName.Substring(2);
         return char.ToUpperInvariant(fieldName[0]) + fieldName.Substring(1);
     }
 

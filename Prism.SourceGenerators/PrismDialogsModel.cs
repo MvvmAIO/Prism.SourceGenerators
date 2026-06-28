@@ -59,7 +59,7 @@ internal static class PrismDialogsModel
         INamedTypeSymbol? prism8DialogService =
             compilation.GetTypeByMetadataName($"{Prism8DialogsNamespace}.IDialogService");
 
-        foreach (ISymbol member in typeSymbol.GetMembers())
+        foreach (ISymbol member in typeSymbol.GetAllMembers())
         {
             if (member is IFieldSymbol field && IsDialogService(field.Type, prism9DialogService, prism8DialogService))
             {

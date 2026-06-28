@@ -65,7 +65,10 @@ internal static class DialogServiceCommandMetadataExtractor
         }
 
         commandName ??= GetCommandName(methodSymbol.Name);
-        string dialogsNamespace = PrismDialogsModel.ResolveDialogsNamespace(compilation)!;
+        string dialogsNamespace = PrismDialogsModel.ResolveDialogsNamespace(compilation)
+            ?? throw new InvalidOperationException(
+                "IDialogService was found but IDialogAware namespace could not be resolved. " +
+                "This indicates an unexpected Prism assembly shape; please file an issue.");
         bool usesExtensionShowDialog = string.Equals(
             dialogsNamespace,
             PrismDialogsModel.Prism9DialogsNamespace,

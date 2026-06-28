@@ -48,7 +48,7 @@ internal static class PrismRegionsModel
     {
         INamedTypeSymbol? regionManagerType = compilation.GetTypeByMetadataName(regionManagerMetadataName);
 
-        foreach (ISymbol member in typeSymbol.GetMembers())
+        foreach (ISymbol member in typeSymbol.GetAllMembers())
         {
             if (member is IFieldSymbol field && IsRegionManager(field.Type, regionManagerType, regionManagerMetadataName))
             {
