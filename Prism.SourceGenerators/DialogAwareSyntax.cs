@@ -12,34 +12,62 @@ internal static class DialogAwareSyntax
     public static CompilationUnitSyntax CreateCompilationUnit(DialogAwareGenerationInfo info)
     {
         CSharpParseOptions options = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Preview);
-        string titleInitializer = string.IsNullOrEmpty(info.InitialTitle)
-            ? string.Empty
-            : $" = {SymbolDisplay.FormatLiteral(info.InitialTitle, quote: true)}";
+        string ns = info.DialogsNamespace;
+        string dialogAware = $"global::{ns}.IDialogAware";
+        string dialogParameters = $"global::{ns}.IDialogParameters";
+        string dialogResult = $"global::{ns}.IDialogResult";
 
-        MemberDeclarationSyntax[] members =
-        [
-            ParseMemberDeclaration(
-                    $$"""
-                    private string _dialogTitle{{titleInitializer}};
-                    """,
-                    options: options)
-                ?? throw new InvalidOperationException("Failed to parse dialog title field."),
-            ParseMemberDeclaration(
-                    """
-                    public string Title
-                    {
-                        get => _dialogTitle;
-                        set => SetProperty(ref _dialogTitle, value);
-                    }
-                    """,
-                    options: options)
-                ?? throw new InvalidOperationException("Failed to parse Title."),
-            ParseMemberDeclaration(
-                    """
-                    public event global::System.Action<global::Prism.Services.Dialogs.IDialogResult>? RequestClose;
-                    """,
-                    options: options)
-                ?? throw new InvalidOperationException("Failed to parse RequestClose."),
+        ImmutableArray<MemberDeclarationSyntax>.Builder members = ImmutableArray.CreateBuilder<MemberDeclarationSyntax>();
+
+        if (info.GeneratesTitle)
+        {
+            string titleInitializer = string.IsNullOrEmpty(info.InitialTitle)
+                ? string.Empty
+                : $" = {SymbolDisplay.FormatLiteral(info.InitialTitle, quote: true)}";
+
+            members.Add(
+                ParseMemberDeclaration(
+                        $$"""
+                        private string _dialogTitle{{titleInitializer}};
+                        """,
+                        options: options)
+                    ?? throw new InvalidOperationException("Failed to parse dialog title field."));
+
+            members.Add(
+                ParseMemberDeclaration(
+                        """
+                        public string Title
+                        {
+                            get => _dialogTitle;
+                            set => SetProperty(ref _dialogTitle, value);
+                        }
+                        """,
+                        options: options)
+                    ?? throw new InvalidOperationException("Failed to parse Title."));
+        }
+
+        if (info.UsesDialogCloseListener)
+        {
+            members.Add(
+                ParseMemberDeclaration(
+                        $$"""
+                        public global::{{ns}}.DialogCloseListener RequestClose { get; set; } = new global::{{ns}}.DialogCloseListener();
+                        """,
+                        options: options)
+                    ?? throw new InvalidOperationException("Failed to parse RequestClose listener."));
+        }
+        else
+        {
+            members.Add(
+                ParseMemberDeclaration(
+                        $$"""
+                        public event global::System.Action<{{dialogResult}}>? RequestClose;
+                        """,
+                        options: options)
+                    ?? throw new InvalidOperationException("Failed to parse RequestClose."));
+        }
+
+        members.Add(
             ParseMemberDeclaration(
                     """
                     public bool CanCloseDialog()
@@ -48,7 +76,9 @@ internal static class DialogAwareSyntax
                     }
                     """,
                     options: options)
-                ?? throw new InvalidOperationException("Failed to parse CanCloseDialog."),
+                ?? throw new InvalidOperationException("Failed to parse CanCloseDialog."));
+
+        members.Add(
             ParseMemberDeclaration(
                     """
                     public void OnDialogClosed()
@@ -57,36 +87,49 @@ internal static class DialogAwareSyntax
                     }
                     """,
                     options: options)
-                ?? throw new InvalidOperationException("Failed to parse OnDialogClosed."),
+                ?? throw new InvalidOperationException("Failed to parse OnDialogClosed."));
+
+        members.Add(
             ParseMemberDeclaration(
-                    """
-                    public void OnDialogOpened(global::Prism.Services.Dialogs.IDialogParameters parameters)
+                    $$"""
+                    public void OnDialogOpened({{dialogParameters}} parameters)
                     {
                         OnDialogOpenedCore(parameters);
                     }
                     """,
                     options: options)
-                ?? throw new InvalidOperationException("Failed to parse OnDialogOpened."),
+                ?? throw new InvalidOperationException("Failed to parse OnDialogOpened."));
+
+        members.Add(
+            ParseMemberDeclaration(
+                    "private partial bool CanCloseDialogCore();",
+                    options: options)
+                ?? throw new InvalidOperationException("Failed to parse CanCloseDialogCore declaration."));
+
+        members.Add(
             ParseMemberDeclaration(
                     """
-                    partial bool CanCloseDialogCore() => true;
+                    private partial bool CanCloseDialogCore() => true;
                     """,
                     options: options)
-                ?? throw new InvalidOperationException("Failed to parse CanCloseDialogCore."),
+                ?? throw new InvalidOperationException("Failed to parse CanCloseDialogCore."));
+
+        members.Add(
             ParseMemberDeclaration(
                     "partial void OnDialogClosedCore();",
                     options: options)
-                ?? throw new InvalidOperationException("Failed to parse OnDialogClosedCore."),
+                ?? throw new InvalidOperationException("Failed to parse OnDialogClosedCore."));
+
+        members.Add(
             ParseMemberDeclaration(
-                    "partial void OnDialogOpenedCore(global::Prism.Services.Dialogs.IDialogParameters parameters);",
+                    $"partial void OnDialogOpenedCore({dialogParameters} parameters);",
                     options: options)
-                ?? throw new InvalidOperationException("Failed to parse OnDialogOpenedCore."),
-        ];
+                ?? throw new InvalidOperationException("Failed to parse OnDialogOpenedCore."));
 
         BaseListSyntax baseList = BaseList(
             SingletonSeparatedList<BaseTypeSyntax>(
-                SimpleBaseType(ParseTypeName("global::Prism.Services.Dialogs.IDialogAware"))));
+                SimpleBaseType(ParseTypeName(dialogAware))));
 
-        return info.Hierarchy.GetCompilationUnit(ImmutableArray.Create(members), baseList);
+        return info.Hierarchy.GetCompilationUnit(members.ToImmutable(), baseList);
     }
 }

@@ -12,28 +12,31 @@ internal static class NavigationAwareMetadataExtractor
 {
     internal const string NavigationAwareAttributeMetadataName = "Prism.SourceGenerators.NavigationAwareAttribute";
 
-    internal static Result<HierarchyInfo> ExtractGenerationInfo(
+    internal static Result<NavigationAwareGenerationInfo> ExtractGenerationInfo(
         GeneratorAttributeSyntaxContext context,
         System.Threading.CancellationToken token)
     {
         if (context.TargetSymbol is not INamedTypeSymbol classSymbol)
         {
-            return new Result<HierarchyInfo>(default!, ImmutableArray<DiagnosticInfo>.Empty);
+            return new Result<NavigationAwareGenerationInfo>(default!, ImmutableArray<DiagnosticInfo>.Empty);
         }
 
         Compilation compilation = context.SemanticModel.Compilation;
-        if (!compilationHasNavigationAware(compilation))
+        string? regionsNamespace = PrismRegionsModel.ResolveRegionsNamespace(compilation);
+        if (regionsNamespace is null)
         {
-            return new Result<HierarchyInfo>(default!, ImmutableArray<DiagnosticInfo>.Empty);
+            return new Result<NavigationAwareGenerationInfo>(default!, ImmutableArray<DiagnosticInfo>.Empty);
         }
 
         ImmutableArray<DiagnosticInfo> diagnostics = ValidatePartial(classSymbol);
         if (diagnostics.Length > 0)
         {
-            return new Result<HierarchyInfo>(default!, diagnostics);
+            return new Result<NavigationAwareGenerationInfo>(default!, diagnostics);
         }
 
-        return new Result<HierarchyInfo>(HierarchyInfo.From(classSymbol), ImmutableArray<DiagnosticInfo>.Empty);
+        return new Result<NavigationAwareGenerationInfo>(
+            new NavigationAwareGenerationInfo(HierarchyInfo.From(classSymbol), regionsNamespace),
+            ImmutableArray<DiagnosticInfo>.Empty);
     }
 
     private static ImmutableArray<DiagnosticInfo> ValidatePartial(INamedTypeSymbol classSymbol)
@@ -54,7 +57,4 @@ internal static class NavigationAwareMetadataExtractor
                 classSymbol,
                 classSymbol.Name));
     }
-
-    private static bool compilationHasNavigationAware(Compilation compilation) =>
-        compilation.HasAccessibleTypeWithMetadataName("Prism.Navigation.Regions.INavigationAware");
 }

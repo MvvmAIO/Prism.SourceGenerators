@@ -9,17 +9,18 @@ namespace Prism.SourceGenerators;
 
 internal static class NavigationAwareSyntax
 {
-    private static readonly Lazy<ImmutableArray<MemberDeclarationSyntax>> MembersLazy = new(ParseMembers);
-
-    private static ImmutableArray<MemberDeclarationSyntax> ParseMembers()
+    public static CompilationUnitSyntax CreateCompilationUnit(NavigationAwareGenerationInfo info)
     {
         CSharpParseOptions options = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Preview);
+        string ns = info.RegionsNamespace;
+        string navigationContext = $"global::{ns}.NavigationContext";
+        string navigationAware = $"global::{ns}.INavigationAware";
 
         MemberDeclarationSyntax[] members =
         [
             ParseMemberDeclaration(
-                    """
-                    public void OnNavigatedTo(global::Prism.Navigation.Regions.NavigationContext navigationContext)
+                    $$"""
+                    public void OnNavigatedTo({{navigationContext}} navigationContext)
                     {
                         OnNavigatedToCore(navigationContext);
                     }
@@ -27,8 +28,8 @@ internal static class NavigationAwareSyntax
                     options: options)
                 ?? throw new InvalidOperationException("Failed to parse OnNavigatedTo."),
             ParseMemberDeclaration(
-                    """
-                    public bool IsNavigationTarget(global::Prism.Navigation.Regions.NavigationContext navigationContext)
+                    $$"""
+                    public bool IsNavigationTarget({{navigationContext}} navigationContext)
                     {
                         return IsNavigationTargetCore(navigationContext);
                     }
@@ -36,8 +37,8 @@ internal static class NavigationAwareSyntax
                     options: options)
                 ?? throw new InvalidOperationException("Failed to parse IsNavigationTarget."),
             ParseMemberDeclaration(
-                    """
-                    public void OnNavigatedFrom(global::Prism.Navigation.Regions.NavigationContext navigationContext)
+                    $$"""
+                    public void OnNavigatedFrom({{navigationContext}} navigationContext)
                     {
                         OnNavigatedFromCore(navigationContext);
                     }
@@ -45,30 +46,29 @@ internal static class NavigationAwareSyntax
                     options: options)
                 ?? throw new InvalidOperationException("Failed to parse OnNavigatedFrom."),
             ParseMemberDeclaration(
-                    "partial void OnNavigatedToCore(global::Prism.Navigation.Regions.NavigationContext navigationContext);",
+                    $"partial void OnNavigatedToCore({navigationContext} navigationContext);",
                     options: options)
                 ?? throw new InvalidOperationException("Failed to parse OnNavigatedToCore."),
             ParseMemberDeclaration(
-                    """
-                    partial bool IsNavigationTargetCore(global::Prism.Navigation.Regions.NavigationContext navigationContext) => true;
+                    $"private partial bool IsNavigationTargetCore({navigationContext} navigationContext);",
+                    options: options)
+                ?? throw new InvalidOperationException("Failed to parse IsNavigationTargetCore declaration."),
+            ParseMemberDeclaration(
+                    $$"""
+                    private partial bool IsNavigationTargetCore({{navigationContext}} navigationContext) => true;
                     """,
                     options: options)
                 ?? throw new InvalidOperationException("Failed to parse IsNavigationTargetCore."),
             ParseMemberDeclaration(
-                    "partial void OnNavigatedFromCore(global::Prism.Navigation.Regions.NavigationContext navigationContext);",
+                    $"partial void OnNavigatedFromCore({navigationContext} navigationContext);",
                     options: options)
                 ?? throw new InvalidOperationException("Failed to parse OnNavigatedFromCore."),
         ];
 
-        return ImmutableArray.Create(members);
-    }
-
-    public static CompilationUnitSyntax CreateCompilationUnit(HierarchyInfo hierarchy)
-    {
         BaseListSyntax baseList = BaseList(
             SingletonSeparatedList<BaseTypeSyntax>(
-                SimpleBaseType(ParseTypeName("global::Prism.Navigation.Regions.INavigationAware"))));
+                SimpleBaseType(ParseTypeName(navigationAware))));
 
-        return hierarchy.GetCompilationUnit(MembersLazy.Value, baseList);
+        return info.Hierarchy.GetCompilationUnit(ImmutableArray.Create(members), baseList);
     }
 }

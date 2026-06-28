@@ -364,6 +364,11 @@ public partial class FormViewModel : BindableValidator
 | PSG4001 | Service type is not assignable from the implementation type |
 | PSG4002 | ViewModelType could not be resolved |
 | PSG5001 | `[NotifyDataErrorInfo]` requires the containing type to inherit from `BindableValidator` |
+| PSG0007 | Class with `[NavigationAware]` must be `partial` |
+| PSG0008 | Class with `[DialogAware]` must be `partial` |
+| PSG7001 | No accessible `IRegionManager` for `[NavigateCommand]` / `[NavigateOnChanged]` |
+| PSG7002–PSG7005 | `[NavigateCommand]` / `[NavigateOnChanged]` attribute validation |
+| PSG7101–PSG7102 | `[ShowDialogCommand]` — missing `IDialogService` or dialog `Name` |
 
 > **Quick fix:** PSG0001–PSG0005 all have an IDE code fix that inserts the missing `partial` modifier (Ctrl+. / Alt+Enter on the squiggle, or "Fix all in document/project/solution" to apply across the whole codebase).
 

@@ -2,6 +2,23 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.7.0] - 2026-06-17
+
+### Added
+
+- **`[NavigateCommand]`** — generates a `DelegateCommand` that calls `IRegionManager.RequestNavigate(region, target)`.
+- **`[NavigateOnChanged]`** — navigates when an `[ObservableProperty]` value changes (requires `TargetMember`).
+- **`[ShowDialogCommand]`** — generates a `DelegateCommand` that calls `IDialogService.ShowDialog` with an optional `On{Name}DialogClosed` partial hook.
+- **PSG7001–PSG7005** — region navigation diagnostics (`IRegionManager` missing, Region/Target required, `[NavigateOnChanged]` rules).
+- **PSG7101–PSG7102** — dialog service command diagnostics (`IDialogService` missing, dialog `Name` required).
+- **Prism 8 regions compatibility** for `[NavigationAware]` — emits `Prism.Regions` when that API is referenced (Prism 9+ uses `Prism.Navigation.Regions`).
+- **Prism 9 dialog compatibility** for `[DialogAware]` / `[ShowDialogCommand]` — emits `Prism.Dialogs` (`DialogCloseListener`) when available; Prism 8 uses `Prism.Services.Dialogs`.
+- Integration test contracts assembly for Prism 8 region/dialog APIs not present in **Prism.Core** alone.
+
+### Changed
+
+- **`[NavigationAware]`** / **`[DialogAware]`** namespace selection is driven by referenced assemblies instead of a single hard-coded Prism 9 surface.
+
 ## [0.6.0] - 2026-06-17
 
 ### Added

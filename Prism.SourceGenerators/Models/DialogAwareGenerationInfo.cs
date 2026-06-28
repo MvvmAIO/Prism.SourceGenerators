@@ -3,4 +3,12 @@ namespace Prism.SourceGenerators.Models;
 /// <summary>Inputs for <c>[DialogAware]</c> source emission.</summary>
 /// <param name="Hierarchy">Type hierarchy metadata for emitted partials.</param>
 /// <param name="InitialTitle">Optional initial title from the attribute.</param>
-internal sealed record DialogAwareGenerationInfo(HierarchyInfo Hierarchy, string InitialTitle);
+/// <param name="DialogsNamespace">Prism 8 (<c>Prism.Services.Dialogs</c>) or Prism 9+ (<c>Prism.Dialogs</c>).</param>
+/// <param name="UsesDialogCloseListener">When true, emit <c>DialogCloseListener</c> instead of a <c>RequestClose</c> event.</param>
+/// <param name="GeneratesTitle">When false, omit <c>Title</c> because the target contract has no title member.</param>
+internal sealed record DialogAwareGenerationInfo(
+    HierarchyInfo Hierarchy,
+    string InitialTitle,
+    string DialogsNamespace,
+    bool UsesDialogCloseListener,
+    bool GeneratesTitle);

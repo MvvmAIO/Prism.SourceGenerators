@@ -1,6 +1,20 @@
 ; Shipped analyzer releases
 ; https://github.com/dotnet/roslyn-analyzers/blob/main/src/Microsoft.CodeAnalysis.Analyzers/ReleaseTrackingAnalyzers.Help.md
 
+## Release 0.7.0
+
+### New Rules
+
+Rule ID | Category | Severity | Notes
+--------|----------|----------|-------
+PSG7001 | Prism.SourceGenerators | Error | IRegionManager member not found
+PSG7002 | Prism.SourceGenerators | Error | Region is required for [NavigateCommand]
+PSG7003 | Prism.SourceGenerators | Error | Target is required for [NavigateCommand]
+PSG7004 | Prism.SourceGenerators | Error | [NavigateOnChanged] requires [ObservableProperty]
+PSG7005 | Prism.SourceGenerators | Error | TargetMember is required for [NavigateOnChanged]
+PSG7101 | Prism.SourceGenerators | Error | IDialogService member not found
+PSG7102 | Prism.SourceGenerators | Error | Name is required for [ShowDialogCommand]
+
 ## Release 0.6.0
 
 ### New Rules

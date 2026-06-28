@@ -7,23 +7,25 @@ using Prism.SourceGenerators.Models;
 namespace Prism.SourceGenerators;
 
 /// <summary>
-/// Emits <c>INavigationAware</c> members for types annotated with <c>[NavigationAware]</c>.
-/// Supports Prism 8 (<c>Prism.Regions</c>) and Prism 9+ (<c>Prism.Navigation.Regions</c>).
+/// Emits <c>DelegateCommand</c> properties that call <c>IDialogService.ShowDialog</c>.
 /// </summary>
 [Generator(LanguageNames.CSharp)]
-public sealed class NavigationAwareGenerator : IIncrementalGenerator
+public sealed class DialogServiceCommandGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        IncrementalValuesProvider<Result<NavigationAwareGenerationInfo>> classInfos =
+        IncrementalValuesProvider<Result<ShowDialogCommandGenerationInfo>> showDialogCommands =
             context.SyntaxProvider
                 .ForAttributeWithMetadataName(
-                    NavigationAwareMetadataExtractor.NavigationAwareAttributeMetadataName,
-                    static (node, _) => node is ClassDeclarationSyntax,
-                    static (ctx, token) => NavigationAwareMetadataExtractor.ExtractGenerationInfo(ctx, token));
+                    DialogServiceCommandMetadataExtractor.ShowDialogCommandAttributeMetadataName,
+                    static (node, _) => node is MethodDeclarationSyntax
+                    {
+                        Parent: ClassDeclarationSyntax or RecordDeclarationSyntax
+                    },
+                    static (ctx, token) => DialogServiceCommandMetadataExtractor.ExtractShowDialogCommand(ctx, token));
 
         context.RegisterSourceOutput(
-            classInfos.Where(static item => !item.Errors.IsEmpty),
+            showDialogCommands.Where(static item => !item.Errors.IsEmpty),
             static (spc, result) =>
             {
                 foreach (DiagnosticInfo diagnostic in result.Errors.AsImmutableArray())
@@ -33,13 +35,13 @@ public sealed class NavigationAwareGenerator : IIncrementalGenerator
             });
 
         context.RegisterSourceOutput(
-            classInfos
+            showDialogCommands
                 .Where(static item => item.Value is not null && !item.HasBlockingDiagnostics)
                 .Select(static (item, _) => item.Value!),
             static (spc, info) =>
             {
-                CompilationUnitSyntax compilationUnit = NavigationAwareSyntax.CreateCompilationUnit(info);
-                spc.AddSource($"{info.Hierarchy.FilenameHint}.NavigationAware.g.cs", compilationUnit);
+                CompilationUnitSyntax compilationUnit = DialogServiceCommandSyntax.CreateCompilationUnit(info);
+                spc.AddSource($"{info.Hierarchy.FilenameHint}.{info.CommandName}.g.cs", compilationUnit);
             });
     }
 }

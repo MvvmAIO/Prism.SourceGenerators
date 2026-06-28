@@ -50,6 +50,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Models\BindableBaseGenerationInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\BindableValidatorGenerationInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\DialogAwareGenerationInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\NavigationAwareGenerationInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\RegionNavigationGenerationInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\ShowDialogCommandGenerationInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\PropertyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\Result.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\TypeInfo.cs" />
@@ -65,6 +68,14 @@
     <Compile Include="$(MSBuildThisFileDirectory)DialogAwareGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DialogAwareMetadataExtractor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DialogAwareSyntax.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DialogServiceCommandGenerator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DialogServiceCommandMetadataExtractor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DialogServiceCommandSyntax.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PrismDialogsModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PrismRegionsModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RegionNavigationGenerator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RegionNavigationMetadataExtractor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RegionNavigationSyntax.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NavigationAwareGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NavigationAwareMetadataExtractor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NavigationAwareSyntax.cs" />
