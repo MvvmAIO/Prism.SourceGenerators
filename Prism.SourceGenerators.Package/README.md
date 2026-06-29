@@ -7,7 +7,7 @@ Roslyn **source generators** for the [Prism](https://github.com/PrismLibrary/Pri
 ## Installation
 
 ```xml
-<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.2.0" />
+<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.7.0" />
 ```
 
 > **Prism.Core 8.1.97 + async commands?** Also install [`MvvmAIO.Prism.Bcl.Commands`](https://www.nuget.org/packages/MvvmAIO.Prism.Bcl.Commands) for `AsyncDelegateCommand`. Prism 9+ already ships these types.

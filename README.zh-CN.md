@@ -368,7 +368,7 @@ public partial class FormViewModel : BindableValidator
 ## 安装
 
 ```xml
-<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.5.1" />
+<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.7.0" />
 ```
 
 或：
@@ -407,5 +407,3 @@ dotnet run --project build/_build.csproj -- --target Publish --configuration Rel
 
 - .NET 10 SDK
 - Visual Studio 2022 17.13+ / Rider / VS Code with C# Dev Kit（支持 `.slnx`）
-
-
