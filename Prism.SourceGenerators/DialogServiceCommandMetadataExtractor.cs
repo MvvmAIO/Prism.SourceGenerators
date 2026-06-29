@@ -6,6 +6,7 @@ using System.Threading;
 using Microsoft.CodeAnalysis;
 using Prism.SourceGenerators.Diagnostics;
 using Prism.SourceGenerators.Extensions;
+using Prism.SourceGenerators.Helpers;
 using Prism.SourceGenerators.Models;
 
 namespace Prism.SourceGenerators;
@@ -37,9 +38,9 @@ internal static class DialogServiceCommandMetadataExtractor
             return new Result<ShowDialogCommandGenerationInfo>(default!, ImmutableArray<DiagnosticInfo>.Empty);
         }
 
-        string? dialogName = GetRequiredString(attribute, "Name");
-        string? commandName = GetOptionalString(attribute, "CommandName");
-        string? dialogServiceMember = GetOptionalString(attribute, "DialogServiceMember");
+        string? dialogName = attribute.TryGetNamedString("Name");
+        string? commandName = attribute.TryGetNamedString("CommandName");
+        string? dialogServiceMember = attribute.TryGetNamedString("DialogServiceMember");
 
         ImmutableArray<DiagnosticInfo>.Builder diagnostics = ImmutableArray.CreateBuilder<DiagnosticInfo>();
         if (string.IsNullOrWhiteSpace(dialogName))
@@ -64,7 +65,7 @@ internal static class DialogServiceCommandMetadataExtractor
             return new Result<ShowDialogCommandGenerationInfo>(default!, diagnostics.ToImmutable());
         }
 
-        commandName ??= GetCommandName(methodSymbol.Name);
+        commandName ??= NamingHelpers.GetCommandName(methodSymbol.Name);
         string dialogsNamespace = PrismDialogsModel.ResolveDialogsNamespace(compilation)
             ?? throw new InvalidOperationException(
                 "IDialogService was found but IDialogAware namespace could not be resolved. " +
@@ -86,32 +87,4 @@ internal static class DialogServiceCommandMetadataExtractor
             ImmutableArray<DiagnosticInfo>.Empty);
     }
 
-    private static string? GetRequiredString(AttributeData attribute, string name)
-    {
-        foreach (KeyValuePair<string, TypedConstant> pair in attribute.NamedArguments)
-        {
-            if (pair.Key == name && pair.Value.Value is string value && !string.IsNullOrWhiteSpace(value))
-            {
-                return value;
-            }
-        }
-
-        return null;
-    }
-
-    private static string? GetOptionalString(AttributeData attribute, string name)
-    {
-        foreach (KeyValuePair<string, TypedConstant> pair in attribute.NamedArguments)
-        {
-            if (pair.Key == name && pair.Value.Value is string value && !string.IsNullOrWhiteSpace(value))
-            {
-                return value;
-            }
-        }
-
-        return null;
-    }
-
-    private static string GetCommandName(string methodName) =>
-        methodName.EndsWith("Command", StringComparison.Ordinal) ? methodName : $"{methodName}Command";
 }

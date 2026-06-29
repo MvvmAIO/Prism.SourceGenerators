@@ -2,6 +2,7 @@ using System;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Prism.SourceGenerators.Helpers;
 using Prism.SourceGenerators.Models;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
@@ -13,7 +14,7 @@ internal static class DialogServiceCommandSyntax
     {
         CSharpParseOptions options = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Preview);
         string dialogLiteral = SymbolDisplay.FormatLiteral(info.DialogNameLiteral, quote: true);
-        string fieldName = GetBackingFieldName(info.CommandName);
+        string fieldName = NamingHelpers.GetBackingFieldName(info.CommandName);
         string executeMethod = $"{info.MethodName}ShowDialogExecute";
         string closedCoreMethod = $"On{info.MethodName}DialogClosedCore";
         string dialogResult = $"global::{info.DialogsNamespace}.IDialogResult";
@@ -57,7 +58,4 @@ internal static class DialogServiceCommandSyntax
 
         return info.Hierarchy.GetCompilationUnit(ImmutableArray.Create(members));
     }
-
-    private static string GetBackingFieldName(string commandName) =>
-        $"_{char.ToLowerInvariant(commandName[0])}{commandName.Substring(1)}";
 }

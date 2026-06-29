@@ -2,6 +2,7 @@ using System;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Prism.SourceGenerators.Helpers;
 using Prism.SourceGenerators.Models;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
@@ -14,7 +15,7 @@ internal static class RegionNavigationSyntax
         CSharpParseOptions options = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Preview);
         string regionLiteral = SymbolDisplay.FormatLiteral(info.RegionLiteral, quote: true);
         string targetLiteral = SymbolDisplay.FormatLiteral(info.TargetLiteral, quote: true);
-        string fieldName = GetBackingFieldName(info.CommandName);
+        string fieldName = NamingHelpers.GetBackingFieldName(info.CommandName);
         string executeMethod = $"{info.MethodName}NavigateExecute";
 
         MemberDeclarationSyntax[] members =
@@ -59,7 +60,4 @@ internal static class RegionNavigationSyntax
 
         return info.Hierarchy.GetCompilationUnit(ImmutableArray.Create(member));
     }
-
-    private static string GetBackingFieldName(string commandName) =>
-        $"_{char.ToLowerInvariant(commandName[0])}{commandName.Substring(1)}";
 }

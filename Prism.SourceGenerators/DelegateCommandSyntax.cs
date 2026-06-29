@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.Text;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Prism.SourceGenerators.Helpers;
 using Prism.SourceGenerators.Models;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
@@ -30,7 +31,7 @@ internal static class DelegateCommandSyntax
         }
         else
         {
-            string fieldName = GetBackingFieldName(info.CommandName);
+            string fieldName = NamingHelpers.GetBackingFieldName(info.CommandName);
             string fieldDecl = $"private {commandType}? {fieldName};";
             members.Add(
                 ParseMemberDeclaration(fieldDecl, options: options)
@@ -45,9 +46,6 @@ internal static class DelegateCommandSyntax
 
         return info.Hierarchy.GetCompilationUnit(members.ToImmutable());
     }
-
-    private static string GetBackingFieldName(string commandName) =>
-        $"_{char.ToLowerInvariant(commandName[0])}{commandName.Substring(1)}";
 
     private static (string CommandType, string Initialization) GetCommandTypeAndInitialization(CommandGenerationInfo info)
     {
