@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Prism.SourceGenerators.Diagnostics;
 using Prism.SourceGenerators.Extensions;
+using Prism.SourceGenerators.Helpers;
 using Prism.SourceGenerators.Models;
 
 namespace Prism.SourceGenerators;
@@ -42,10 +43,10 @@ internal static class RegionNavigationMetadataExtractor
             return new Result<NavigateCommandGenerationInfo>(default!, ImmutableArray<DiagnosticInfo>.Empty);
         }
 
-        string? region = GetRequiredString(attribute, "Region");
-        string? target = GetRequiredString(attribute, "Target");
-        string? commandName = GetOptionalString(attribute, "CommandName");
-        string? regionManagerMember = GetOptionalString(attribute, "RegionManagerMember");
+        string? region = attribute.TryGetNamedString("Region");
+        string? target = attribute.TryGetNamedString("Target");
+        string? commandName = attribute.TryGetNamedString("CommandName");
+        string? regionManagerMember = attribute.TryGetNamedString("RegionManagerMember");
 
         ImmutableArray<DiagnosticInfo>.Builder diagnostics = ImmutableArray.CreateBuilder<DiagnosticInfo>();
         if (string.IsNullOrWhiteSpace(region))
@@ -78,7 +79,7 @@ internal static class RegionNavigationMetadataExtractor
             return new Result<NavigateCommandGenerationInfo>(default!, diagnostics.ToImmutable());
         }
 
-        commandName ??= GetCommandName(methodSymbol.Name);
+        commandName ??= NamingHelpers.GetCommandName(methodSymbol.Name);
         return new Result<NavigateCommandGenerationInfo>(
             new NavigateCommandGenerationInfo(
                 HierarchyInfo.From(containingType),
@@ -133,9 +134,9 @@ internal static class RegionNavigationMetadataExtractor
                         targetSymbol.Name)));
         }
 
-        string? region = GetRequiredString(attribute, "Region");
-        string? targetMember = GetRequiredString(attribute, "TargetMember");
-        string? regionManagerMember = GetOptionalString(attribute, "RegionManagerMember");
+        string? region = attribute.TryGetNamedString("Region");
+        string? targetMember = attribute.TryGetNamedString("TargetMember");
+        string? regionManagerMember = attribute.TryGetNamedString("RegionManagerMember");
 
         ImmutableArray<DiagnosticInfo>.Builder diagnostics = ImmutableArray.CreateBuilder<DiagnosticInfo>();
         if (string.IsNullOrWhiteSpace(region))
@@ -234,32 +235,4 @@ internal static class RegionNavigationMetadataExtractor
         return $"value.{string.Join('.', parts.Skip(1))}";
     }
 
-    private static string? GetRequiredString(AttributeData attribute, string name)
-    {
-        foreach (KeyValuePair<string, TypedConstant> pair in attribute.NamedArguments)
-        {
-            if (pair.Key == name && pair.Value.Value is string value && !string.IsNullOrWhiteSpace(value))
-            {
-                return value;
-            }
-        }
-
-        return null;
-    }
-
-    private static string? GetOptionalString(AttributeData attribute, string name)
-    {
-        foreach (KeyValuePair<string, TypedConstant> pair in attribute.NamedArguments)
-        {
-            if (pair.Key == name && pair.Value.Value is string value && !string.IsNullOrWhiteSpace(value))
-            {
-                return value;
-            }
-        }
-
-        return null;
-    }
-
-    private static string GetCommandName(string methodName) =>
-        methodName.EndsWith("Command", StringComparison.Ordinal) ? methodName : $"{methodName}Command";
 }

@@ -122,6 +122,25 @@ internal static class AttributeDataExtensions
     }
 
     /// <summary>
+    /// Tries to get a non-blank string named argument from an <see cref="AttributeData"/> instance.
+    /// </summary>
+    /// <param name="attributeData">The target <see cref="AttributeData"/> instance to check.</param>
+    /// <param name="name">The name of the argument to check.</param>
+    /// <returns>The non-blank string value if present; otherwise <see langword="null"/>.</returns>
+    public static string? TryGetNamedString(this AttributeData attributeData, string name)
+    {
+        foreach (KeyValuePair<string, TypedConstant> pair in attributeData.NamedArguments)
+        {
+            if (pair.Key == name && pair.Value.Value is string value && !string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
     /// Enumerates all items in a flattened sequence of constructor arguments for a given <see cref="AttributeData"/> instance.
     /// </summary>
     /// <typeparam name="T">The type of constructor arguments to retrieve.</typeparam>
