@@ -52,6 +52,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Models\BindableValidatorGenerationInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\DialogAwareGenerationInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\NavigationAwareGenerationInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Models\ParameterBindingInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\RegionNavigationGenerationInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\ShowDialogCommandGenerationInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Models\PropertyInfo.cs" />

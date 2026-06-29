@@ -476,7 +476,20 @@ internal static class Roslyn5000TestHarness
             : """
             namespace Prism.Navigation.Regions
             {
-                public sealed class NavigationContext { }
+                public sealed class NavigationContext
+                {
+                    public INavigationParameters Parameters { get; } = new NavigationParameters();
+                }
+
+                public interface INavigationParameters
+                {
+                    bool TryGetValue<T>(string key, out T value);
+                }
+
+                public sealed class NavigationParameters : INavigationParameters
+                {
+                    public bool TryGetValue<T>(string key, out T value) { value = default!; return false; }
+                }
 
                 public interface INavigationAware
                 {
@@ -497,7 +510,20 @@ internal static class Roslyn5000TestHarness
             : """
             namespace Prism.Regions
             {
-                public sealed class NavigationContext { }
+                public sealed class NavigationContext
+                {
+                    public INavigationParameters Parameters { get; } = new NavigationParameters();
+                }
+
+                public interface INavigationParameters
+                {
+                    bool TryGetValue<T>(string key, out T value);
+                }
+
+                public sealed class NavigationParameters : INavigationParameters
+                {
+                    public bool TryGetValue<T>(string key, out T value) { value = default!; return false; }
+                }
 
                 public interface INavigationAware
                 {
@@ -577,7 +603,10 @@ internal static class Roslyn5000TestHarness
 
             namespace Prism.Services.Dialogs
             {
-                public interface IDialogParameters { }
+                public interface IDialogParameters
+                {
+                    bool TryGetValue<T>(string key, out T value);
+                }
                 public interface IDialogResult { }
 
                 public interface IDialogAware

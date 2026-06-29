@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Immutable;
+using System.Linq;
+using System.Text;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Prism.SourceGenerators.Models;
@@ -16,16 +18,13 @@ internal static class NavigationAwareSyntax
         string navigationContext = $"global::{ns}.NavigationContext";
         string navigationAware = $"global::{ns}.INavigationAware";
 
+        // Build the OnNavigatedTo body with parameter binding injection
+        string onNavigatedToBody = BuildOnNavigatedToBody(info.ParameterBindings.AsImmutableArray(), "navigationContext");
+        string onNavigatedTo = "public void OnNavigatedTo(" + navigationContext + " navigationContext)\n{\n" + onNavigatedToBody + "\n}";
+
         MemberDeclarationSyntax[] members =
         [
-            ParseMemberDeclaration(
-                    $$"""
-                    public void OnNavigatedTo({{navigationContext}} navigationContext)
-                    {
-                        OnNavigatedToCore(navigationContext);
-                    }
-                    """,
-                    options: options)
+            ParseMemberDeclaration(onNavigatedTo, options: options)
                 ?? throw new InvalidOperationException("Failed to parse OnNavigatedTo."),
             ParseMemberDeclaration(
                     $$"""
@@ -70,5 +69,23 @@ internal static class NavigationAwareSyntax
                 SimpleBaseType(ParseTypeName(navigationAware))));
 
         return info.Hierarchy.GetCompilationUnit(ImmutableArray.Create(members), baseList);
+    }
+
+    /// <summary>
+    /// Builds the body of <c>OnNavigatedTo</c> with parameter binding reads
+    /// followed by the <c>OnNavigatedToCore</c> call.
+    /// </summary>
+    private static string BuildOnNavigatedToBody(ImmutableArray<ParameterBindingInfo> bindings, string contextVar)
+    {
+        var sb = new StringBuilder();
+
+        foreach (ParameterBindingInfo binding in bindings)
+        {
+            sb.AppendLine($"    if ({contextVar}.Parameters.TryGetValue<{binding.PropertyType}>(\"{binding.ParameterKey}\", out var {binding.PropertyName}Value))");
+            sb.AppendLine($"        {binding.PropertyName} = {binding.PropertyName}Value;");
+        }
+
+        sb.Append("    OnNavigatedToCore(navigationContext);");
+        return sb.ToString();
     }
 }
