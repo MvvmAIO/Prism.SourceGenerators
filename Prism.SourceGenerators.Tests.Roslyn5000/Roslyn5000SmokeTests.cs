@@ -54,7 +54,7 @@ public sealed class Roslyn5000SmokeTests
             }
             """;
 
-        GeneratorRunOutput output = Roslyn5000TestHarness.Run(userSource, includeCommands: true);
+        GeneratorRunOutput output = Roslyn5000TestHarness.Run(userSource);
 
         Assert.Empty(output.Diagnostics.Where(static d =>
             d.Severity >= DiagnosticSeverity.Error &&
@@ -84,7 +84,7 @@ public sealed class Roslyn5000SmokeTests
             }
             """;
 
-        GeneratorRunOutput output = Roslyn5000TestHarness.Run(userSource, includeCommands: true);
+        GeneratorRunOutput output = Roslyn5000TestHarness.Run(userSource);
 
         Assert.Empty(output.Diagnostics.Where(static d =>
             d.Severity >= DiagnosticSeverity.Error &&
@@ -95,43 +95,471 @@ public sealed class Roslyn5000SmokeTests
 
         Assert.Contains("async () => await CountAsync()", commandSource.Source);
     }
+
+    [Fact]
+    public void AsyncDelegateCommand_attribute_on_Roslyn5000_emits_command()
+    {
+        const string userSource = """
+            namespace Demo;
+
+            public partial class Vm : Prism.Mvvm.BindableBase
+            {
+                [AsyncDelegateCommand]
+                private async System.Threading.Tasks.Task LoadAsync()
+                {
+                    await System.Threading.Tasks.Task.CompletedTask;
+                }
+            }
+            """;
+
+        GeneratorRunOutput output = Roslyn5000TestHarness.Run(userSource);
+
+        Assert.Empty(output.Diagnostics.Where(static d =>
+            d.Severity >= DiagnosticSeverity.Error &&
+            d.Id.StartsWith("PSG", System.StringComparison.Ordinal)));
+
+        GeneratedSource commandSource = Assert.Single(
+            output.GeneratedSources.Where(s => s.HintName.EndsWith(".LoadCommand.g.cs")));
+
+        Assert.Contains("AsyncDelegateCommand", commandSource.Source);
+    }
+
+    [Fact]
+    public void ValueTask_execute_on_Roslyn5000_emits_AsTask_wrapper()
+    {
+        const string userSource = """
+            namespace Demo;
+
+            public partial class Vm : Prism.Mvvm.BindableBase
+            {
+                [DelegateCommand]
+                private async System.Threading.Tasks.ValueTask SaveAsync()
+                {
+                    await System.Threading.Tasks.Task.CompletedTask;
+                }
+            }
+            """;
+
+        GeneratorRunOutput output = Roslyn5000TestHarness.Run(userSource);
+
+        Assert.Empty(output.Diagnostics.Where(static d =>
+            d.Id is "PSG1001" or "PSG1002"));
+
+        GeneratedSource commandSource = Assert.Single(
+            output.GeneratedSources.Where(s => s.HintName.EndsWith(".SaveCommand.g.cs")));
+
+        Assert.Contains("() => SaveAsync().AsTask()", commandSource.Source);
+    }
+
+    [Fact]
+    public void Partial_property_ObservableProperty_on_Roslyn5000_uses_field_keyword()
+    {
+        const string userSource = """
+            namespace Demo;
+
+            public partial class Vm : Prism.Mvvm.BindableBase
+            {
+                [ObservableProperty]
+                public partial string Name { get; set; } = "";
+            }
+            """;
+
+        GeneratorRunOutput output = Roslyn5000TestHarness.Run(userSource);
+
+        Assert.Empty(output.Diagnostics.Where(static d =>
+            d.Severity >= DiagnosticSeverity.Error &&
+            d.Id.StartsWith("PSG", System.StringComparison.Ordinal)));
+
+        GeneratedSource propertySource = Assert.Single(
+            output.GeneratedSources.Where(s => s.HintName.EndsWith(".Name.g.cs")));
+
+        Assert.Contains("partial string Name", propertySource.Source);
+        Assert.Contains("get => field;", propertySource.Source);
+    }
+
+    [Fact]
+    public void NotifyPropertyChangedFor_on_Roslyn5000_emits_extra_notification()
+    {
+        const string userSource = """
+            namespace Demo;
+
+            public partial class Vm : Prism.Mvvm.BindableBase
+            {
+                [ObservableProperty]
+                [NotifyPropertyChangedFor(nameof(FullName))]
+                private string _firstName = "";
+
+                public string FullName => FirstName;
+            }
+            """;
+
+        GeneratorRunOutput output = Roslyn5000TestHarness.Run(userSource);
+
+        GeneratedSource propertySource = Assert.Single(
+            output.GeneratedSources.Where(s => s.HintName.EndsWith(".FirstName.g.cs")));
+
+        Assert.Contains("RaisePropertyChanged(nameof(FullName))", propertySource.Source);
+    }
+
+    [Fact]
+    public void NotifyCanExecuteChangedFor_on_Roslyn5000_emits_command_refresh()
+    {
+        const string userSource = """
+            namespace Demo;
+
+            public partial class Vm : Prism.Mvvm.BindableBase
+            {
+                [ObservableProperty]
+                [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+                private string _name = "";
+
+                [DelegateCommand(CanExecute = nameof(CanSave))]
+                private void Save() { }
+
+                private bool CanSave() => !string.IsNullOrEmpty(Name);
+            }
+            """;
+
+        GeneratorRunOutput output = Roslyn5000TestHarness.Run(userSource);
+
+        GeneratedSource propertySource = Assert.Single(
+            output.GeneratedSources.Where(s => s.HintName.EndsWith(".Name.g.cs")));
+
+        Assert.Contains("SaveCommand?.RaiseCanExecuteChanged()", propertySource.Source);
+    }
+
+    [Fact]
+    public void BindableBase_attribute_on_Roslyn5000_generates_INPC()
+    {
+        const string userSource = """
+            namespace Demo;
+
+            [BindableBase]
+            public partial class LightVm
+            {
+            }
+            """;
+
+        GeneratorRunOutput output = Roslyn5000TestHarness.Run(userSource);
+
+        Assert.Empty(output.Diagnostics.Where(static d =>
+            d.Severity >= DiagnosticSeverity.Error &&
+            d.Id.StartsWith("PSG", System.StringComparison.Ordinal)));
+
+        Assert.Contains(
+            output.GeneratedSources,
+            static s => s.HintName.EndsWith(".BindableBase.g.cs"));
+    }
+
+    [Fact]
+    public void BindableValidator_NotifyDataErrorInfo_on_Roslyn5000_emits_ValidateProperty()
+    {
+        const string userSource = """
+            namespace Demo;
+
+            public partial class Vm : Prism.SourceGenerators.BindableValidator
+            {
+                [ObservableProperty]
+                [NotifyDataErrorInfo]
+                private string _name = "";
+            }
+            """;
+
+        GeneratorRunOutput output = Roslyn5000TestHarness.Run(userSource);
+
+        Assert.Empty(output.Diagnostics.Where(static d => d.Id == "PSG5001"));
+
+        GeneratedSource propertySource = Assert.Single(
+            output.GeneratedSources.Where(s => s.HintName.EndsWith(".Name.g.cs")));
+
+        Assert.Contains("ValidateProperty(value, nameof(Name))", propertySource.Source);
+    }
+
+    [Fact]
+    public void NavigationAware_on_Roslyn5000_generates_INavigationAware_members()
+    {
+        const string userSource = """
+            namespace Demo;
+
+            [NavigationAware]
+            public partial class PageVm : Prism.Mvvm.BindableBase
+            {
+            }
+            """;
+
+        GeneratorRunOutput output = Roslyn5000TestHarness.Run(userSource);
+
+        Assert.Empty(output.Diagnostics.Where(static d =>
+            d.Severity >= DiagnosticSeverity.Error &&
+            d.Id.StartsWith("PSG", System.StringComparison.Ordinal)));
+
+        GeneratedSource generated = Assert.Single(
+            output.GeneratedSources.Where(s => s.HintName.EndsWith(".NavigationAware.g.cs")));
+
+        Assert.Contains("INavigationAware", generated.Source);
+        Assert.Contains("Prism.Navigation.Regions", generated.Source);
+        Assert.Contains("OnNavigatedToCore", generated.Source);
+    }
+
+    [Fact]
+    public void DialogAware_on_Roslyn5000_generates_IDialogAware_members()
+    {
+        const string userSource = """
+            namespace Demo;
+
+            [DialogAware(Title = "Confirm")]
+            public partial class ConfirmVm : Prism.Mvvm.BindableBase
+            {
+            }
+            """;
+
+        GeneratorRunOutput output = Roslyn5000TestHarness.Run(userSource);
+
+        Assert.Empty(output.Diagnostics.Where(static d =>
+            d.Severity >= DiagnosticSeverity.Error &&
+            d.Id.StartsWith("PSG", System.StringComparison.Ordinal)));
+
+        GeneratedSource generated = Assert.Single(
+            output.GeneratedSources.Where(s => s.HintName.EndsWith(".DialogAware.g.cs")));
+
+        Assert.Contains("IDialogAware", generated.Source);
+        Assert.Contains("RequestClose", generated.Source);
+    }
+
+    [Fact]
+    public void NavigateCommand_on_Roslyn5000_generates_RequestNavigate_command()
+    {
+        const string userSource = """
+            namespace Demo;
+
+            public partial class ShellVm : Prism.Mvvm.BindableBase
+            {
+                private readonly Prism.Navigation.Regions.IRegionManager _regionManager;
+
+                public ShellVm(Prism.Navigation.Regions.IRegionManager regionManager) => _regionManager = regionManager;
+
+                [NavigateCommand(Region = "Content", Target = "Dashboard")]
+                private void GoDashboard() { }
+            }
+            """;
+
+        GeneratorRunOutput output = Roslyn5000TestHarness.Run(userSource);
+
+        Assert.Empty(output.Diagnostics.Where(static d =>
+            d.Severity >= DiagnosticSeverity.Error &&
+            d.Id.StartsWith("PSG", System.StringComparison.Ordinal)));
+
+        GeneratedSource generated = Assert.Single(
+            output.GeneratedSources.Where(s => s.HintName.EndsWith(".GoDashboardCommand.g.cs")));
+
+        Assert.Contains("RequestNavigate(\"Content\", \"Dashboard\")", generated.Source);
+    }
+
+    [Fact]
+    public void ShowDialogCommand_on_Roslyn5000_generates_ShowDialog_command()
+    {
+        const string userSource = """
+            namespace Demo;
+
+            public partial class ShellVm : Prism.Mvvm.BindableBase
+            {
+                private readonly Prism.Services.Dialogs.IDialogService _dialogService;
+
+                public ShellVm(Prism.Services.Dialogs.IDialogService dialogService) => _dialogService = dialogService;
+
+                [ShowDialogCommand(Name = "ConfirmDelete")]
+                private void ConfirmDelete() { }
+            }
+            """;
+
+        GeneratorRunOutput output = Roslyn5000TestHarness.Run(userSource);
+
+        Assert.Empty(output.Diagnostics.Where(static d =>
+            d.Severity >= DiagnosticSeverity.Error &&
+            d.Id.StartsWith("PSG", System.StringComparison.Ordinal)));
+
+        GeneratedSource generated = Assert.Single(
+            output.GeneratedSources.Where(s => s.HintName.EndsWith(".ConfirmDeleteCommand.g.cs")));
+
+        Assert.Contains("ShowDialog(\"ConfirmDelete\"", generated.Source);
+        Assert.Contains("OnConfirmDeleteDialogClosed", generated.Source);
+    }
+
+    [Fact]
+    public void Non_partial_class_reports_PSG0001_on_Roslyn5000()
+    {
+        const string userSource = """
+            namespace Demo;
+
+            public class Vm : Prism.Mvvm.BindableBase
+            {
+                [ObservableProperty]
+                private string _name = "";
+            }
+            """;
+
+        GeneratorRunOutput output = Roslyn5000TestHarness.Run(userSource);
+
+        Assert.Contains(output.Diagnostics, static d => d.Id == "PSG0001");
+    }
+
+    [Fact]
+    public void Non_partial_class_reports_PSG0002_on_Roslyn5000()
+    {
+        const string userSource = """
+            namespace Demo;
+
+            public class Vm : Prism.Mvvm.BindableBase
+            {
+                [DelegateCommand]
+                private void Save() { }
+            }
+            """;
+
+        GeneratorRunOutput output = Roslyn5000TestHarness.Run(userSource);
+
+        Assert.Contains(output.Diagnostics, static d => d.Id == "PSG0002");
+    }
+
+    [Fact]
+    public void NavigateCommand_reports_PSG7001_when_region_manager_missing_on_Roslyn5000()
+    {
+        const string userSource = """
+            namespace Demo;
+
+            public partial class ShellVm : Prism.Mvvm.BindableBase
+            {
+                [NavigateCommand(Region = "Content", Target = "Dashboard")]
+                private void GoDashboard() { }
+            }
+            """;
+
+        GeneratorRunOutput output = Roslyn5000TestHarness.Run(userSource);
+
+        Assert.Contains(output.Diagnostics, static d => d.Id == "PSG7001");
+    }
+
+    [Fact]
+    public void ShowDialogCommand_reports_PSG7101_when_dialog_service_missing_on_Roslyn5000()
+    {
+        const string userSource = """
+            namespace Demo;
+
+            public partial class ShellVm : Prism.Mvvm.BindableBase
+            {
+                [ShowDialogCommand(Name = "ConfirmDelete")]
+                private void ConfirmDelete() { }
+            }
+            """;
+
+        GeneratorRunOutput output = Roslyn5000TestHarness.Run(userSource);
+
+        Assert.Contains(output.Diagnostics, static d => d.Id == "PSG7101");
+    }
 }
 
 internal static class Roslyn5000TestHarness
 {
-    internal static GeneratorRunOutput Run(string userSource, bool includeCommands = false)
+    internal enum RegionsApi
     {
-        string commandStubs = includeCommands
-            ? """
+        Both,
+        Prism8Only,
+        Prism9Only,
+    }
+
+    internal static GeneratorRunOutput Run(
+        string userSource,
+        RegionsApi regionsApi = RegionsApi.Both)
+    {
+        string prism9Regions = regionsApi is RegionsApi.Prism8Only
+            ? string.Empty
+            : """
+            namespace Prism.Navigation.Regions
+            {
+                public sealed class NavigationContext { }
+
+                public interface INavigationAware
+                {
+                    void OnNavigatedTo(NavigationContext navigationContext);
+                    bool IsNavigationTarget(NavigationContext navigationContext);
+                    void OnNavigatedFrom(NavigationContext navigationContext);
+                }
+
+                public interface IRegionManager
+                {
+                    void RequestNavigate(string regionName, string target);
+                }
+            }
+            """;
+
+        string prism8Regions = regionsApi is RegionsApi.Prism9Only
+            ? string.Empty
+            : """
+            namespace Prism.Regions
+            {
+                public sealed class NavigationContext { }
+
+                public interface INavigationAware
+                {
+                    void OnNavigatedTo(NavigationContext navigationContext);
+                    bool IsNavigationTarget(NavigationContext navigationContext);
+                    void OnNavigatedFrom(NavigationContext navigationContext);
+                }
+
+                public interface IRegionManager
+                {
+                    void RequestNavigate(string regionName, string target);
+                }
+            }
+            """;
+
+        string harness = """
+            #nullable enable
+            using System;
+            using System.Threading;
+            using System.Threading.Tasks;
+            using Prism.SourceGenerators;
 
             namespace Prism.Commands
             {
                 public class DelegateCommand
                 {
-                    public DelegateCommand(System.Action execute) { }
-                    public DelegateCommand(System.Func<System.Threading.Tasks.Task> execute) { }
+                    public DelegateCommand(Action execute) { }
+                    public DelegateCommand(Action execute, Func<bool> canExecute) { }
+                    public DelegateCommand ObservesProperty<T>(Func<T> propertyExpression) => this;
+                }
+
+                public class DelegateCommand<T>
+                {
+                    public DelegateCommand(Action<T> execute) { }
+                    public DelegateCommand(Action<T> execute, Func<T, bool> canExecute) { }
+                    public DelegateCommand<T> ObservesProperty<TProperty>(Func<TProperty> propertyExpression) => this;
                 }
 
                 public class AsyncDelegateCommand
                 {
-                    public AsyncDelegateCommand(System.Func<System.Threading.Tasks.Task> execute) { }
-                    public AsyncDelegateCommand(System.Func<System.Threading.Tasks.Task> execute, System.Func<bool> canExecute) { }
+                    public AsyncDelegateCommand(Func<Task> execute) { }
+                    public AsyncDelegateCommand(Func<Task> execute, Func<bool> canExecute) { }
+                    public AsyncDelegateCommand EnableParallelExecution() => this;
+                    public AsyncDelegateCommand CancelAfter(TimeSpan timeout) => this;
+                    public AsyncDelegateCommand CancellationTokenSourceFactory(Func<CancellationToken> factory) => this;
+                    public AsyncDelegateCommand Catch(Action<Exception> handler) => this;
+                    public AsyncDelegateCommand Catch<TException>(Action<TException> handler) where TException : Exception => this;
+                    public AsyncDelegateCommand ObservesProperty<T>(Func<T> propertyExpression) => this;
                 }
 
                 public class AsyncDelegateCommand<T>
                 {
-                    public AsyncDelegateCommand(System.Func<T, System.Threading.Tasks.Task> execute) { }
-                    public AsyncDelegateCommand(System.Func<T, System.Threading.Tasks.Task> execute, System.Func<T, bool> canExecute) { }
+                    public AsyncDelegateCommand(Func<T, Task> execute) { }
+                    public AsyncDelegateCommand(Func<T, Task> execute, Func<T, bool> canExecute) { }
+                    public AsyncDelegateCommand<T> EnableParallelExecution() => this;
+                    public AsyncDelegateCommand<T> CancelAfter(TimeSpan timeout) => this;
+                    public AsyncDelegateCommand<T> CancellationTokenSourceFactory(Func<CancellationToken> factory) => this;
+                    public AsyncDelegateCommand<T> Catch(Action<Exception> handler) => this;
+                    public AsyncDelegateCommand<T> Catch<TException>(Action<TException> handler) where TException : Exception => this;
+                    public AsyncDelegateCommand<T> ObservesProperty<TProperty>(Func<TProperty> propertyExpression) => this;
                 }
             }
-            """
-            : string.Empty;
-
-        string harness = """
-            #nullable enable
-            using System;
-            using System.Threading.Tasks;
-            using Prism.SourceGenerators;
 
             namespace Prism.Mvvm
             {
@@ -140,10 +568,33 @@ internal static class Roslyn5000TestHarness
                     public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
 
                     protected bool SetProperty<T>(ref T storage, T value, string? propertyName = null) => false;
+
+                    protected bool SetProperty<T>(ref T storage, T value, Action? onChanged, string? propertyName = null) => false;
+
                     protected void RaisePropertyChanged(string? propertyName = null) { }
                 }
             }
-            """ + commandStubs + userSource;
+
+            namespace Prism.Services.Dialogs
+            {
+                public interface IDialogParameters { }
+                public interface IDialogResult { }
+
+                public interface IDialogAware
+                {
+                    string Title { get; }
+                    event System.Action<IDialogResult>? RequestClose;
+                    bool CanCloseDialog();
+                    void OnDialogClosed();
+                    void OnDialogOpened(IDialogParameters parameters);
+                }
+
+                public interface IDialogService
+                {
+                    void ShowDialog(string name, IDialogParameters? parameters, System.Action<IDialogResult>? callback);
+                }
+            }
+            """ + prism9Regions + prism8Regions + userSource;
 
         SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(
             harness,
@@ -155,20 +606,19 @@ internal static class Roslyn5000TestHarness
             Roslyn5000MetadataReferences.Get(),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-        IIncrementalGenerator[] generators = includeCommands
-            ?
-            [
-                new ObservablePropertyGenerator(),
-                new PropertyChangingGenerator(),
-                new BindableBaseGenerator(),
-                new DelegateCommandGenerator(),
-            ]
-            :
-            [
-                new ObservablePropertyGenerator(),
-                new PropertyChangingGenerator(),
-                new BindableBaseGenerator(),
-            ];
+        IIncrementalGenerator[] generators =
+        [
+            new BindableValidatorGenerator(),
+            new ObservablePropertyGenerator(),
+            new PropertyChangingGenerator(),
+            new DelegateCommandGenerator(),
+            new BindableBaseGenerator(),
+            new ContainerRegistryRegistrationGenerator(),
+            new NavigationAwareGenerator(),
+            new DialogAwareGenerator(),
+            new RegionNavigationGenerator(),
+            new DialogServiceCommandGenerator(),
+        ];
 
         GeneratorDriver driver = CSharpGeneratorDriver.Create(
             generators.Select(static g => g.AsSourceGenerator()),
@@ -176,7 +626,7 @@ internal static class Roslyn5000TestHarness
 
         driver = driver.RunGeneratorsAndUpdateCompilation(
             compilation,
-            out Compilation _,
+            out Compilation outputCompilation,
             out ImmutableArray<Diagnostic> driverDiagnostics);
 
         GeneratorDriverRunResult runResult = driver.GetRunResult();
@@ -188,6 +638,11 @@ internal static class Roslyn5000TestHarness
             }
         }
 
+        ImmutableArray<Diagnostic> compilationErrors = outputCompilation
+            .GetDiagnostics()
+            .Where(static d => d.Severity == DiagnosticSeverity.Error)
+            .ToImmutableArray();
+
         ImmutableArray<GeneratedSource> generatedSources = runResult.Results
             .SelectMany(static r => r.GeneratedSources)
             .OrderBy(static s => s.HintName, System.StringComparer.Ordinal)
@@ -196,7 +651,8 @@ internal static class Roslyn5000TestHarness
 
         ImmutableArray<Diagnostic> allDiagnostics = runResult.Diagnostics
             .AddRange(runResult.Results.SelectMany(static r => r.Diagnostics))
-            .AddRange(driverDiagnostics);
+            .AddRange(driverDiagnostics)
+            .AddRange(compilationErrors);
 
         return new GeneratorRunOutput(generatedSources, allDiagnostics);
     }

@@ -5,7 +5,7 @@
 在应用或类库项目中引用（版本号请以 [NuGet](https://www.nuget.org/packages/MvvmAIO.Prism.SourceGenerators) 为准）：
 
 ```xml
-<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.2.0" />
+<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.7.0" />
 ```
 
 或命令行：
@@ -85,7 +85,7 @@ public partial class MainViewModel : BindableBase
 
 ## 6. 下一步读什么
 
-- 属性、钩子、依赖通知 → [可观察属性](ObservableProperty)  
-- 同步/异步命令、CanExecute、Prism 8 → [命令](Commands)  
-- 报错编号 → [诊断与排错](Diagnostics)  
-- 多 VS / Roslyn 下分析器如何选中 → [架构与打包](Architecture)  
+- 属性、钩子、依赖通知 → [可观察属性](ObservableProperty)
+- 同步/异步命令、CanExecute、Prism 8 → [命令](Commands)
+- 报错编号 → [诊断与排错](Diagnostics)
+- 多 VS / Roslyn 下分析器如何选中 → [架构与打包](Architecture)

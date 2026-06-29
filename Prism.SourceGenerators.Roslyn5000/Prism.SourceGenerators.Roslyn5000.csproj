@@ -3,4 +3,8 @@
   <Import Project="..\Prism.SourceGenerators\Prism.SourceGenerators.props" />
   <Import Project="..\Prism.SourceGenerators\Prism.SourceGenerators.projitems" Label="Shared" />
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Prism.SourceGenerators.Tests.Roslyn5000" />
+  </ItemGroup>
+
 </Project>
