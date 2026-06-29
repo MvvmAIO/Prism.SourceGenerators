@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Immutable;
+using System.Text;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Prism.SourceGenerators.Models;
@@ -89,15 +90,12 @@ internal static class DialogAwareSyntax
                     options: options)
                 ?? throw new InvalidOperationException("Failed to parse OnDialogClosed."));
 
+        // Build OnDialogOpened body with parameter binding injection
+        string onDialogOpenedBody = BuildOnDialogOpenedBody(info.ParameterBindings.AsImmutableArray(), "parameters");
+        string onDialogOpened = "public void OnDialogOpened(" + dialogParameters + " parameters)\n{\n" + onDialogOpenedBody + "\n}";
+
         members.Add(
-            ParseMemberDeclaration(
-                    $$"""
-                    public void OnDialogOpened({{dialogParameters}} parameters)
-                    {
-                        OnDialogOpenedCore(parameters);
-                    }
-                    """,
-                    options: options)
+            ParseMemberDeclaration(onDialogOpened, options: options)
                 ?? throw new InvalidOperationException("Failed to parse OnDialogOpened."));
 
         members.Add(
@@ -131,5 +129,23 @@ internal static class DialogAwareSyntax
                 SimpleBaseType(ParseTypeName(dialogAware))));
 
         return info.Hierarchy.GetCompilationUnit(members.ToImmutable(), baseList);
+    }
+
+    /// <summary>
+    /// Builds the body of <c>OnDialogOpened</c> with parameter binding reads
+    /// followed by the <c>OnDialogOpenedCore</c> call.
+    /// </summary>
+    private static string BuildOnDialogOpenedBody(ImmutableArray<ParameterBindingInfo> bindings, string parametersVar)
+    {
+        var sb = new StringBuilder();
+
+        foreach (ParameterBindingInfo binding in bindings)
+        {
+            sb.AppendLine($"    if ({parametersVar}.TryGetValue<{binding.PropertyType}>(\"{binding.ParameterKey}\", out var {binding.PropertyName}Value))");
+            sb.AppendLine($"        {binding.PropertyName} = {binding.PropertyName}Value;");
+        }
+
+        sb.Append("    OnDialogOpenedCore(parameters);");
+        return sb.ToString();
     }
 }

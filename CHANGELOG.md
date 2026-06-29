@@ -2,6 +2,15 @@
 
 All notable changes to this project are documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- **`[FromNavigationParameter]`** — marks a field or partial property for typed parameter binding from `NavigationContext.Parameters` during `OnNavigatedTo`. Reads the value via `TryGetValue<T>` and assigns it through the property setter before `OnNavigatedToCore` is invoked. Requires `[ObservableProperty]` on the same member.
+- **`[FromDialogParameter]`** — marks a field or partial property for typed parameter binding from `IDialogParameters` during `OnDialogOpened`. Reads the value via `TryGetValue<T>` and assigns it through the property setter before `OnDialogOpenedCore` is invoked. Requires `[ObservableProperty]` on the same member.
+- **PSG7006–PSG7008** — `[FromNavigationParameter]` diagnostics (invalid target, missing `[ObservableProperty]`, empty key).
+- **PSG7103–PSG7105** — `[FromDialogParameter]` diagnostics (invalid target, missing `[ObservableProperty]`, empty key).
+
 ## [0.7.0] - 2026-06-17
 
 ### Added

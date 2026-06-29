@@ -333,4 +333,86 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true,
         description: "Set Name to the dialog name registered with RegisterDialog.",
         helpLinkUri: HelpLink);
+
+    // --- FromNavigationParameter diagnostics ---
+
+    /// <summary>
+    /// PSG7006: [FromNavigationParameter] can only be applied to fields or properties.
+    /// </summary>
+    public static readonly DiagnosticDescriptor FromNavigationParameterOnInvalidTarget = new(
+        id: "PSG7006",
+        title: "[FromNavigationParameter] can only be applied to fields or properties",
+        messageFormat: "The member '{0}' has [FromNavigationParameter] but is not a field or property; remove the attribute",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "[FromNavigationParameter] must be applied to a field or partial property annotated with [ObservableProperty].",
+        helpLinkUri: HelpLink);
+
+    /// <summary>
+    /// PSG7007: [FromNavigationParameter] requires [ObservableProperty] on the same member.
+    /// </summary>
+    public static readonly DiagnosticDescriptor FromNavigationParameterRequiresObservableProperty = new(
+        id: "PSG7007",
+        title: "[FromNavigationParameter] requires [ObservableProperty]",
+        messageFormat: "The member '{0}' has [FromNavigationParameter] but is not annotated with [ObservableProperty]; parameter binding will not be emitted",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: "[FromNavigationParameter] must be applied to the same field or partial property as [ObservableProperty] so the generated setter can be used for assignment.",
+        helpLinkUri: HelpLink);
+
+    /// <summary>
+    /// PSG7008: [FromNavigationParameter] key cannot be empty.
+    /// </summary>
+    public static readonly DiagnosticDescriptor FromNavigationParameterEmptyKey = new(
+        id: "PSG7008",
+        title: "[FromNavigationParameter] key cannot be empty",
+        messageFormat: "The member '{0}' has [FromNavigationParameter] with an empty Key; omit Key to use the property name or provide a non-empty value",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "The Key property of [FromNavigationParameter] must be a non-empty string, or omitted to default to the property name.",
+        helpLinkUri: HelpLink);
+
+    // --- FromDialogParameter diagnostics ---
+
+    /// <summary>
+    /// PSG7103: [FromDialogParameter] can only be applied to fields or properties.
+    /// </summary>
+    public static readonly DiagnosticDescriptor FromDialogParameterOnInvalidTarget = new(
+        id: "PSG7103",
+        title: "[FromDialogParameter] can only be applied to fields or properties",
+        messageFormat: "The member '{0}' has [FromDialogParameter] but is not a field or property; remove the attribute",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "[FromDialogParameter] must be applied to a field or partial property annotated with [ObservableProperty].",
+        helpLinkUri: HelpLink);
+
+    /// <summary>
+    /// PSG7104: [FromDialogParameter] requires [ObservableProperty] on the same member.
+    /// </summary>
+    public static readonly DiagnosticDescriptor FromDialogParameterRequiresObservableProperty = new(
+        id: "PSG7104",
+        title: "[FromDialogParameter] requires [ObservableProperty]",
+        messageFormat: "The member '{0}' has [FromDialogParameter] but is not annotated with [ObservableProperty]; parameter binding will not be emitted",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: "[FromDialogParameter] must be applied to the same field or partial property as [ObservableProperty] so the generated setter can be used for assignment.",
+        helpLinkUri: HelpLink);
+
+    /// <summary>
+    /// PSG7105: [FromDialogParameter] key cannot be empty.
+    /// </summary>
+    public static readonly DiagnosticDescriptor FromDialogParameterEmptyKey = new(
+        id: "PSG7105",
+        title: "[FromDialogParameter] key cannot be empty",
+        messageFormat: "The member '{0}' has [FromDialogParameter] with an empty Key; omit Key to use the property name or provide a non-empty value",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "The Key property of [FromDialogParameter] must be a non-empty string, or omitted to default to the property name.",
+        helpLinkUri: HelpLink);
 }

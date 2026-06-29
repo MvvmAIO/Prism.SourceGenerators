@@ -368,7 +368,9 @@ public partial class FormViewModel : BindableValidator
 | PSG0008 | Class with `[DialogAware]` must be `partial` |
 | PSG7001 | No accessible `IRegionManager` for `[NavigateCommand]` / `[NavigateOnChanged]` |
 | PSG7002–PSG7005 | `[NavigateCommand]` / `[NavigateOnChanged]` attribute validation |
+| PSG7006–PSG7008 | `[FromNavigationParameter]` — invalid target, missing `[ObservableProperty]`, empty key |
 | PSG7101–PSG7102 | `[ShowDialogCommand]` — missing `IDialogService` or dialog `Name` |
+| PSG7103–PSG7105 | `[FromDialogParameter]` — invalid target, missing `[ObservableProperty]`, empty key |
 
 > **Quick fix:** PSG0001–PSG0005 all have an IDE code fix that inserts the missing `partial` modifier (Ctrl+. / Alt+Enter on the squiggle, or "Fix all in document/project/solution" to apply across the whole codebase).
 

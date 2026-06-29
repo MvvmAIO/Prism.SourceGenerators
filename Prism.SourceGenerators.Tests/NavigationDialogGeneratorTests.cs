@@ -81,4 +81,117 @@ public class NavigationDialogGeneratorTests
 
         Assert.Contains(output.Diagnostics, d => d.Id == "PSG0008");
     }
+
+    // --- [FromNavigationParameter] tests ---
+
+    [Fact]
+    public void FromNavigationParameter_generates_TryGetValue_in_OnNavigatedTo()
+    {
+        GeneratorRunOutput output = GeneratorTestHarness.Run("""
+            [NavigationAware]
+            public partial class PageVm : Prism.Mvvm.BindableBase
+            {
+                [FromNavigationParameter("userId")]
+                [ObservableProperty]
+                private int _userId;
+            }
+            """);
+
+        Assert.Empty(output.Diagnostics);
+        GeneratedSource generated = Assert.Single(output.GeneratedSources.Where(s => s.HintName.EndsWith(".NavigationAware.g.cs")));
+        Assert.Contains("TryGetValue", generated.Source);
+        Assert.Contains("\"userId\"", generated.Source);
+        Assert.Contains("UserId = UserIdValue", generated.Source);
+        Assert.Contains("OnNavigatedToCore(navigationContext)", generated.Source);
+    }
+
+    [Fact]
+    public void FromNavigationParameter_defaults_key_to_property_name()
+    {
+        GeneratorRunOutput output = GeneratorTestHarness.Run("""
+            [NavigationAware]
+            public partial class PageVm : Prism.Mvvm.BindableBase
+            {
+                [FromNavigationParameter]
+                [ObservableProperty]
+                private string _userName;
+            }
+            """);
+
+        GeneratedSource generated = Assert.Single(output.GeneratedSources.Where(s => s.HintName.EndsWith(".NavigationAware.g.cs")));
+        Assert.Contains("TryGetValue", generated.Source);
+        Assert.Contains("\"UserName\"", generated.Source);
+        Assert.Contains("UserName = UserNameValue", generated.Source);
+    }
+
+    [Fact]
+    public void FromNavigationParameter_reports_PSG7007_without_ObservableProperty()
+    {
+        GeneratorRunOutput output = GeneratorTestHarness.Run("""
+            [NavigationAware]
+            public partial class PageVm : Prism.Mvvm.BindableBase
+            {
+                [FromNavigationParameter("userId")]
+                private int _userId;
+            }
+            """);
+
+        Assert.Contains(output.Diagnostics, d => d.Id == "PSG7007");
+    }
+
+    // --- [FromDialogParameter] tests ---
+
+    [Fact]
+    public void FromDialogParameter_generates_TryGetValue_in_OnDialogOpened()
+    {
+        GeneratorRunOutput output = GeneratorTestHarness.Run("""
+            [DialogAware(Title = "Confirm")]
+            public partial class ConfirmVm : Prism.Mvvm.BindableBase
+            {
+                [FromDialogParameter("message")]
+                [ObservableProperty]
+                private string _message;
+            }
+            """);
+
+        GeneratedSource generated = Assert.Single(output.GeneratedSources.Where(s => s.HintName.EndsWith(".DialogAware.g.cs")));
+        Assert.Contains("TryGetValue", generated.Source);
+        Assert.Contains("\"message\"", generated.Source);
+        Assert.Contains("Message = MessageValue", generated.Source);
+        Assert.Contains("OnDialogOpenedCore(parameters)", generated.Source);
+    }
+
+    [Fact]
+    public void FromDialogParameter_defaults_key_to_property_name()
+    {
+        GeneratorRunOutput output = GeneratorTestHarness.Run("""
+            [DialogAware(Title = "Confirm")]
+            public partial class ConfirmVm : Prism.Mvvm.BindableBase
+            {
+                [FromDialogParameter]
+                [ObservableProperty]
+                private string _title;
+            }
+            """);
+
+        GeneratedSource generated = Assert.Single(output.GeneratedSources.Where(s => s.HintName.EndsWith(".DialogAware.g.cs")));
+        Assert.Contains("TryGetValue", generated.Source);
+        Assert.Contains("\"Title\"", generated.Source);
+        Assert.Contains("Title = TitleValue", generated.Source);
+    }
+
+    [Fact]
+    public void FromDialogParameter_reports_PSG7104_without_ObservableProperty()
+    {
+        GeneratorRunOutput output = GeneratorTestHarness.Run("""
+            [DialogAware(Title = "Confirm")]
+            public partial class ConfirmVm : Prism.Mvvm.BindableBase
+            {
+                [FromDialogParameter("message")]
+                private string _message;
+            }
+            """);
+
+        Assert.Contains(output.Diagnostics, d => d.Id == "PSG7104");
+    }
 }
