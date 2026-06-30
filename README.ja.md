@@ -373,7 +373,7 @@ public partial class FormViewModel : BindableValidator
 ## インストール
 
 ```xml
-<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.8.0" />
+<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.8.1" />
 ```
 
 または:

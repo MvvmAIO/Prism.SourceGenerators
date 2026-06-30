@@ -376,7 +376,7 @@ public partial class FormViewModel : BindableValidator
 ## 安装
 
 ```xml
-<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.8.0" />
+<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.8.1" />
 ```
 
 或：

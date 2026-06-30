@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.8.1] - 2026-06-30
+
+### Fixed
+
+- **CS0579** — `[FromNavigationParameter]` / `[FromDialogParameter]` applied to a partial property (C# 13+ mode) caused a duplicate attribute error because the generator forwarded the attributes onto the generated implementing partial. Both attributes are now suppressed during forwarding via `IsGeneratorOwnedObservablePropertyAttribute`.
+
 ## [0.8.0] - 2026-06-30
 
 ### Added
