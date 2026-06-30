@@ -111,7 +111,7 @@ internal static class DialogAwareMetadataExtractor
 
             if (member is IFieldSymbol field)
             {
-                propertyName = GetPropertyNameFromField(field.Name);
+                propertyName = NamingHelpers.GetPropertyNameFromField(field.Name);
                 propertyType = field.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
             }
             else
@@ -142,15 +142,6 @@ internal static class DialogAwareMetadataExtractor
     private static bool HasObservableProperty(ISymbol symbol) =>
         symbol.GetAttributes().Any(static a =>
             a.AttributeClass?.ToDisplayString() == ObservablePropertyAttributeMetadataName);
-
-    private static string GetPropertyNameFromField(string fieldName)
-    {
-        if (fieldName.StartsWith("m_") && fieldName.Length > 2)
-            return char.ToUpperInvariant(fieldName[2]) + fieldName.Substring(3);
-        if (fieldName.StartsWith('_') && fieldName.Length > 1)
-            return char.ToUpperInvariant(fieldName[1]) + fieldName.Substring(2);
-        return char.ToUpperInvariant(fieldName[0]) + fieldName.Substring(1);
-    }
 
     private static string GetTitleFromAttribute(ImmutableArray<AttributeData> attributes)
     {

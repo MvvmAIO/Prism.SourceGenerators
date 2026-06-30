@@ -191,21 +191,10 @@ internal static class RegionNavigationMetadataExtractor
     private static (string PropertyName, string FieldType) GetPropertyInfo(ISymbol symbol) =>
         symbol switch
         {
-            IFieldSymbol field => (GetPropertyNameFromField(field.Name), field.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)),
+            IFieldSymbol field => (NamingHelpers.GetPropertyNameFromField(field.Name), field.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)),
             IPropertySymbol property => (property.Name, property.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)),
             _ => throw new InvalidOperationException("Unexpected symbol for NavigateOnChanged."),
         };
-
-    private static string GetPropertyNameFromField(string fieldName)
-    {
-        // Align with ObservablePropertyGenerator.GetPropertyName so [NavigateOnChanged]
-        // emits the same On{Property}Changed hook that [ObservableProperty] generates.
-        if (fieldName.StartsWith("m_") && fieldName.Length > 2)
-            return char.ToUpperInvariant(fieldName[2]) + fieldName.Substring(3);
-        if (fieldName.StartsWith('_') && fieldName.Length > 1)
-            return char.ToUpperInvariant(fieldName[1]) + fieldName.Substring(2);
-        return char.ToUpperInvariant(fieldName[0]) + fieldName.Substring(1);
-    }
 
     private static string BuildTargetMemberExpression(string targetMember)
     {
