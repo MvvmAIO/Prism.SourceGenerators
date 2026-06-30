@@ -37,6 +37,8 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
     private const string DelegateCommandAttributeName = "Prism.SourceGenerators.DelegateCommandAttribute";
     private const string AsyncDelegateCommandAttributeName = "Prism.SourceGenerators.AsyncDelegateCommandAttribute";
     private const string NotifyDataErrorInfoAttributeName = "Prism.SourceGenerators.NotifyDataErrorInfoAttribute";
+    private const string FromNavigationParameterAttributeName = "Prism.SourceGenerators.FromNavigationParameterAttribute";
+    private const string FromDialogParameterAttributeName = "Prism.SourceGenerators.FromDialogParameterAttribute";
     private const string BindableValidatorMetadataName = "Prism.SourceGenerators.BindableValidator";
 
     /// <inheritdoc/>
@@ -444,7 +446,9 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
         fullyQualifiedMetadataName == "global::" + AttributeName
         || fullyQualifiedMetadataName == "global::" + NotifyPropertyChangedForAttributeName
         || fullyQualifiedMetadataName == "global::" + NotifyCanExecuteChangedForAttributeName
-        || fullyQualifiedMetadataName == "global::" + NotifyDataErrorInfoAttributeName;
+        || fullyQualifiedMetadataName == "global::" + NotifyDataErrorInfoAttributeName
+        || fullyQualifiedMetadataName == "global::" + FromNavigationParameterAttributeName
+        || fullyQualifiedMetadataName == "global::" + FromDialogParameterAttributeName;
 
     private static string? RenderForwardedAttribute(
         AttributeSyntax attribute,
