@@ -136,7 +136,7 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
         }
 
         string fieldName = fieldSymbol.Name;
-        string propertyName = GetPropertyName(fieldName);
+        string propertyName = NamingHelpers.GetPropertyNameFromField(fieldName);
         string fieldType = fieldSymbol.Type.GetFullyQualifiedNameWithNullabilityAnnotations();
         HierarchyInfo hierarchy = HierarchyInfo.From(containingType);
         ImmutableArray<string> notifyProps = CollectNotifyPropertyChangedFor(fieldSymbol);
@@ -541,15 +541,6 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
             Accessibility.Public => "public",
             _ => "public"
         };
-    }
-
-    private static string GetPropertyName(string fieldName)
-    {
-        if (fieldName.StartsWith("m_") && fieldName.Length > 2)
-            return char.ToUpperInvariant(fieldName[2]) + fieldName.Substring(3);
-        if (fieldName.StartsWith("_") && fieldName.Length > 1)
-            return char.ToUpperInvariant(fieldName[1]) + fieldName.Substring(2);
-        return char.ToUpperInvariant(fieldName[0]) + fieldName.Substring(1);
     }
 
     /// <summary>
