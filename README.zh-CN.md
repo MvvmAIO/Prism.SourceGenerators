@@ -362,13 +362,21 @@ public partial class FormViewModel : BindableValidator
 | PSG4001 | ServiceType 与实现类型不兼容 |
 | PSG4002 | ViewModelType 无法解析 |
 | PSG5001 | `[NotifyDataErrorInfo]` 要求包含类型继承自 `BindableValidator` |
+| PSG0007 | 标注 `[NavigationAware]` 的类必须声明为 `partial` |
+| PSG0008 | 标注 `[DialogAware]` 的类必须声明为 `partial` |
+| PSG6001 | 建议将字段标注的 `[ObservableProperty]` 转为 partial property（C# 13+，Info） |
+| PSG7001 | 未找到可访问的 `IRegionManager`（`[NavigateCommand]` / `[NavigateOnChanged]`） |
+| PSG7002–PSG7005 | `[NavigateCommand]` / `[NavigateOnChanged]` 属性验证 |
+| PSG7006–PSG7008 | `[FromNavigationParameter]` — 目标无效、缺少 `[ObservableProperty]`、空 Key |
+| PSG7101–PSG7102 | `[ShowDialogCommand]` — 缺少 `IDialogService` 或对话框 `Name` |
+| PSG7103–PSG7105 | `[FromDialogParameter]` — 目标无效、缺少 `[ObservableProperty]`、空 Key |
 
 > **快速修复：** PSG0001–PSG0005 都提供 IDE 代码修复，会自动插入缺失的 `partial` 修饰符（在波浪线处按 Ctrl+. / Alt+Enter，或使用"修复文档/项目/解决方案中的所有问题"在整个代码库中批量应用）。
 
 ## 安装
 
 ```xml
-<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.7.0" />
+<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.8.0" />
 ```
 
 或：
