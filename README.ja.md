@@ -359,13 +359,21 @@ public partial class FormViewModel : BindableValidator
 | PSG4001 | ServiceType が実装型と互換性がありません |
 | PSG4002 | ViewModelType が解決できませんでした |
 | PSG5001 | `[NotifyDataErrorInfo]` は `BindableValidator` を継承する型が必要です |
+| PSG0007 | `[NavigationAware]` を付与されたクラスは `partial` として宣言する必要があります |
+| PSG0008 | `[DialogAware]` を付与されたクラスは `partial` として宣言する必要があります |
+| PSG6001 | フィールド付き `[ObservableProperty]` を partial property に変換することを推奨（C# 13+、Info） |
+| PSG7001 | アクセス可能な `IRegionManager` が見つかりません（`[NavigateCommand]` / `[NavigateOnChanged]`） |
+| PSG7002–PSG7005 | `[NavigateCommand]` / `[NavigateOnChanged]` の属性検証 |
+| PSG7006–PSG7008 | `[FromNavigationParameter]` — 無効なターゲット、`[ObservableProperty]` 不足、空の Key |
+| PSG7101–PSG7102 | `[ShowDialogCommand]` — `IDialogService` またはダイアログ `Name` 不足 |
+| PSG7103–PSG7105 | `[FromDialogParameter]` — 無効なターゲット、`[ObservableProperty]` 不足、空の Key |
 
 > **クイックフィックス：** PSG0001～PSG0005 にはすべて IDE のコードフィックスが用意されており、欠落している `partial` 修飾子を自動的に挿入します（波線上で Ctrl+. / Alt+Enter を押すか、「ドキュメント/プロジェクト/ソリューション内のすべての問題を修正」でコードベース全体に一括適用できます）。
 
 ## インストール
 
 ```xml
-<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.7.0" />
+<PackageReference Include="MvvmAIO.Prism.SourceGenerators" Version="0.8.0" />
 ```
 
 または:
