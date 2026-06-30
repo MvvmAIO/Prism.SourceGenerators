@@ -260,4 +260,47 @@ public class NavigationDialogGeneratorTests
 
         Assert.Contains(output.Diagnostics, d => d.Id == "PSG7105");
     }
+
+    // --- partial property mode (C# 13+): attributes must not be forwarded ---
+
+    [Fact]
+    public void FromNavigationParameter_on_partial_property_does_not_emit_CS0579()
+    {
+        // In partial-property mode the generator must NOT forward
+        // [FromNavigationParameter] onto the generated implementing partial,
+        // otherwise CS0579 (duplicate attribute) is reported.
+        GeneratorRunOutput output = GeneratorTestHarness.Run("""
+            [NavigationAware]
+            public partial class PageVm : Prism.Mvvm.BindableBase
+            {
+                [FromNavigationParameter("userId")]
+                [ObservableProperty]
+                public partial int UserId { get; set; }
+            }
+            """);
+
+        Assert.Empty(output.Diagnostics);
+        GeneratedSource generated = Assert.Single(output.GeneratedSources.Where(s => s.HintName.EndsWith(".NavigationAware.g.cs")));
+        Assert.Contains("TryGetValue", generated.Source);
+        Assert.Contains("\"userId\"", generated.Source);
+    }
+
+    [Fact]
+    public void FromDialogParameter_on_partial_property_does_not_emit_CS0579()
+    {
+        GeneratorRunOutput output = GeneratorTestHarness.Run("""
+            [DialogAware(Title = "Confirm")]
+            public partial class ConfirmVm : Prism.Mvvm.BindableBase
+            {
+                [FromDialogParameter("message")]
+                [ObservableProperty]
+                public partial string Message { get; set; }
+            }
+            """);
+
+        Assert.Empty(output.Diagnostics);
+        GeneratedSource generated = Assert.Single(output.GeneratedSources.Where(s => s.HintName.EndsWith(".DialogAware.g.cs")));
+        Assert.Contains("TryGetValue", generated.Source);
+        Assert.Contains("\"message\"", generated.Source);
+    }
 }
