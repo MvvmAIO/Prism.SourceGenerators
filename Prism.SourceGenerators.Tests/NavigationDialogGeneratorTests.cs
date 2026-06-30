@@ -139,6 +139,39 @@ public class NavigationDialogGeneratorTests
         Assert.Contains(output.Diagnostics, d => d.Id == "PSG7007");
     }
 
+    [Fact]
+    public void FromNavigationParameter_reports_PSG7006_on_method()
+    {
+        // AttributeUsage is Field|Property, so CS0592 is also emitted by the compiler;
+        // the generator must additionally report PSG7006 for the invalid target.
+        GeneratorRunOutput output = GeneratorTestHarness.Run("""
+            [NavigationAware]
+            public partial class PageVm : Prism.Mvvm.BindableBase
+            {
+                [FromNavigationParameter("userId")]
+                public void DoSomething() { }
+            }
+            """);
+
+        Assert.Contains(output.Diagnostics, d => d.Id == "PSG7006");
+    }
+
+    [Fact]
+    public void FromNavigationParameter_reports_PSG7008_for_empty_key()
+    {
+        GeneratorRunOutput output = GeneratorTestHarness.Run("""
+            [NavigationAware]
+            public partial class PageVm : Prism.Mvvm.BindableBase
+            {
+                [FromNavigationParameter("")]
+                [ObservableProperty]
+                private int _userId;
+            }
+            """);
+
+        Assert.Contains(output.Diagnostics, d => d.Id == "PSG7008");
+    }
+
     // --- [FromDialogParameter] tests ---
 
     [Fact]
@@ -193,5 +226,38 @@ public class NavigationDialogGeneratorTests
             """);
 
         Assert.Contains(output.Diagnostics, d => d.Id == "PSG7104");
+    }
+
+    [Fact]
+    public void FromDialogParameter_reports_PSG7103_on_method()
+    {
+        // AttributeUsage is Field|Property, so CS0592 is also emitted by the compiler;
+        // the generator must additionally report PSG7103 for the invalid target.
+        GeneratorRunOutput output = GeneratorTestHarness.Run("""
+            [DialogAware(Title = "Confirm")]
+            public partial class ConfirmVm : Prism.Mvvm.BindableBase
+            {
+                [FromDialogParameter("message")]
+                public void DoSomething() { }
+            }
+            """);
+
+        Assert.Contains(output.Diagnostics, d => d.Id == "PSG7103");
+    }
+
+    [Fact]
+    public void FromDialogParameter_reports_PSG7105_for_empty_key()
+    {
+        GeneratorRunOutput output = GeneratorTestHarness.Run("""
+            [DialogAware(Title = "Confirm")]
+            public partial class ConfirmVm : Prism.Mvvm.BindableBase
+            {
+                [FromDialogParameter("")]
+                [ObservableProperty]
+                private string _message;
+            }
+            """);
+
+        Assert.Contains(output.Diagnostics, d => d.Id == "PSG7105");
     }
 }
