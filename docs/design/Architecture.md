@@ -1,6 +1,5 @@
 # Design Doc: 架构与打包
 
-> **关联 Spec**：—（横切）
 > **关联 ADR**：[ADR-001](../adr/ADR-001-multi-roslyn-analyzer-layout.md)、[ADR-002](../adr/ADR-002-shared-project-shproj.md)、[ADR-003](../adr/ADR-003-bcl-commands-split-package.md)
 
 ## 概述

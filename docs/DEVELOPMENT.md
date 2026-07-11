@@ -46,8 +46,8 @@ dotnet test Prism.SourceGenerators.slnx --configuration Release --no-build
 | `Prism.SourceGenerators.Tests.Roslyn5000` | Roslyn 5.0 冒烟 |
 | `Prism.SourceGenerators.Integration.Tests` | 打包与 PSG 集成场景 |
 | `build/` | Nuke（`build.slnx`） |
-| `docs/` | **维护者文档**（Spec / Design / ADR / RFC） |
-| `wiki/` | GitHub Wiki 同步源（简短导读，非 Spec 合同） |
+| `docs/` | **维护者文档**（Design Doc / ADR / Roadmap） |
+| `wiki/` | GitHub Wiki 同步源（简短导读，非维护者契约） |
 
 详见 [design/Architecture.md](design/Architecture.md)。
 
@@ -58,7 +58,7 @@ dotnet test Prism.SourceGenerators.slnx --configuration Release --no-build
 1. 使用 **`IIncrementalGenerator`**，优先 `ForAttributeWithMetadataName`。
 2. 生成逻辑经 **语法树** 发射（非裸字符串拼接，自 0.3.0 起）。
 3. 分析器：`IsRoslynComponent`、`EnforceExtendedAnalyzerRules`。
-4. 诊断前缀 **`PSG`**；新 ID 登记于 `AnalyzerReleases.*.md` 与 `docs/spec/`。
+4. 诊断前缀 **`PSG`**；新 ID 登记于 `AnalyzerReleases.*.md` 与对应 Design Doc。
 5. **四套 Roslyn 变体** + MSBuild targets 按编译器版本选择 analyzer 路径。
 
 ### 与 Prism 的边界

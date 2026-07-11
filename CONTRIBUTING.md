@@ -16,7 +16,7 @@ Thank you for your interest in this project. The following guidelines help keep 
 
 The **canonical product manual** is the static documentation site **[Prism.SourceGenerators.Docs](https://mvvmaio.github.io/Prism.SourceGenerators.Docs/)** (repo **[Prism.SourceGenerators.Docs](https://github.com/MvvmAIO/Prism.SourceGenerators.Docs)**). This repository’s **README** files and **[GitHub Wiki](https://github.com/MvvmAIO/Prism.SourceGenerators/wiki)** (tracked under [`wiki/`](https://github.com/MvvmAIO/Prism.SourceGenerators/tree/master/wiki)) are **short entry points** only.
 
-**Maintainer documentation (documentation-driven development):** see **[`docs/DOCUMENTATION.md`](docs/DOCUMENTATION.md)** for document types (RFC, ADR, Spec, Design Doc, Plan, Review), lifecycle, and the **docs-before-code** workflow. Index: [`docs/README.md`](docs/README.md). Substantive generator or API work should update the relevant **Spec** and **Design Doc** in the same PR when behavior changes.
+**Maintainer documentation:** see **[`docs/DOCUMENTATION.md`](docs/DOCUMENTATION.md)** for the ADR, Design Doc, Roadmap, Issue, PR, and Release model. Index: [`docs/README.md`](docs/README.md). Substantive generator or API work should update the relevant **Design Doc** in the same PR when behavior changes.
 
 Technical discussion in issues and PRs may be in English or Chinese.
 
@@ -87,18 +87,18 @@ If a PR changes emitted source or diagnostics, update or add tests and any **`.v
 
 ---
 
-## Documentation-driven development
+## Documentation
 
-Maintainer docs live under **`docs/`**. See **[`docs/DOCUMENTATION.md`](docs/DOCUMENTATION.md)** for the full system (RFC, ADR, Spec, Design Doc, Plan, Review, Roadmap).
+Maintainer docs live under **`docs/`**. See **[`docs/DOCUMENTATION.md`](docs/DOCUMENTATION.md)** for the documentation model.
 
 | Change | Docs to update |
 |--------|----------------|
-| New generator or PSG ID | RFC + ADR → **`docs/spec/`** + **`docs/design/`** + `AnalyzerReleases` + Docs site |
-| Behavior change (existing generator) | **`docs/spec/`** / **`docs/design/`** in the same PR |
-| Large multi-PR feature | **`docs/plans/`** + main Issue |
-| Release | **`docs/PUBLISHING.md`** checklist + Release Review in **`docs/review/`** |
+| Breaking architectural change | ADR + relevant **`docs/design/`** + `AnalyzerReleases` / Docs site as applicable |
+| Other generator or behavior change | Relevant **`docs/design/`** in the same PR |
+| Large multi-PR feature | Main GitHub Issue |
+| Release | **`docs/PUBLISHING.md`** checklist + GitHub Release |
 
-Backlog: [`docs/ROADMAP.md`](docs/ROADMAP.md). **Prism.SourceGenerators.Docs** remains the **consumer** manual; `docs/spec/` is the **maintainer contract**.
+Backlog: [`docs/ROADMAP.md`](docs/ROADMAP.md). **Prism.SourceGenerators.Docs** remains the **consumer** manual; each Design Doc is the maintainer contract for its domain.
 
 ---
 
@@ -107,7 +107,7 @@ Backlog: [`docs/ROADMAP.md`](docs/ROADMAP.md). **Prism.SourceGenerators.Docs** r
 - Match **existing style** in touched files (naming, nullable annotations, `#nullable`, language features already in use).
 - Prefer **focused** changes: one logical concern per PR when practical.
 - **User-visible** behavior (new diagnostics, generator output, package layout) should be reflected in **`CHANGELOG.md`** under **Unreleased** (or the appropriate section maintainers use).
-- New **analyzer IDs** (`PSGxxxx`) should appear in **README** diagnostic tables, **`docs/spec/`**, and **Prism.SourceGenerators.Docs** when messages or IDs change.
+- New **analyzer IDs** (`PSGxxxx`) should appear in **README** diagnostic tables, the relevant **Design Doc**, and **Prism.SourceGenerators.Docs** when messages or IDs change.
 
 ---
 

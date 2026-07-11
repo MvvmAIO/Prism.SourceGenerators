@@ -4,7 +4,7 @@
 |------|-----|
 | **状态** | Accepted |
 | **日期** | 2026-06-17 |
-| **关联 RFC** | [NavigationDialogAdvanced](../rfc/archive/NavigationDialogAdvanced.md) |
+| **关联 Design Doc** | [NavigationAware](../design/NavigationAware.md) / [DialogAware](../design/DialogAware.md) |
 
 ## 背景
 
@@ -21,5 +21,5 @@ Prism 9 将区域导航与对话框 API 迁至新命名空间（`Prism.Navigatio
 
 ## 参考
 
-- [spec/NavigationAware.md](../spec/NavigationAware.md)
-- [spec/DialogAware.md](../spec/DialogAware.md)
+- [NavigationAware](../design/NavigationAware.md)
+- [DialogAware](../design/DialogAware.md)
