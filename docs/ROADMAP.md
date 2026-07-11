@@ -1,6 +1,6 @@
 # 产品与技术路线图
 
-功能与工程 backlog。**不**定义 Spec 契约 — 开发规范见 [`../AGENTS.md`](../AGENTS.md)，文档流程见 [`DOCUMENTATION.md`](DOCUMENTATION.md)。
+功能与工程 backlog。生成器 API、诊断与实现契约见对应 [Design Doc](design/README.md)；开发规范见 [`../AGENTS.md`](../AGENTS.md)。
 
 当前稳定版：**0.8.1**。诊断 ID 前缀 **PSG**；已发布 ID 不复用。
 
@@ -25,14 +25,14 @@
 |----|------|------|
 | GitHub Release v0.8.1 | tag 已有，Release 待创建 | [ ] |
 | Docs 站 getting-started 版本号 | 仍为 0.6.0，需升至 0.8.1 | [ ] |
-| Docs RFC 页状态更新 | P4 已实现，RFC 仍标 deferred | [ ] |
-| 本仓库 `docs/` 文档驱动体系 | 脚手架 + ADR 回填 | [~] |
+| Docs 站历史页面状态更新 | P4 已实现，页面仍标 deferred | [ ] |
+| 本仓库 `docs/` 文档体系精简 | Design Doc 合并契约，移除重复流程文档 | [x] |
 
 ---
 
 ## F2 — 导航/对话框增强（下一版本候选）
 
-源自 [rfc/archive/NavigationDialogAdvanced.md](rfc/archive/NavigationDialogAdvanced.md) 与 Docs 站 RFC。
+源自已完成的导航与对话框设计，以及 Docs 站历史页面。
 
 | 项 | 说明 | 优先级 | 状态 |
 |----|------|--------|------|
@@ -42,7 +42,7 @@
 | `IConfirmNavigationRequest` | 未保存更改提示 | 暂缓 | [ ] |
 | `IJournalAware` | 返回栈集成 | 暂缓 | [ ] |
 
-每项落地前：RFC（如需）→ ADR → Spec/Design → Samples 演示 → Docs 站。
+每项落地时：更新 Design Doc；有破坏性架构决策时新增 ADR；按需更新 Samples 与 Docs 站。
 
 ---
 

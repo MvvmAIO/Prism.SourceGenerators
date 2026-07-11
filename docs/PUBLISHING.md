@@ -17,9 +17,9 @@ dotnet run --project build/_build.csproj -- --target Pack --configuration Releas
 
 产物位于 `artifacts/`（以 Nuke 配置为准）。
 
-## 发布前检查（Release Review）
+## 发布前检查
 
-发版前建议创建 [review/](review/README.md) 记录，核对：
+发版前核对：
 
 - [ ] `CHANGELOG.md` `[Unreleased]` 已整理
 - [ ] `Prism.SourceGenerators.Package` 与 `Prism.Bcl.Commands` 的 `<Version>` 一致（若同期发版）

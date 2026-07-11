@@ -153,7 +153,7 @@ Diagnostic IDs are defined in [`Prism.SourceGenerators/Diagnostics/DiagnosticDes
 | Surface | Use for |
 |---------|---------|
 | **[Documentation site](https://mvvmaio.github.io/Prism.SourceGenerators.Docs/)** | Canonical consumer manual, PSG tables, architecture |
-| **`docs/`** (see [docs/README.md](docs/README.md)) | **Maintainer DDD**: Spec, Design Doc, RFC, ADR, Roadmap — [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md) is authoritative for doc types and workflow |
+| **`docs/`** (see [docs/README.md](docs/README.md)) | Maintainer documentation: Design Doc, ADR, Roadmap — [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md) defines the documentation model |
 | **This repo `README` / `README.zh-CN` / `README.ja`** | Landing-page snippets |
 | **`wiki/`** | Short Chinese-oriented notes; not a contract |
 | **`CONTRIBUTING.md`** | Human contributor process (aligned with this file) |
@@ -161,32 +161,29 @@ Diagnostic IDs are defined in [`Prism.SourceGenerators/Diagnostics/DiagnosticDes
 
 ---
 
-## 文档体系（文档驱动开发）
+## 文档体系
 
-本仓库实行**文档驱动开发**：先文档后代码。完整规范见 **[docs/DOCUMENTATION.md](docs/DOCUMENTATION.md)**（§11 决策表）。`AGENTS.md` 本节为摘要。
+完整规则见 **[docs/DOCUMENTATION.md](docs/DOCUMENTATION.md)**。维护者文档保留稳定沉淀的信息；需求、讨论与评审分别由 GitHub Issue、PR 和 Release 承载。
 
-| 类型 | 目录 | 用途 | 关键规则 |
+| 类型 | 位置 | 用途 | 关键规则 |
 |------|------|------|----------|
-| **RFC** | `docs/rfc/` | 设计提案 | 新增生成器 / 诊断 / 破坏性 API 须 RFC；已实现 → `archive/` |
-| **ADR** | `docs/adr/` | 架构决策（不可变） | RFC Accepted → ADR；编号不复用 |
-| **Spec** | `docs/spec/` | 稳定契约 | 变更须 RFC + ADR |
-| **Design Doc** | `docs/design/` | 实现细节 | 随代码 PR 同步 |
-| **Plan** | `docs/plans/` | 大型任务（跨多 PR） | Done → `archive/` |
-| **Review** | `docs/review/` | 评审记录 | Final 后正文不可变 |
-| **Roadmap** | `docs/ROADMAP.md` | Backlog | 完成项归档 |
+| **ADR** | `docs/adr/` | 架构决策（不可变） | 编号不复用；替代时新建 ADR |
+| **Design Doc** | `docs/design/` | API、诊断、契约、实现与权衡 | 随代码 PR 同步更新 |
+| **Roadmap** | `docs/ROADMAP.md` | Backlog | 维护宏观优先级 |
+| **Issue / PR / Release** | GitHub | 任务、审查、版本历史 | 不在仓内重复记录 |
 
 ### Agent 文档工作流
 
 | 场景 | 行为 |
 |------|------|
-| 新增 PSG 诊断 | 确认 RFC；更新 Spec、`AnalyzerReleases.Unshipped.md`、README 诊断表、Docs 站 |
-| 修改公共特性 API | 确认 RFC + ADR；更新 Spec |
-| 跨多 PR 特性 | 确认 `docs/plans/` 或先建 Plan（经用户确认） |
-| 创建 RFC / ADR | 使用 `docs/*/_template.md`；ADR 编号见 `docs/adr/README.md` |
+| 新增 PSG 诊断 | 更新 Design Doc、`AnalyzerReleases.Unshipped.md`、README 诊断表与 Docs 站 |
+| 破坏性架构变更 | 记录 ADR，并更新相关 Design Doc |
+| 发版 | 更新版本表、CHANGELOG 与 GitHub Release 信息 |
+| 创建 ADR | 使用 `docs/adr/_template.md`；编号见 `docs/adr/README.md` |
 | 用户可见变更 | `CHANGELOG.md` + **Prism.SourceGenerators.Docs** |
 | 文档文件位置 | 维护者文档放在 `docs/`，勿与 `wiki/` 职责混淆 |
 
-发现与已有 ADR / Spec 冲突时，先报告再由维护者决定是否 Supersede ADR。
+发现与已有 ADR 或 Design Doc 冲突时，先报告再由维护者决定是否 Supersede ADR。
 
 ---
 

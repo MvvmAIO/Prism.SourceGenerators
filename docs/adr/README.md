@@ -1,11 +1,11 @@
 # ADR 索引
 
-- **格式**：[DOCUMENTATION.md](../DOCUMENTATION.md#3-adr--architecture-decision-record)
+- **格式**：[DOCUMENTATION.md](../DOCUMENTATION.md#adr)
 - **模板**：[_template.md](_template.md)
 
 ## 决策列表
 
-| ADR | 标题 | 状态 | 日期 | 关联 RFC |
+| ADR | 标题 | 状态 | 日期 | 关联上下文 |
 |-----|------|------|------|----------|
 | [ADR-001](ADR-001-multi-roslyn-analyzer-layout.md) | 多 Roslyn 分析器布局 | Accepted | 2026-04 | — |
 | [ADR-002](ADR-002-shared-project-shproj.md) | 共享项目 (.shproj) | Accepted | 2026-04 | — |

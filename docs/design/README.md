@@ -1,6 +1,6 @@
 # Design Doc 索引
 
-实现细节与权衡。随代码 PR 更新。模板：[_template.md](_template.md)
+每份文档统一记录 API、诊断、契约、实现细节与设计权衡；随代码 PR 更新。模板：[_template.md](_template.md)
 
 | 主题 | Design Doc |
 |------|------------|
