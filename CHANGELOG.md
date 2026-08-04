@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented in this file.
 
+## [Unreleased]
+
+### Fixed
+
+- **PSG7007 / PSG7104** — missing `[ObservableProperty]` on a `[FromNavigationParameter]` / `[FromDialogParameter]` member no longer suppresses the entire `[NavigationAware]` / `[DialogAware]` surface. The warning still omits that Parameter Binding; Error diagnostics (and non-partial) continue to block generation.
+
+### Changed
+
+- **Parameter Binding** extract/emit logic is centralized in `ParameterBinding` (`ParameterBindingKind.Navigation` / `.Dialog`) shared by NavigationAware and DialogAware.
+
 ## [0.8.1] - 2026-06-30
 
 ### Fixed

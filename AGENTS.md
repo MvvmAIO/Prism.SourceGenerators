@@ -153,6 +153,7 @@ Diagnostic IDs are defined in [`Prism.SourceGenerators/Diagnostics/DiagnosticDes
 | Surface | Use for |
 |---------|---------|
 | **[Documentation site](https://mvvmaio.github.io/Prism.SourceGenerators.Docs/)** | Canonical consumer manual, PSG tables, architecture |
+| **`CONTEXT.md`** | Domain glossary for agent skills (Parameter Binding, etc.) |
 | **`docs/`** (see [docs/README.md](docs/README.md)) | Maintainer documentation: Design Doc, ADR, Roadmap — [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md) defines the documentation model |
 | **`docs/agents/`** | Config for mattpocock/skills (issue tracker, triage labels, domain layout); skill files live under [`.agents/skills/`](.agents/skills/) |
 | **This repo `README` / `README.zh-CN` / `README.ja`** | Landing-page snippets |

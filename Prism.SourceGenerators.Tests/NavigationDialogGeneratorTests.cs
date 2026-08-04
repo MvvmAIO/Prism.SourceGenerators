@@ -137,6 +137,35 @@ public class NavigationDialogGeneratorTests
             """);
 
         Assert.Contains(output.Diagnostics, d => d.Id == "PSG7007");
+        GeneratedSource generated = Assert.Single(output.GeneratedSources.Where(s => s.HintName.EndsWith(".NavigationAware.g.cs")));
+        Assert.Contains("INavigationAware", generated.Source);
+        Assert.Contains("OnNavigatedToCore(navigationContext)", generated.Source);
+        Assert.DoesNotContain("TryGetValue", generated.Source);
+        Assert.DoesNotContain("UserId", generated.Source);
+    }
+
+    [Fact]
+    public void FromNavigationParameter_PSG7007_skips_bad_binding_but_keeps_good_ones()
+    {
+        GeneratorRunOutput output = GeneratorTestHarness.Run("""
+            [NavigationAware]
+            public partial class PageVm : Prism.Mvvm.BindableBase
+            {
+                [FromNavigationParameter("userId")]
+                private int _userId;
+
+                [FromNavigationParameter("name")]
+                [ObservableProperty]
+                private string _userName;
+            }
+            """);
+
+        Assert.Contains(output.Diagnostics, d => d.Id == "PSG7007");
+        GeneratedSource generated = Assert.Single(output.GeneratedSources.Where(s => s.HintName.EndsWith(".NavigationAware.g.cs")));
+        Assert.Contains("TryGetValue", generated.Source);
+        Assert.Contains("\"name\"", generated.Source);
+        Assert.Contains("UserName = UserNameValue", generated.Source);
+        Assert.DoesNotContain("\"userId\"", generated.Source);
     }
 
     [Fact]
@@ -154,6 +183,7 @@ public class NavigationDialogGeneratorTests
             """);
 
         Assert.Contains(output.Diagnostics, d => d.Id == "PSG7006");
+        Assert.DoesNotContain(output.GeneratedSources, s => s.HintName.EndsWith(".NavigationAware.g.cs"));
     }
 
     [Fact]
@@ -170,6 +200,7 @@ public class NavigationDialogGeneratorTests
             """);
 
         Assert.Contains(output.Diagnostics, d => d.Id == "PSG7008");
+        Assert.DoesNotContain(output.GeneratedSources, s => s.HintName.EndsWith(".NavigationAware.g.cs"));
     }
 
     // --- [FromDialogParameter] tests ---
@@ -226,6 +257,11 @@ public class NavigationDialogGeneratorTests
             """);
 
         Assert.Contains(output.Diagnostics, d => d.Id == "PSG7104");
+        GeneratedSource generated = Assert.Single(output.GeneratedSources.Where(s => s.HintName.EndsWith(".DialogAware.g.cs")));
+        Assert.Contains("IDialogAware", generated.Source);
+        Assert.Contains("OnDialogOpenedCore(parameters)", generated.Source);
+        Assert.DoesNotContain("TryGetValue", generated.Source);
+        Assert.DoesNotContain("\"message\"", generated.Source);
     }
 
     [Fact]
@@ -243,6 +279,7 @@ public class NavigationDialogGeneratorTests
             """);
 
         Assert.Contains(output.Diagnostics, d => d.Id == "PSG7103");
+        Assert.DoesNotContain(output.GeneratedSources, s => s.HintName.EndsWith(".DialogAware.g.cs"));
     }
 
     [Fact]
@@ -259,6 +296,7 @@ public class NavigationDialogGeneratorTests
             """);
 
         Assert.Contains(output.Diagnostics, d => d.Id == "PSG7105");
+        Assert.DoesNotContain(output.GeneratedSources, s => s.HintName.EndsWith(".DialogAware.g.cs"));
     }
 
     // --- partial property mode (C# 13+): attributes must not be forwarded ---

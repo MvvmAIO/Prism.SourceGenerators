@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Immutable;
-using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -19,7 +18,7 @@ internal static class NavigationAwareSyntax
         string navigationAware = $"global::{ns}.INavigationAware";
 
         // Build the OnNavigatedTo body with parameter binding injection
-        string onNavigatedToBody = BuildOnNavigatedToBody(info.ParameterBindings.AsImmutableArray(), "navigationContext");
+        string onNavigatedToBody = BuildOnNavigatedToBody(info.ParameterBindings.AsImmutableArray());
         string onNavigatedTo = "public void OnNavigatedTo(" + navigationContext + " navigationContext)\n{\n" + onNavigatedToBody + "\n}";
 
         MemberDeclarationSyntax[] members =
@@ -75,16 +74,10 @@ internal static class NavigationAwareSyntax
     /// Builds the body of <c>OnNavigatedTo</c> with parameter binding reads
     /// followed by the <c>OnNavigatedToCore</c> call.
     /// </summary>
-    private static string BuildOnNavigatedToBody(ImmutableArray<ParameterBindingInfo> bindings, string contextVar)
+    private static string BuildOnNavigatedToBody(ImmutableArray<ParameterBindingInfo> bindings)
     {
         var sb = new StringBuilder();
-
-        foreach (ParameterBindingInfo binding in bindings)
-        {
-            sb.AppendLine($"    if ({contextVar}.Parameters.TryGetValue<{binding.PropertyType}>(\"{binding.ParameterKey}\", out var {binding.PropertyName}Value))");
-            sb.AppendLine($"        {binding.PropertyName} = {binding.PropertyName}Value;");
-        }
-
+        sb.Append(ParameterBinding.BuildBindingStatements(bindings, "navigationContext.Parameters"));
         sb.Append("    OnNavigatedToCore(navigationContext);");
         return sb.ToString();
     }

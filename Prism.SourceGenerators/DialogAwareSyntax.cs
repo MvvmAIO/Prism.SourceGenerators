@@ -91,7 +91,7 @@ internal static class DialogAwareSyntax
                 ?? throw new InvalidOperationException("Failed to parse OnDialogClosed."));
 
         // Build OnDialogOpened body with parameter binding injection
-        string onDialogOpenedBody = BuildOnDialogOpenedBody(info.ParameterBindings.AsImmutableArray(), "parameters");
+        string onDialogOpenedBody = BuildOnDialogOpenedBody(info.ParameterBindings.AsImmutableArray());
         string onDialogOpened = "public void OnDialogOpened(" + dialogParameters + " parameters)\n{\n" + onDialogOpenedBody + "\n}";
 
         members.Add(
@@ -135,16 +135,10 @@ internal static class DialogAwareSyntax
     /// Builds the body of <c>OnDialogOpened</c> with parameter binding reads
     /// followed by the <c>OnDialogOpenedCore</c> call.
     /// </summary>
-    private static string BuildOnDialogOpenedBody(ImmutableArray<ParameterBindingInfo> bindings, string parametersVar)
+    private static string BuildOnDialogOpenedBody(ImmutableArray<ParameterBindingInfo> bindings)
     {
         var sb = new StringBuilder();
-
-        foreach (ParameterBindingInfo binding in bindings)
-        {
-            sb.AppendLine($"    if ({parametersVar}.TryGetValue<{binding.PropertyType}>(\"{binding.ParameterKey}\", out var {binding.PropertyName}Value))");
-            sb.AppendLine($"        {binding.PropertyName} = {binding.PropertyName}Value;");
-        }
-
+        sb.Append(ParameterBinding.BuildBindingStatements(bindings, "parameters"));
         sb.Append("    OnDialogOpenedCore(parameters);");
         return sb.ToString();
     }
