@@ -4,18 +4,20 @@ How the engineering skills should consume this repo's domain documentation when 
 
 ## Before exploring, read these
 
+- **`CONTEXT.md`** at the repo root (glossary: Parameter Binding, Blocking Diagnostic, Parameter Binding Kind).
 - **`AGENTS.md`** at the repo root (project constraints, layout, generator checklist, documentation map).
 - **`docs/DOCUMENTATION.md`** — documentation carriers and sync checklist.
 - **`docs/adr/`** — ADRs that touch the area you're about to work in.
 - **`docs/design/`** — Design Doc for the generator domain under change.
 - Sibling routing for issues: **`docs/agents/issue-tracker.md`**.
 
-Optional glossary: if a root **`CONTEXT.md`** exists, prefer its vocabulary for domain terms. Its absence is fine — proceed with `AGENTS.md` / Design Docs / ADRs. Don't flag absence; don't suggest creating domain files upfront unless the task requires an ADR / Design Doc update per `AGENTS.md`.
+If a listed optional file doesn't exist, **proceed silently**. Don't flag absence; don't suggest creating domain files upfront unless the task requires an ADR / Design Doc update per `AGENTS.md`.
 
 ## File structure
 
 ```
 /
+├── CONTEXT.md
 ├── AGENTS.md
 ├── docs/
 │   ├── agents/          ← skills config (this folder)

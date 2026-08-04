@@ -73,6 +73,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)DialogServiceCommandGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DialogServiceCommandMetadataExtractor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DialogServiceCommandSyntax.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ParameterBinding.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PrismDialogsModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PrismRegionsModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RegionNavigationGenerator.cs" />

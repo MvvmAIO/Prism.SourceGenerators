@@ -9,7 +9,7 @@
 ## 实现概览
 
 - `DialogAwareGenerator.cs`、`DialogAwareMetadataExtractor.cs`
-- `FromDialogParameter` 在 `OnDialogOpened` 前绑定
+- `ParameterBinding` — `[FromDialogParameter]` 提取与 `TryGetValue` 语句；Kind = Dialog
 
 ## 已知局限
 
@@ -35,6 +35,7 @@ Prism 9 使用 `Prism.Dialogs` / `DialogCloseListener`；Prism 8 使用 `Prism.S
 
 1. `Title`、`RequestClose` 等由生成器提供可覆盖 partial。
 2. 参数特性在 partial property 模式不转发到实现 partial（0.8.1+）。
+3. Parameter Binding 的 **Blocking Diagnostic**（Error）抑制整个 Aware 表面；**Warning**（PSG7104）只省略该 binding，仍发出 `IDialogAware`。
 
 ### 不在范围内
 

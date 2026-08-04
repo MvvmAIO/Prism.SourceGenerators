@@ -9,7 +9,7 @@
 ## 实现概览
 
 - `NavigationAwareGenerator.cs` — 接口成员与 `*Core` partial
-- `FromNavigationParameter` 绑定语句插入 `OnNavigatedTo` 开头
+- `ParameterBinding` — `[FromNavigationParameter]` 提取与 `TryGetValue` 语句；Kind = Navigation
 - `PrismRegionsModel` / 程序集探测 — 选用 `INavigationAware` 命名空间
 
 ## API 与契约
@@ -26,12 +26,13 @@
 | ID | 级别 |
 |----|------|
 | PSG0007 | Error — 类非 partial |
-| PSG7006–7008 | `[FromNavigationParameter]` 目标 / ObservableProperty / 空 key |
+| PSG7006–PSG7008 | `[FromNavigationParameter]` 目标 / ObservableProperty / 空 key |
 
 ### 不变量
 
 1. 接口命名空间由引用程序集探测：Prism 8 为 `Prism.Regions`，Prism 9 为 `Prism.Navigation.Regions`。
 2. 参数绑定在 `OnNavigatedToCore` **之前**执行。
+3. Parameter Binding 的 **Blocking Diagnostic**（Error）抑制整个 Aware 表面；**Warning**（PSG7007）只省略该 binding，仍发出 `INavigationAware`。
 
 ### 不在范围内
 
