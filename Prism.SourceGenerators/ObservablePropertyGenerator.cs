@@ -303,32 +303,47 @@ public sealed class ObservablePropertyGenerator : IIncrementalGenerator
         }
 
         // Otherwise, check whether a [DelegateCommand]/[AsyncDelegateCommand] method on the type
-        // would generate this command property (e.g. method 'Save' generates 'SaveCommand').
-        if (commandName.EndsWith("Command", System.StringComparison.Ordinal))
+        // would generate this command property (including Async strip and explicit CommandName).
+        foreach (ISymbol member in type.GetMembers())
         {
-            string methodName = commandName.Substring(0, commandName.Length - "Command".Length);
-            if (methodName.Length > 0)
-            {
-                foreach (ISymbol member in type.GetMembers(methodName))
-                {
-                    if (member is IMethodSymbol method && HasCommandAttribute(method))
-                        return true;
-                }
-            }
+            if (member is not IMethodSymbol method)
+                continue;
+
+            if (!TryGetEffectiveGeneratedCommandName(method, out string effectiveName))
+                continue;
+
+            if (string.Equals(effectiveName, commandName, StringComparison.Ordinal))
+                return true;
         }
 
         return false;
     }
 
-    private static bool HasCommandAttribute(IMethodSymbol method)
+    /// <summary>
+    /// Resolves the command property name a method would emit: explicit <c>CommandName</c> on
+    /// <c>[DelegateCommand]</c> / <c>[AsyncDelegateCommand]</c>, else <see cref="NamingHelpers.GetCommandName"/>.
+    /// </summary>
+    private static bool TryGetEffectiveGeneratedCommandName(IMethodSymbol method, out string commandName)
     {
+        commandName = null!;
+        AttributeData? commandAttribute = null;
+
         foreach (AttributeData attr in method.GetAttributes())
         {
             string? name = attr.AttributeClass?.ToDisplayString();
             if (name == DelegateCommandAttributeName || name == AsyncDelegateCommandAttributeName)
-                return true;
+            {
+                commandAttribute = attr;
+                break;
+            }
         }
-        return false;
+
+        if (commandAttribute is null)
+            return false;
+
+        string? explicitName = commandAttribute.TryGetNamedString("CommandName");
+        commandName = explicitName ?? NamingHelpers.GetCommandName(method.Name);
+        return true;
     }
 
     /// <summary>

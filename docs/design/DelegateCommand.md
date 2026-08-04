@@ -31,6 +31,8 @@
 
 生成 `{Method}Command` 属性（C# 14+ 使用 `field ??=`），并接线 `ObservesCanExecute` 与 `RaiseCanExecuteChanged`。
 
+命令属性名由共享 **Command Naming**（`NamingHelpers.GetCommandName`）派生：去掉末尾 `Async`，再一律追加 `Command`（与 `[NavigateCommand]` / `[ShowDialogCommand]` 相同）。可用特性上的 `CommandName` 覆盖。
+
 ### 诊断
 
 | ID | 级别 | 触发条件 |

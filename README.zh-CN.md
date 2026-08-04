@@ -155,7 +155,7 @@ public partial class EditorViewModel : BindableBase
 }
 ```
 
-生成的 setter 会在 `RaisePropertyChanged` 之后调用 `SaveCommand?.RaiseCanExecuteChanged()`。可以使用 `[NotifyCanExecuteChangedFor(nameof(A), nameof(B))]` 一次指定多个命令，或多次标注。命名既可以是类型上已有的成员，也可以是 `[DelegateCommand]` / `[AsyncDelegateCommand]` 方法生成的命令属性（例如方法 `Save` 生成 `SaveCommand`）。如果名称无法解析，会报告 **PSG2005**（警告），但 setter 仍会生成。
+生成的 setter 会在 `RaisePropertyChanged` 之后调用 `SaveCommand?.RaiseCanExecuteChanged()`。可以使用 `[NotifyCanExecuteChangedFor(nameof(A), nameof(B))]` 一次指定多个命令，或多次标注。命名既可以是类型上已有的成员，也可以是 `[DelegateCommand]` / `[AsyncDelegateCommand]` 方法生成的命令属性（例如方法 `Save` 或 `SaveAsync` 生成 `SaveCommand`；也尊重特性上的显式 `CommandName`）。如果名称无法解析，会报告 **PSG2005**（警告），但 setter 仍会生成。
 
 ### 转发属性到生成的属性
 

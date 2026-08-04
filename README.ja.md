@@ -152,7 +152,7 @@ public partial class EditorViewModel : BindableBase
 }
 ```
 
-生成された setter は `RaisePropertyChanged` の後に `SaveCommand?.RaiseCanExecuteChanged()` を呼び出します。`[NotifyCanExecuteChangedFor(nameof(A), nameof(B))]` で複数のコマンドを指定、または複数の属性インスタンスを使用できます。名前は型上の既存メンバー、または `[DelegateCommand]` / `[AsyncDelegateCommand]` メソッドが生成するコマンドプロパティ（例：メソッド `Save` が `SaveCommand` を生成）を指定できます。解決できない名前は **PSG2005**（警告）として報告されますが、setter は生成されます。
+生成された setter は `RaisePropertyChanged` の後に `SaveCommand?.RaiseCanExecuteChanged()` を呼び出します。`[NotifyCanExecuteChangedFor(nameof(A), nameof(B))]` で複数のコマンドを指定、または複数の属性インスタンスを使用できます。名前は型上の既存メンバー、または `[DelegateCommand]` / `[AsyncDelegateCommand]` メソッドが生成するコマンドプロパティ（例：メソッド `Save` または `SaveAsync` が `SaveCommand` を生成；属性の明示的な `CommandName` も尊重）を指定できます。解決できない名前は **PSG2005**（警告）として報告されますが、setter は生成されます。
 
 ### 生成されるプロパティへの属性転送
 

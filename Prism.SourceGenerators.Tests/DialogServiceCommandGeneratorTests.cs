@@ -39,4 +39,24 @@ public sealed class DialogServiceCommandGeneratorTests
 
         Assert.Contains(output.Diagnostics, d => d.Id == "PSG7101");
     }
+
+    [Fact]
+    public void ShowDialogCommand_strips_Async_suffix_for_command_name()
+    {
+        GeneratorRunOutput output = GeneratorTestHarness.Run("""
+            public partial class ShellVm : Prism.Mvvm.BindableBase
+            {
+                private readonly Prism.Services.Dialogs.IDialogService _dialogService;
+
+                public ShellVm(Prism.Services.Dialogs.IDialogService dialogService) => _dialogService = dialogService;
+
+                [ShowDialogCommand(Name = "ConfirmDelete")]
+                private void ConfirmDeleteAsync() { }
+            }
+            """);
+
+        GeneratedSource generated = Assert.Single(output.GeneratedSources.Where(s => s.HintName.EndsWith(".ConfirmDeleteCommand.g.cs")));
+        Assert.Contains("ConfirmDeleteCommand", generated.Source);
+        Assert.DoesNotContain("ConfirmDeleteAsyncCommand", generated.Source);
+    }
 }

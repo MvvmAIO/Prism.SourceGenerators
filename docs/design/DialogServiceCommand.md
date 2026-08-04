@@ -15,7 +15,7 @@
 
 | 特性 | 说明 |
 |------|------|
-| `[ShowDialogCommand(Name = "...")]` | `IDialogService.ShowDialog` 与可选 `On{Name}DialogClosed` partial |
+| `[ShowDialogCommand(Name = "...")]` | `IDialogService.ShowDialog` 与可选 `On{Name}DialogClosed` partial；命令名遵循共享 Command Naming（剥 `Async` 后追加 `Command`） |
 
 ### 诊断
 

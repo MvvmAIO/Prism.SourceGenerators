@@ -630,6 +630,64 @@ public sealed class MatrixTests
     }
 
     [Fact]
+    public void NotifyCanExecuteChangedFor_resolves_SaveAsync_to_SaveCommand_without_PSG2005()
+    {
+        const string source = """
+            namespace Demo;
+
+            public partial class Vm : Prism.Mvvm.BindableBase
+            {
+                [ObservableProperty]
+                [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+                private string _name = "";
+
+                [DelegateCommand]
+                private async System.Threading.Tasks.Task SaveAsync()
+                {
+                    await System.Threading.Tasks.Task.CompletedTask;
+                }
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source, languageVersion: LanguageVersion.Preview);
+
+        Assert.DoesNotContain(output.Diagnostics, d => d.Id == "PSG2005");
+        Assert.Contains(output.GeneratedSources, s => s.HintName.EndsWith(".SaveCommand.g.cs"));
+
+        GeneratedSource propertySource = Assert.Single(output.GeneratedSources.Where(s => s.HintName.EndsWith(".Name.g.cs")));
+        Assert.Contains("SaveCommand?.RaiseCanExecuteChanged();", propertySource.Source);
+    }
+
+    [Fact]
+    public void NotifyCanExecuteChangedFor_resolves_explicit_CommandName_without_PSG2005()
+    {
+        const string source = """
+            namespace Demo;
+
+            public partial class Vm : Prism.Mvvm.BindableBase
+            {
+                [ObservableProperty]
+                [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+                private string _name = "";
+
+                [DelegateCommand(CommandName = "SaveCommand")]
+                private async System.Threading.Tasks.Task PersistAsync()
+                {
+                    await System.Threading.Tasks.Task.CompletedTask;
+                }
+            }
+            """;
+
+        GeneratorRunOutput output = GeneratorTestHarness.Run(source, languageVersion: LanguageVersion.Preview);
+
+        Assert.DoesNotContain(output.Diagnostics, d => d.Id == "PSG2005");
+        Assert.Contains(output.GeneratedSources, s => s.HintName.EndsWith(".SaveCommand.g.cs"));
+
+        GeneratedSource propertySource = Assert.Single(output.GeneratedSources.Where(s => s.HintName.EndsWith(".Name.g.cs")));
+        Assert.Contains("SaveCommand?.RaiseCanExecuteChanged();", propertySource.Source);
+    }
+
+    [Fact]
     public void NotifyCanExecuteChangedFor_reports_PSG2005_but_still_emits_property()
     {
         const string source = """
