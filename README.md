@@ -157,7 +157,7 @@ public partial class EditorViewModel : BindableBase
 }
 ```
 
-The generated setter calls `SaveCommand?.RaiseCanExecuteChanged()` after `RaisePropertyChanged`. Multiple commands are supported via `[NotifyCanExecuteChangedFor(nameof(A), nameof(B))]` or repeated attributes. Names may reference either an existing member on the type or the generated command of a method annotated with `[DelegateCommand]` / `[AsyncDelegateCommand]` (e.g. method `Save` yields `SaveCommand`). Unresolved names are reported as **PSG2005** (warning) and the setter is still emitted.
+The generated setter calls `SaveCommand?.RaiseCanExecuteChanged()` after `RaisePropertyChanged`. Multiple commands are supported via `[NotifyCanExecuteChangedFor(nameof(A), nameof(B))]` or repeated attributes. Names may reference either an existing member on the type or the generated command of a method annotated with `[DelegateCommand]` / `[AsyncDelegateCommand]` (e.g. method `Save` or `SaveAsync` yields `SaveCommand`; an explicit `CommandName` on the attribute is also honored). Unresolved names are reported as **PSG2005** (warning) and the setter is still emitted.
 
 ### Forwarding attributes to the generated property
 

@@ -65,4 +65,24 @@ public sealed class RegionNavigationGeneratorTests
 
         Assert.Contains(output.Diagnostics, d => d.Id == "PSG7001");
     }
+
+    [Fact]
+    public void NavigateCommand_strips_Async_suffix_for_command_name()
+    {
+        GeneratorRunOutput output = GeneratorTestHarness.Run("""
+            public partial class ShellVm : Prism.Mvvm.BindableBase
+            {
+                private readonly Prism.Navigation.Regions.IRegionManager _regionManager;
+
+                public ShellVm(Prism.Navigation.Regions.IRegionManager regionManager) => _regionManager = regionManager;
+
+                [NavigateCommand(Region = "Content", Target = "Dashboard")]
+                private void GoDashboardAsync() { }
+            }
+            """);
+
+        GeneratedSource generated = Assert.Single(output.GeneratedSources.Where(s => s.HintName.EndsWith(".GoDashboardCommand.g.cs")));
+        Assert.Contains("GoDashboardCommand", generated.Source);
+        Assert.DoesNotContain("GoDashboardAsyncCommand", generated.Source);
+    }
 }

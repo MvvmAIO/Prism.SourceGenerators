@@ -44,7 +44,8 @@ targets 根据 **`csc.exe` 的文件版本** 映射到 **`roslyn4.0` / `4.3` / `
 
 检查：
 
-- 方法是否命名为 **`Save`** 且已标 **`[DelegateCommand]`**，从而生成 **`SaveCommand`**；或直接使用已有命令属性名。  
+- 方法是否命名为 **`Save`** 或 **`SaveAsync`** 且已标 **`[DelegateCommand]`** / **`[AsyncDelegateCommand]`**，从而生成 **`SaveCommand`**；或直接使用已有命令属性名。  
+- 若使用了 **`CommandName = "..."`**，引用的必须是该显式名。  
 - **`nameof`** 是否拼写错误、目标是否为 **`static`** 且不可见等。
 
 ---

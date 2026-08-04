@@ -14,7 +14,7 @@
 
 | 特性 | 说明 |
 |------|------|
-| `[NavigateCommand(Region, Target)]` | 生成 `DelegateCommand`，调用 `IRegionManager.RequestNavigate` |
+| `[NavigateCommand(Region, Target)]` | 生成 `DelegateCommand`，调用 `IRegionManager.RequestNavigate`；命令名遵循共享 Command Naming（剥 `Async` 后追加 `Command`） |
 | `[NavigateOnChanged(TargetMember = ...)]` | 与 `[ObservableProperty]` 联用；值变化时导航 |
 
 依赖类型上可访问的 `IRegionManager`（字段、属性或构造函数注入）。

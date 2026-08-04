@@ -52,7 +52,7 @@
 |----|------|----------|
 | PSG0001 | Error | 含 `[ObservableProperty]` 的类非 partial |
 | PSG0003 | Error | partial property 目标未声明 partial |
-| PSG2005 | Warning | `[NotifyCanExecuteChangedFor]` 命令未解析 |
+| PSG2005 | Warning | `[NotifyCanExecuteChangedFor]` 命令未解析（含 `Save` / `SaveAsync` → `SaveCommand`，以及显式 `CommandName`） |
 | PSG6001 | Info | 建议 field → partial property（C# 13+） |
 
 ### 不变量

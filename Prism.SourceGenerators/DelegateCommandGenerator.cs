@@ -158,7 +158,7 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
             }
         }
 
-        commandName ??= GetCommandName(methodName);
+        commandName ??= NamingHelpers.GetCommandName(methodName);
 
         ImmutableArray<string> observesProperties = CollectObservesProperties(methodSymbol);
 
@@ -326,7 +326,7 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
                 }
             }
 
-            commandName ??= GetCommandName(methodName);
+            commandName ??= NamingHelpers.GetCommandName(methodName);
 
             foreach (string observedProperty in observesProperties)
             {
@@ -931,13 +931,6 @@ public sealed class DelegateCommandGenerator : IIncrementalGenerator
 #else
         return false;
 #endif
-    }
-
-    private static string GetCommandName(string methodName)
-    {
-        if (methodName.EndsWith("Async"))
-            methodName = methodName.Substring(0, methodName.Length - 5);
-        return methodName + "Command";
     }
 
     /// <summary>

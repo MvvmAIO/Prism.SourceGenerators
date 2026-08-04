@@ -8,13 +8,27 @@ namespace Prism.SourceGenerators.Helpers;
 internal static class NamingHelpers
 {
     /// <summary>
-    /// Derives a command name from a method name. If the method name already
-    /// ends with "Command", it is returned as-is; otherwise "Command" is appended.
+    /// Derives a command property name from an execute method name (Command Naming):
+    /// strip a trailing <c>Async</c>, then always append <c>Command</c>.
     /// </summary>
     /// <param name="methodName">The source method name.</param>
     /// <returns>The derived command property name.</returns>
-    public static string GetCommandName(string methodName) =>
-        methodName.EndsWith("Command", StringComparison.Ordinal) ? methodName : $"{methodName}Command";
+    public static string GetCommandName(string methodName)
+    {
+        if (methodName.EndsWith("Async", StringComparison.Ordinal))
+        {
+            methodName = methodName.Substring(0, methodName.Length - "Async".Length);
+        }
+
+        return methodName + "Command";
+    }
+
+    /// <summary>
+    /// Returns whether <paramref name="methodName"/> would derive <paramref name="commandName"/>
+    /// under <see cref="GetCommandName"/> (no explicit <c>CommandName</c> override).
+    /// </summary>
+    public static bool WouldGenerateCommandName(string methodName, string commandName) =>
+        string.Equals(GetCommandName(methodName), commandName, StringComparison.Ordinal);
 
     /// <summary>
     /// Derives a camelCase backing field name from a PascalCase command name

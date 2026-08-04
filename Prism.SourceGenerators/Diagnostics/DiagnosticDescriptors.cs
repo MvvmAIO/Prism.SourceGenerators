@@ -181,7 +181,7 @@ internal static class DiagnosticDescriptors
         category: Category,
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
-        description: "The name passed to [NotifyCanExecuteChangedFor] should match either an existing member on the containing type, or the generated command property of a method annotated with [DelegateCommand] or [AsyncDelegateCommand] (e.g. method 'Save' yields 'SaveCommand').",
+        description: "The name passed to [NotifyCanExecuteChangedFor] should match either an existing member on the containing type, or the generated command property of a method annotated with [DelegateCommand] or [AsyncDelegateCommand] (e.g. method 'Save' or 'SaveAsync' yields 'SaveCommand'; an explicit CommandName on the attribute is also honored).",
         helpLinkUri: HelpLink);
 
     public static readonly DiagnosticDescriptor CanExecuteMemberIncompatibleSignature = new(

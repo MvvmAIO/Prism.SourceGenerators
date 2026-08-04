@@ -7,10 +7,12 @@ All notable changes to this project are documented in this file.
 ### Fixed
 
 - **PSG7007 / PSG7104** — missing `[ObservableProperty]` on a `[FromNavigationParameter]` / `[FromDialogParameter]` member no longer suppresses the entire `[NavigationAware]` / `[DialogAware]` surface. The warning still omits that Parameter Binding; Error diagnostics (and non-partial) continue to block generation.
+- **PSG2005** — `[NotifyCanExecuteChangedFor]` now resolves commands generated from `*Async` execute methods (e.g. `SaveAsync` → `SaveCommand`) and honors an explicit `CommandName` on `[DelegateCommand]` / `[AsyncDelegateCommand]`.
 
 ### Changed
 
 - **Parameter Binding** extract/emit logic is centralized in `ParameterBinding` (`ParameterBindingKind.Navigation` / `.Dialog`) shared by NavigationAware and DialogAware.
+- **Command Naming** — `NamingHelpers.GetCommandName` is the single rule for DelegateCommand, NavigateCommand, and ShowDialogCommand: strip a trailing `Async`, then always append `Command`. Region/Dialog methods previously named `FooAsync` generated `FooAsyncCommand`; they now generate `FooCommand` (breaking for those call sites).
 
 ## [0.8.1] - 2026-06-30
 

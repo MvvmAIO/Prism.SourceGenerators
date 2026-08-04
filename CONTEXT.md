@@ -15,3 +15,7 @@ _Avoid_: fatal diagnostic, hard error (unless quoting Roslyn severity)
 **Parameter Binding Kind**:
 Which From* attribute and PSG diagnostic trio apply — Navigation (`[FromNavigationParameter]`, PSG7006–7008) or Dialog (`[FromDialogParameter]`, PSG7103–7105). Same Parameter Binding module, different Kind preset.
 _Avoid_: binding mode, binding source enum (unless a code name)
+
+**Command Naming**:
+How a command property name is derived from an execute method name: strip a trailing `Async`, then **always** append `Command` (even if the name already ends with `Command`). Used by DelegateCommand, Region/Dialog command attributes, and PSG2005 reverse lookup.
+_Avoid_: command id, handler name (for the generated property)
