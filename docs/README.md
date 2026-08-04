@@ -5,6 +5,7 @@
 | 文档 | 说明 |
 |------|------|
 | [DOCUMENTATION.md](DOCUMENTATION.md) | 文档载体与维护规则 |
+| [agents/](agents/issue-tracker.md) | Agent skills：Issue 路由 / triage / domain |
 | [DEVELOPMENT.md](DEVELOPMENT.md) | 环境、构建、测试与仓库布局 |
 | [CONTRIBUTING.md](../CONTRIBUTING.md) | 贡献流程与代码审查约定 |
 | [PUBLISHING.md](PUBLISHING.md) | NuGet 打包与发布流程 |

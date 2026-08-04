@@ -154,6 +154,7 @@ Diagnostic IDs are defined in [`Prism.SourceGenerators/Diagnostics/DiagnosticDes
 |---------|---------|
 | **[Documentation site](https://mvvmaio.github.io/Prism.SourceGenerators.Docs/)** | Canonical consumer manual, PSG tables, architecture |
 | **`docs/`** (see [docs/README.md](docs/README.md)) | Maintainer documentation: Design Doc, ADR, Roadmap — [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md) defines the documentation model |
+| **`docs/agents/`** | Config for mattpocock/skills (issue tracker, triage labels, domain layout); skill files live under [`.agents/skills/`](.agents/skills/) |
 | **This repo `README` / `README.zh-CN` / `README.ja`** | Landing-page snippets |
 | **`wiki/`** | Short Chinese-oriented notes; not a contract |
 | **`CONTRIBUTING.md`** | Human contributor process (aligned with this file) |
@@ -184,6 +185,31 @@ Diagnostic IDs are defined in [`Prism.SourceGenerators/Diagnostics/DiagnosticDes
 | 文档文件位置 | 维护者文档放在 `docs/`，勿与 `wiki/` 职责混淆 |
 
 发现与已有 ADR 或 Design Doc 冲突时，先报告再由维护者决定是否 Supersede ADR。
+
+---
+
+## Agent skills (mattpocock/skills)
+
+Skill bodies (including `SKILL.md`): [`.agents/skills/`](.agents/skills/) — universal agent directory shared by compatible clients; `skills-lock.json` pins source and content hashes. Install/update with the **universal** agent target (not Cursor-specific paths):
+
+```bash
+npx skills@latest add mattpocock/skills --agent universal --skill '*' -y --copy
+npx skills@latest update
+```
+
+Config for engineering skills: [`docs/agents/`](docs/agents/) (`issue-tracker.md`, `triage-labels.md`, `domain.md`). Skills such as `/to-tickets`, `/to-spec`, `/triage`, `/wayfinder`, and `/qa` must follow the issue routing there.
+
+### Sibling issue routing
+
+| Change lands in… | Execution issue repo |
+|------------------|----------------------|
+| This repo (generators, Core, packages, tests, build, maintainer `docs/`, `AGENTS.md`) | `MvvmAIO/Prism.SourceGenerators` |
+| User docs site | `MvvmAIO/Prism.SourceGenerators.Docs` |
+| Avalonia samples | `MvvmAIO/Prism.SourceGenerators.Samples` |
+
+- **Execution tickets follow the repo they change** — do not open Docs/Samples-only execution issues here.
+- **Cross-repo links**: parent / `wayfinder:map` may stay here; checklist URLs + `Relates to` / `Blocked by` on children. Do not duplicate full acceptance criteria across repos.
+- A title `Docs: …` in **this** repo means maintainer docs under `docs/`; user-site work belongs in the Docs repo.
 
 ---
 
