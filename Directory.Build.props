@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <!-- SimonCropp/Polyfill: keep one version across the repo (https://github.com/SimonCropp/Polyfill). -->
-    <PolyfillVersion>10.11.2</PolyfillVersion>
+    <PolyfillVersion>11.0.2</PolyfillVersion>
     <!-- Must match the Prism.SourceGenerators.Roslyn* project referenced by test projects (e.g. Roslyn4120 -> 4.12.0). See Prism.SourceGenerators.props for generator multi-Roslyn layout. -->
     <PrismSourceGeneratorsTestsRoslynVersion>4.12.0</PrismSourceGeneratorsTestsRoslynVersion>
   </PropertyGroup>
