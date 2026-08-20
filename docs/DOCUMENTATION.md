@@ -9,7 +9,7 @@
 | ADR | `docs/adr/` | 不应随讨论漂移的架构决策 |
 | Design Doc | `docs/design/` | 每个域的 API、诊断、契约、实现与设计权衡 |
 | Roadmap | `docs/ROADMAP.md` | 跨 Issue 的宏观优先级与全景 |
-| Agent skills config | `docs/agents/` | mattpocock/skills 的 Issue 路由、triage 标签与 domain 消费规则（技能本体在 `.agents/skills/`） |
+| Agent skills config | `docs/agents/` | 本机 skills 的 Issue 路由、triage 标签与 domain 消费规则 |
 | Issue | GitHub Issues | 需求、缺陷与任务追踪 |
 | PR | GitHub Pull Requests | 变更审查与实施讨论 |
 | Release | GitHub Releases | 已发布版本的历史 |

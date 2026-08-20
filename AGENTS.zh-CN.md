@@ -12,6 +12,6 @@
 6. **NuGet**：主包 **MvvmAIO.Prism.SourceGenerators**；Prism 8 异步命令另需 **MvvmAIO.Prism.Bcl.Commands**（独立发布密钥 `NUGET_API_KEY_BCL`）。
 7. **Roslyn 变体**：`Roslyn4001` … `Roslyn5000` 多目标；Roslyn 5.0 冒烟见 `Prism.SourceGenerators.Tests.Roslyn5000`。
 8. **文档站点**：https://mvvmaio.github.io/Prism.SourceGenerators.Docs/
-9. **Agent skills**：通用目录 [`.agents/skills/`](.agents/skills/)（`mattpocock/skills`）；配置见 [`docs/agents/`](docs/agents/)。勿使用 Cursor 专用 skills 目录。
+9. **Agent skills**：本仓库不内置 Skills，使用维护者本机技能（通常 `~/.agents/skills`）；配置见 [`docs/agents/`](docs/agents/)。不要再往本仓拷贝 `.agents/skills` 或 `skills-lock.json`。
 
 完整目录结构、诊断清单与发布步骤见 [**AGENTS.md**](AGENTS.md)。

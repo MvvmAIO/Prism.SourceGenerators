@@ -1,8 +1,8 @@
 # Triage Labels
 
-The skills speak in terms of five canonical triage roles. This file maps those roles to the actual label strings used in this repo's issue tracker (`MvvmAIO/Prism.SourceGenerators`). Sibling repos should use the **same** label strings when triage skills run there.
+User-local skills speak in terms of five canonical triage roles. This file maps those roles to the actual label strings used in this repo's issue tracker (`MvvmAIO/Prism.SourceGenerators`). Sibling repos should use the **same** label strings when triage skills run there.
 
-| Label in mattpocock/skills | Label in our tracker | Meaning |
+| Role in user-local skills | Label in our tracker | Meaning |
 | -------------------------- | -------------------- | ---------------------------------------- |
 | `needs-triage` | `needs-triage` | Maintainer needs to evaluate this issue |
 | `needs-info` | `needs-info` | Waiting on reporter for more information |

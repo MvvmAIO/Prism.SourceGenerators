@@ -155,7 +155,7 @@ Diagnostic IDs are defined in [`Prism.SourceGenerators/Diagnostics/DiagnosticDes
 | **[Documentation site](https://mvvmaio.github.io/Prism.SourceGenerators.Docs/)** | Canonical consumer manual, PSG tables, architecture |
 | **`CONTEXT.md`** | Domain glossary for agent skills (Parameter Binding, etc.) |
 | **`docs/`** (see [docs/README.md](docs/README.md)) | Maintainer documentation: Design Doc, ADR, Roadmap — [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md) defines the documentation model |
-| **`docs/agents/`** | Config for mattpocock/skills (issue tracker, triage labels, domain layout); skill files live under [`.agents/skills/`](.agents/skills/) |
+| **`docs/agents/`** | Config for user-local skills (issue tracker, triage labels, domain layout) |
 | **This repo `README` / `README.zh-CN` / `README.ja`** | Landing-page snippets |
 | **`wiki/`** | Short Chinese-oriented notes; not a contract |
 | **`CONTRIBUTING.md`** | Human contributor process (aligned with this file) |
@@ -189,14 +189,9 @@ Diagnostic IDs are defined in [`Prism.SourceGenerators/Diagnostics/DiagnosticDes
 
 ---
 
-## Agent skills (mattpocock/skills)
+## Agent skills
 
-Skill bodies (including `SKILL.md`): [`.agents/skills/`](.agents/skills/) — universal agent directory shared by compatible clients; `skills-lock.json` pins source and content hashes. Install/update with the **universal** agent target (not Cursor-specific paths):
-
-```bash
-npx skills@latest add mattpocock/skills --agent universal --skill '*' -y --copy
-npx skills@latest update
-```
+This repository does **not** vendor Skills. Agents should use the maintainer's user-local skills (typically `~/.agents/skills` / Cursor user skills). Do not copy `.agents/skills` or `skills-lock.json` back into this repo.
 
 Config for engineering skills: [`docs/agents/`](docs/agents/) (`issue-tracker.md`, `triage-labels.md`, `domain.md`). Skills such as `/to-tickets`, `/to-spec`, `/triage`, `/wayfinder`, and `/qa` must follow the issue routing there.
 
