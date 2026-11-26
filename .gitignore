@@ -368,3 +368,6 @@ FodyWeavers.xsd
 
 # JetBrains Rider / IntelliJ IDEA (user-specific and machine-local IDE metadata)
 .idea/
+
+# Local scratch directories
+.scratch/
