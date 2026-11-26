@@ -1,6 +1,6 @@
 # Prism.SourceGenerators
 
-[English](README.md) | [简体中文](README.zh-CN.md) | **日本語**
+[English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | **日本語**
 
 [Prism](https://github.com/PrismLibrary/Prism) MVVM ライブラリ向けの Roslyn ソースジェネレーター。
 
@@ -18,7 +18,7 @@
 | 場所 | 役割 |
 |------|------|
 | **[ドキュメントサイト](https://mvvmaio.github.io/Prism.SourceGenerators.Docs/)**（[ソース](https://github.com/MvvmAIO/Prism.SourceGenerators.Docs)） | **正典**：英語 / 簡体字中国語 / 日本語、ジェネレータ網羅、**PSG** 一覧、アーキテクチャと CI など。詳細はここを優先。 |
-| **本 README** / [English](README.md) / [简体中文](README.zh-CN.md) | リポジトリ概要とコピペ例。**完全なマニュアルではない**。 |
+| **本 README** / [English](README.md) / [简体中文](README.zh-CN.md) / [繁體中文](README.zh-TW.md) | リポジトリ概要とコピペ例。**完全なマニュアルではない**。 |
 | **[GitHub Wiki](https://github.com/MvvmAIO/Prism.SourceGenerators/wiki)**（PR 用に [`wiki/`](https://github.com/MvvmAIO/Prism.SourceGenerators/tree/master/wiki) を同期） | 短いトピック別メモ（中文中心）。**診断文言や API の契約にはしない**。 |
 
 ## プロジェクト構成
