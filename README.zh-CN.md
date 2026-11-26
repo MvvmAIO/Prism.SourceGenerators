@@ -1,10 +1,10 @@
 # Prism.SourceGenerators
 
-[English](README.md) | **简体中文** | [日本語](README.ja.md)
+[English](README.md) | **简体中文** | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md)
 
 为 [Prism](https://github.com/PrismLibrary/Prism) MVVM 库提供的 Roslyn 源生成器。
 
-参与贡献见 [CONTRIBUTING.md](CONTRIBUTING.md)。自动化代理与 Cursor 的标准约束见 [AGENTS.md](AGENTS.md)（[中文摘要](AGENTS.zh-CN.md)）。
+参与贡献见 [CONTRIBUTING.md](CONTRIBUTING.md)，仓库工程与协作约束见 [AGENTS.md](AGENTS.md)。
 
 ## CI 状态
 
@@ -20,7 +20,7 @@
 | 渠道 | 说明 |
 |------|------|
 | **[文档站点](https://mvvmaio.github.io/Prism.SourceGenerators.Docs/)**（[源码仓库](https://github.com/MvvmAIO/Prism.SourceGenerators.Docs)） | **权威**：多语言、完整生成器参考、**PSG** 诊断表、架构与 CI 等。深读与交叉链接请以本站为准。 |
-| **本 README** / [English](README.md) / [日本語](README.ja.md) | 仓库首屏简介与常用代码片段，**不作**完整手册。 |
+| **本 README** / [English](README.md) / [繁體中文](README.zh-TW.md) / [日本語](README.ja.md) | 仓库首屏简介与常用代码片段，**不作**完整手册。 |
 | **[GitHub Wiki](https://github.com/MvvmAIO/Prism.SourceGenerators/wiki)**（主仓库 [`wiki/`](https://github.com/MvvmAIO/Prism.SourceGenerators/tree/master/wiki) 目录同步，便于 PR） | 中文导读与条目化笔记，**不是**编译器诊断或 API 的合同文本。 |
 
 ## 项目结构
