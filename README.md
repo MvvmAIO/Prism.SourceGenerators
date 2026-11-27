@@ -2,16 +2,18 @@
 
 **English** | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md)
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines and [AGENTS.md](AGENTS.md) for repository conventions.
-
 Roslyn source generators for the [Prism](https://github.com/PrismLibrary/Prism) MVVM library.
 
-## CI Status
+See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines and [AGENTS.md](AGENTS.md) for repository conventions.
 
 [![.NET](https://github.com/MvvmAIO/Prism.SourceGenerators/actions/workflows/dotnet.yml/badge.svg?branch=master)](https://github.com/MvvmAIO/Prism.SourceGenerators/actions/workflows/dotnet.yml)
 [![Tests](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/MvvmAIO/Prism.SourceGenerators/master/.github/badges/tests.json)](https://github.com/MvvmAIO/Prism.SourceGenerators/actions/workflows/dotnet.yml)
+[![NuGet](https://img.shields.io/nuget/v/MvvmAIO.Prism.SourceGenerators.svg?label=NuGet&logo=nuget)](https://www.nuget.org/packages/MvvmAIO.Prism.SourceGenerators)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.txt)
 
-- Open the workflow page above to see the latest pipeline status.
+## CI Status
+
+- Open the workflow badge above to see the latest pipeline status.
 - The `Tests` badge displays the latest passed/failed/skipped counts.
 - The run also uploads a `test-results` artifact (`.trx`) for detailed test reports.
 
@@ -23,7 +25,7 @@ Roslyn source generators for the [Prism](https://github.com/PrismLibrary/Prism) 
 | **This README** (and [README.zh-CN.md](README.zh-CN.md) / [README.zh-TW.md](README.zh-TW.md) / [README.ja.md](README.ja.md)) | Short product overview and copy-paste snippets for the repo landing page. |
 | **[GitHub Wiki](https://github.com/MvvmAIO/Prism.SourceGenerators/wiki)** (tracked under [`wiki/`](https://github.com/MvvmAIO/Prism.SourceGenerators/tree/master/wiki) for PRs) | Short, topic-oriented notes (Chinese-first). **Not** a contract for diagnostics text or API guarantees. |
 
-The static site is built with **NuStreamDocs** + Material 3 and published with **GitHub Actions** from **Prism.SourceGenerators.Docs**; use that repo’s **Settings → Pages** with **GitHub Actions** as the source if you fork it.
+The static site is built with **[VitePress](https://vitepress.dev/)** and published with **GitHub Actions** from **Prism.SourceGenerators.Docs**; use that repo’s **Settings → Pages** with **GitHub Actions** as the source if you fork it.
 
 ## Project Structure
 
@@ -37,7 +39,7 @@ Prism.SourceGenerators.Core/                   # MvvmAIO.Prism.Core (attributes)
 Prism.Bcl.Commands/                            # MvvmAIO.Prism.Bcl.Commands (Prism 8 AsyncDelegateCommand package, install manually)
 ```
 
-Samples (Avalonia): [Prism.SourceGenerators.Samples](https://github.com/MvvmAIO/Prism.SourceGenerators.Samples) — Prism 8 / Prism 9 demo apps consuming **`MvvmAIO.Prism.SourceGenerators`** from NuGet.
+Samples (Avalonia, WPF, MAUI, Uno): [Prism.SourceGenerators.Samples](https://github.com/MvvmAIO/Prism.SourceGenerators.Samples) — Prism 8 / Prism 9 sample apps and ViewModel libraries consuming **`MvvmAIO.Prism.SourceGenerators`** from NuGet.
 
 ## Generators
 

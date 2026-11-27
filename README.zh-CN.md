@@ -6,10 +6,12 @@
 
 参与贡献见 [CONTRIBUTING.md](CONTRIBUTING.md)，仓库工程与协作约束见 [AGENTS.md](AGENTS.md)。
 
-## CI 状态
-
 [![.NET](https://github.com/MvvmAIO/Prism.SourceGenerators/actions/workflows/dotnet.yml/badge.svg?branch=master)](https://github.com/MvvmAIO/Prism.SourceGenerators/actions/workflows/dotnet.yml)
 [![Tests](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/MvvmAIO/Prism.SourceGenerators/master/.github/badges/tests.json)](https://github.com/MvvmAIO/Prism.SourceGenerators/actions/workflows/dotnet.yml)
+[![NuGet](https://img.shields.io/nuget/v/MvvmAIO.Prism.SourceGenerators.svg?label=NuGet&logo=nuget)](https://www.nuget.org/packages/MvvmAIO.Prism.SourceGenerators)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.txt)
+
+## CI 状态
 
 - 点击上方工作流可查看最新构建状态。
 - `Tests` 徽章会直接显示最新通过/失败/跳过数量。
@@ -35,7 +37,7 @@ Prism.SourceGenerators.Core/                   # MvvmAIO.Prism.Core（特性）�
 Prism.Bcl.Commands/                            # MvvmAIO.Prism.Bcl.Commands（Prism 8 AsyncDelegateCommand 包，需手动安装）
 ```
 
-示例（Avalonia）：独立仓库 [Prism.SourceGenerators.Samples](https://github.com/MvvmAIO/Prism.SourceGenerators.Samples) — Prism 8 / Prism 9 演示应用，通过 NuGet 引用 **`MvvmAIO.Prism.SourceGenerators`**。
+示例（Avalonia、WPF、MAUI、Uno）：独立仓库 [Prism.SourceGenerators.Samples](https://github.com/MvvmAIO/Prism.SourceGenerators.Samples) — Prism 8 / Prism 9 示例应用与 ViewModel 类库，通过 NuGet 引用 **`MvvmAIO.Prism.SourceGenerators`**。
 
 ## 生成器
 
