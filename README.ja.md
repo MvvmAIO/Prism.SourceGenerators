@@ -1,13 +1,15 @@
 # Prism.SourceGenerators
 
-[English](README.md) | [简体中文](README.zh-CN.md) | **日本語**
+[English](README.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md) | **日本語**
 
 [Prism](https://github.com/PrismLibrary/Prism) MVVM ライブラリ向けの Roslyn ソースジェネレーター。
 
-## CI ステータス
-
 [![.NET](https://github.com/MvvmAIO/Prism.SourceGenerators/actions/workflows/dotnet.yml/badge.svg?branch=master)](https://github.com/MvvmAIO/Prism.SourceGenerators/actions/workflows/dotnet.yml)
 [![Tests](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/MvvmAIO/Prism.SourceGenerators/master/.github/badges/tests.json)](https://github.com/MvvmAIO/Prism.SourceGenerators/actions/workflows/dotnet.yml)
+[![NuGet](https://img.shields.io/nuget/v/MvvmAIO.Prism.SourceGenerators.svg?label=NuGet&logo=nuget)](https://www.nuget.org/packages/MvvmAIO.Prism.SourceGenerators)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.txt)
+
+## CI ステータス
 
 - 上記ワークフローリンクから最新のパイプライン状態を確認できます。
 - `Tests` バッジに最新の pass/fail/skip 件数が表示されます。
@@ -18,7 +20,7 @@
 | 場所 | 役割 |
 |------|------|
 | **[ドキュメントサイト](https://mvvmaio.github.io/Prism.SourceGenerators.Docs/)**（[ソース](https://github.com/MvvmAIO/Prism.SourceGenerators.Docs)） | **正典**：英語 / 簡体字中国語 / 日本語、ジェネレータ網羅、**PSG** 一覧、アーキテクチャと CI など。詳細はここを優先。 |
-| **本 README** / [English](README.md) / [简体中文](README.zh-CN.md) | リポジトリ概要とコピペ例。**完全なマニュアルではない**。 |
+| **本 README** / [English](README.md) / [简体中文](README.zh-CN.md) / [繁體中文](README.zh-TW.md) | リポジトリ概要とコピペ例。**完全なマニュアルではない**。 |
 | **[GitHub Wiki](https://github.com/MvvmAIO/Prism.SourceGenerators/wiki)**（PR 用に [`wiki/`](https://github.com/MvvmAIO/Prism.SourceGenerators/tree/master/wiki) を同期） | 短いトピック別メモ（中文中心）。**診断文言や API の契約にはしない**。 |
 
 ## プロジェクト構成
@@ -33,7 +35,7 @@ Prism.SourceGenerators.Core/                   # MvvmAIO.Prism.Core（属性）�
 Prism.Bcl.Commands/                            # MvvmAIO.Prism.Bcl.Commands（Prism 8 AsyncDelegateCommand パッケージ、手動インストール）
 ```
 
-サンプル（Avalonia）: 別リポジトリ [Prism.SourceGenerators.Samples](https://github.com/MvvmAIO/Prism.SourceGenerators.Samples) — Prism 8 / 9 のデモ。NuGet の **`MvvmAIO.Prism.SourceGenerators`** を参照。
+サンプル（Avalonia・WPF・MAUI・Uno）: 別リポジトリ [Prism.SourceGenerators.Samples](https://github.com/MvvmAIO/Prism.SourceGenerators.Samples) — Prism 8 / 9 のデモアプリと ViewModel ライブラリ。NuGet の **`MvvmAIO.Prism.SourceGenerators`** を参照。
 
 ## ジェネレーター
 

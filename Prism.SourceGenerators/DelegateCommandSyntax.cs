@@ -32,13 +32,16 @@ internal static class DelegateCommandSyntax
         else
         {
             string fieldName = NamingHelpers.GetBackingFieldName(info.CommandName);
-            string fieldDecl = $"private {commandType}? {fieldName};";
+            string nullableSuffix = info.Hierarchy.SupportsCSharp8 ? "?" : string.Empty;
+            string fieldDecl = $"private {commandType}{nullableSuffix} {fieldName};";
             members.Add(
                 ParseMemberDeclaration(fieldDecl, options: options)
                 ?? throw new System.InvalidOperationException("Failed to parse command backing field."));
 
-            string propertyText =
-                $"public {commandType} {info.CommandName} => {fieldName} ??= {initialization};";
+            string lazyInitialization = info.Hierarchy.SupportsCSharp8
+                ? $"{fieldName} ??= {initialization}"
+                : $"{fieldName} ?? ({fieldName} = {initialization})";
+            string propertyText = $"public {commandType} {info.CommandName} => {lazyInitialization};";
             members.Add(
                 ParseMemberDeclaration(propertyText, options: options)
                 ?? throw new System.InvalidOperationException("Failed to parse command property."));

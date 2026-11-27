@@ -11,6 +11,7 @@
 - 文件：`DelegateCommandGenerator.cs`
 - Prism 版本探测决定 `AsyncDelegateCommand` 类型来源（框架 vs Bcl.Commands）
 - C# 14+ 命令属性使用 `field ??=` 懒初始化
+- C# 7.3：命令用 `_command ?? (_command = ...)` 延迟初始化，重复读取返回同一实例。
 
 ## 设计权衡
 

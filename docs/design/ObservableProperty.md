@@ -65,6 +65,7 @@
 ### 兼容基线
 
 - C# 12−：field 后备。
+- C# 7.3：字段属性及其通知辅助成员不发出可空引用类型标注；可空值类型（如 `int?`）保持不变。
 - C# 13+：partial property + `field`。
 - C# 14+：命令侧 `field`（见 [DelegateCommand](DelegateCommand.md)）。
 

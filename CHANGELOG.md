@@ -6,6 +6,7 @@ All notable changes to this project are documented in this file.
 
 ### Fixed
 
+- Field-backed `[ObservableProperty]` and `[DelegateCommand]` now generate code that compiles with C# 7.3, including when using Prism 8 on .NET Framework 4.8 (#117).
 - **PSG7007 / PSG7104** — missing `[ObservableProperty]` on a `[FromNavigationParameter]` / `[FromDialogParameter]` member no longer suppresses the entire `[NavigationAware]` / `[DialogAware]` surface. The warning still omits that Parameter Binding; Error diagnostics (and non-partial) continue to block generation.
 - **PSG2005** — `[NotifyCanExecuteChangedFor]` now resolves commands generated from `*Async` execute methods (e.g. `SaveAsync` → `SaveCommand`) and honors an explicit `CommandName` on `[DelegateCommand]` / `[AsyncDelegateCommand]`.
 

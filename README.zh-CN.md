@@ -1,15 +1,17 @@
 # Prism.SourceGenerators
 
-[English](README.md) | **简体中文** | [日本語](README.ja.md)
+[English](README.md) | **简体中文** | [繁體中文](README.zh-TW.md) | [日本語](README.ja.md)
 
 为 [Prism](https://github.com/PrismLibrary/Prism) MVVM 库提供的 Roslyn 源生成器。
 
-参与贡献见 [CONTRIBUTING.md](CONTRIBUTING.md)。自动化代理与 Cursor 的标准约束见 [AGENTS.md](AGENTS.md)（[中文摘要](AGENTS.zh-CN.md)）。
-
-## CI 状态
+参与贡献见 [CONTRIBUTING.md](CONTRIBUTING.md)，仓库工程与协作约束见 [AGENTS.md](AGENTS.md)。
 
 [![.NET](https://github.com/MvvmAIO/Prism.SourceGenerators/actions/workflows/dotnet.yml/badge.svg?branch=master)](https://github.com/MvvmAIO/Prism.SourceGenerators/actions/workflows/dotnet.yml)
 [![Tests](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/MvvmAIO/Prism.SourceGenerators/master/.github/badges/tests.json)](https://github.com/MvvmAIO/Prism.SourceGenerators/actions/workflows/dotnet.yml)
+[![NuGet](https://img.shields.io/nuget/v/MvvmAIO.Prism.SourceGenerators.svg?label=NuGet&logo=nuget)](https://www.nuget.org/packages/MvvmAIO.Prism.SourceGenerators)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.txt)
+
+## CI 状态
 
 - 点击上方工作流可查看最新构建状态。
 - `Tests` 徽章会直接显示最新通过/失败/跳过数量。
@@ -20,7 +22,7 @@
 | 渠道 | 说明 |
 |------|------|
 | **[文档站点](https://mvvmaio.github.io/Prism.SourceGenerators.Docs/)**（[源码仓库](https://github.com/MvvmAIO/Prism.SourceGenerators.Docs)） | **权威**：多语言、完整生成器参考、**PSG** 诊断表、架构与 CI 等。深读与交叉链接请以本站为准。 |
-| **本 README** / [English](README.md) / [日本語](README.ja.md) | 仓库首屏简介与常用代码片段，**不作**完整手册。 |
+| **本 README** / [English](README.md) / [繁體中文](README.zh-TW.md) / [日本語](README.ja.md) | 仓库首屏简介与常用代码片段，**不作**完整手册。 |
 | **[GitHub Wiki](https://github.com/MvvmAIO/Prism.SourceGenerators/wiki)**（主仓库 [`wiki/`](https://github.com/MvvmAIO/Prism.SourceGenerators/tree/master/wiki) 目录同步，便于 PR） | 中文导读与条目化笔记，**不是**编译器诊断或 API 的合同文本。 |
 
 ## 项目结构
@@ -35,7 +37,7 @@ Prism.SourceGenerators.Core/                   # MvvmAIO.Prism.Core（特性）�
 Prism.Bcl.Commands/                            # MvvmAIO.Prism.Bcl.Commands（Prism 8 AsyncDelegateCommand 包，需手动安装）
 ```
 
-示例（Avalonia）：独立仓库 [Prism.SourceGenerators.Samples](https://github.com/MvvmAIO/Prism.SourceGenerators.Samples) — Prism 8 / Prism 9 演示应用，通过 NuGet 引用 **`MvvmAIO.Prism.SourceGenerators`**。
+示例（Avalonia、WPF、MAUI、Uno）：独立仓库 [Prism.SourceGenerators.Samples](https://github.com/MvvmAIO/Prism.SourceGenerators.Samples) — Prism 8 / Prism 9 示例应用与 ViewModel 类库，通过 NuGet 引用 **`MvvmAIO.Prism.SourceGenerators`**。
 
 ## 生成器
 
