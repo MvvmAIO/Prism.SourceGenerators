@@ -1,0 +1,97 @@
+name: Publish NuGet
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version from an existing v-tag, without the v prefix (e.g. 0.8.2)'
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nuget-${{ inputs.version && format('v{0}', inputs.version) || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  pack:
+    if: contains(fromJSON('["Skymly","wys0610"]'), github.actor) && (github.event_name == 'push' || github.ref == 'refs/heads/master')
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.source.outputs.version }}
+    steps:
+      - name: Resolve release source
+        id: source
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          set -eu
+          if [[ "$GITHUB_EVENT_NAME" == push ]]; then
+            version=${GITHUB_REF_NAME#v}
+            ref=$GITHUB_SHA
+          else
+            version=$INPUT_VERSION
+            ref="refs/tags/v$version"
+          fi
+          if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$ ]]; then
+            echo 'Expected a release version such as 0.8.2 or 0.8.2-rc.1' >&2
+            exit 1
+          fi
+          printf 'version=%s\nref=%s\n' "$version" "$ref" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ steps.source.outputs.ref }}
+          persist-credentials: false
+
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Pack release packages
+        env:
+          VERSION: ${{ steps.source.outputs.version }}
+        run: |
+          dotnet run --project build/_build.csproj -- --target Pack --configuration Release --version "$VERSION"
+          mkdir -p packages
+          cp "Prism.SourceGenerators.Package/bin/Release/MvvmAIO.Prism.SourceGenerators.$VERSION.nupkg" packages/
+          cp "Prism.Bcl.Commands/bin/Release/MvvmAIO.Prism.Bcl.Commands.$VERSION.nupkg" packages/
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: nuget-packages
+          path: packages/*.nupkg
+          if-no-files-found: error
+          overwrite: true
+
+  publish:
+    needs: pack
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: nuget-packages
+          path: packages
+
+      - name: Log in to NuGet.org
+        id: login
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+        with:
+          user: ${{ vars.NUGET_USER }}
+
+      - name: Publish both packages
+        env:
+          VERSION: ${{ needs.pack.outputs.version }}
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+        run: |
+          for id in MvvmAIO.Prism.SourceGenerators MvvmAIO.Prism.Bcl.Commands; do
+            dotnet nuget push "packages/$id.$VERSION.nupkg" --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          done

@@ -405,10 +405,9 @@ dotnet run --project build/_build.csproj -- --target Ci --configuration Release
 
 # NuGet パッケージを作成（必要に応じてバージョン上書き）
 dotnet run --project build/_build.csproj -- --target Pack --configuration Release --version 0.2.0
-
-# NuGet へ公開（MvvmAIO.Prism.SourceGenerators + MvvmAIO.Prism.Bcl.Commands）
-dotnet run --project build/_build.csproj -- --target Publish --configuration Release --version 0.2.0 --nuget-api-key <NUGET_API_KEY>
 ```
+
+NuGet リリースについては [Trusted Publishing](docs/PUBLISHING.md) を参照してください。
 
 ## 要件
 

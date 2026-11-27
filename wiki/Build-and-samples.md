@@ -8,7 +8,7 @@
 dotnet build Prism.SourceGenerators.slnx
 ```
 
-- 需要 **.NET 10 SDK**。  
+- 需要 **.NET 10 SDK**。
 - 建议使用支持 **`.slnx`** 的 IDE 版本（见 README **Requirements**）。
 
 ---
@@ -23,10 +23,9 @@ dotnet run --project build/_build.csproj -- --target Ci --configuration Release
 
 # 打 NuGet 包（版本号可按需修改）
 dotnet run --project build/_build.csproj -- --target Pack --configuration Release --version 0.2.0
-
-# 发布到 NuGet（需要 API Key）
-dotnet run --project build/_build.csproj -- --target Publish --configuration Release --version 0.2.0 --nuget-api-key <NUGET_API_KEY>
 ```
+
+NuGet 发布说明见 [Trusted Publishing](../docs/PUBLISHING.md)。
 
 ---
 
@@ -72,7 +71,7 @@ $wiki = "C:\path\to\Prism.SourceGenerators.wiki"
 Copy-Item "$repo\wiki\*" $wiki -Force
 ```
 
-推送后在浏览器打开：  
+推送后在浏览器打开：
 **https://github.com/MvvmAIO/Prism.SourceGenerators/wiki**
 
 ---

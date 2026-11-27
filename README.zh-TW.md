@@ -408,10 +408,9 @@ dotnet run --project build/_build.csproj -- --target Ci --configuration Release
 
 # 封裝 NuGet 套件（可選覆寫版本號）
 dotnet run --project build/_build.csproj -- --target Pack --configuration Release --version 0.2.0
-
-# 發布 NuGet 套件（MvvmAIO.Prism.SourceGenerators + MvvmAIO.Prism.Bcl.Commands）
-dotnet run --project build/_build.csproj -- --target Publish --configuration Release --version 0.2.0 --nuget-api-key <NUGET_API_KEY>
 ```
+
+NuGet 發布說明見 [Trusted Publishing](docs/PUBLISHING.md)。
 
 ## 需求
 

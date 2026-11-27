@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using System;
-using System.Linq;
 
 using Nuke.Common;
 using Nuke.Common.CI;
@@ -16,27 +15,11 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
 [UnsetVisualStudioEnvironmentVariables]
 sealed class Build : NukeBuild
 {
-    static readonly string[] AllowedPublishActors = ["Skymly", "wys0610"];
-
     [Parameter("Build configuration (Debug/Release)")]
     string Configuration { get; set; } = IsLocalBuild ? "Debug" : "Release";
 
     [Parameter("Package version override (for release/tag builds)")]
     string? Version { get; set; } = Environment.GetEnvironmentVariable("VERSION");
-
-    [Parameter("NuGet API key (required for Publish target)")]
-    string? NuGetApiKey { get; set; } =
-        Environment.GetEnvironmentVariable("NUGET_API_KEY")
-        ?? Environment.GetEnvironmentVariable("APIKEY");
-
-    [Parameter("NuGet API key for MvvmAIO.Prism.Bcl.Commands (optional; falls back to --nuget-api-key)")]
-    string? BclNuGetApiKey { get; set; } =
-        Environment.GetEnvironmentVariable("NUGET_API_KEY_BCL")
-        ?? Environment.GetEnvironmentVariable("NUGET_API_KEY")
-        ?? Environment.GetEnvironmentVariable("APIKEY");
-
-    bool IsAuthorizedPublishActor =>
-        !IsServerBuild || AllowedPublishActors.Contains(Environment.GetEnvironmentVariable("GITHUB_ACTOR") ?? string.Empty, StringComparer.OrdinalIgnoreCase);
 
     AbsolutePath Root => RootDirectory;
     AbsolutePath SolutionFile => Root / "Prism.SourceGenerators.slnx";
@@ -123,27 +106,6 @@ sealed class Build : NukeBuild
 
                 return s;
             });
-        });
-
-    Target Publish => _ => _
-        .DependsOn(Pack)
-        .Requires(() => IsAuthorizedPublishActor)
-        .Requires(() => !string.IsNullOrWhiteSpace(NuGetApiKey))
-        .Executes(() =>
-        {
-            string bclApiKey = string.IsNullOrWhiteSpace(BclNuGetApiKey) ? NuGetApiKey! : BclNuGetApiKey!;
-
-            DotNetNuGetPush(s => s
-                .SetTargetPath(Root / "Prism.SourceGenerators.Package" / "bin" / Configuration / "*.nupkg")
-                .SetApiKey(NuGetApiKey)
-                .SetSource("https://api.nuget.org/v3/index.json")
-                .EnableSkipDuplicate());
-
-            DotNetNuGetPush(s => s
-                .SetTargetPath(Root / "Prism.Bcl.Commands" / "bin" / Configuration / "*.nupkg")
-                .SetApiKey(bclApiKey)
-                .SetSource("https://api.nuget.org/v3/index.json")
-                .EnableSkipDuplicate());
         });
 
     Target Ci => _ => _
