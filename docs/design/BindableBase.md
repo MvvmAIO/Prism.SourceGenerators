@@ -13,6 +13,8 @@
 
 `[BindableBase]` 于未继承 `Prism.Mvvm.BindableBase` 的 **partial class**：生成 `INotifyPropertyChanged`、`SetProperty`、`RaisePropertyChanged` 与 `OnPropertyChanged`。若已继承 `BindableBase` 或层级中已有 `INotifyPropertyChanged`，则不生成。
 
+在 C# 7.3 下，生成的 `PropertyChanged`、`PropertyChanging` 事件及 `SetProperty`、`RaisePropertyChanged`、`RaisePropertyChanging` 方法签名省略可空引用类型标注。C# 8 及更高版本的生成文件发出 `#nullable enable` 并为这些签名添加可空引用类型标注。
+
 ### 诊断
 
 | ID | 说明 |

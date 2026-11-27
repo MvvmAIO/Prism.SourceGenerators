@@ -14,27 +14,28 @@ namespace Prism.SourceGenerators;
 /// </summary>
 internal static class PropertyChangingSyntax
 {
-    private static readonly Lazy<ImmutableArray<MemberDeclarationSyntax>> MembersLazy = new(ParseMembers);
+    private static readonly Lazy<ImmutableArray<MemberDeclarationSyntax>> NullableMembers = new(static () => ParseMembers("?"));
+    private static readonly Lazy<ImmutableArray<MemberDeclarationSyntax>> LegacyMembers = new(static () => ParseMembers(string.Empty));
 
-    private static ImmutableArray<MemberDeclarationSyntax> ParseMembers()
+    private static ImmutableArray<MemberDeclarationSyntax> ParseMembers(string nullableSuffix)
     {
         CSharpParseOptions options = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Preview);
 
         MemberDeclarationSyntax[] members =
         [
             ParseMemberDeclaration(
-                    """
+                    $$"""
                     /// <inheritdoc cref="global::System.ComponentModel.INotifyPropertyChanging.PropertyChanging"/>
-                    public event global::System.ComponentModel.PropertyChangingEventHandler? PropertyChanging;
+                    public event global::System.ComponentModel.PropertyChangingEventHandler{{nullableSuffix}} PropertyChanging;
                     """,
                     options: options)
                 ?? throw new InvalidOperationException("Failed to parse PropertyChanging event."),
             ParseMemberDeclaration(
-                    """
+                    $$"""
                     /// <summary>
                     /// Raises the <see cref="PropertyChanging"/> event for the specified property when <c>FeatureSwitches.EnableINotifyPropertyChangingSupport</c> is <see langword="true"/>.
                     /// </summary>
-                    protected void RaisePropertyChanging([global::System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
+                    protected void RaisePropertyChanging([global::System.Runtime.CompilerServices.CallerMemberName] string{{nullableSuffix}} propertyName = null)
                     {
                         if (!global::Prism.SourceGenerators.__Internals.FeatureSwitches.EnableINotifyPropertyChangingSupport)
                         {
@@ -79,6 +80,6 @@ internal static class PropertyChangingSyntax
             SingletonSeparatedList<BaseTypeSyntax>(
                 SimpleBaseType(ParseTypeName("global::System.ComponentModel.INotifyPropertyChanging"))));
 
-        return hierarchy.GetCompilationUnit(MembersLazy.Value, baseList);
+        return hierarchy.GetCompilationUnit((hierarchy.SupportsCSharp8 ? NullableMembers : LegacyMembers).Value, baseList);
     }
 }
