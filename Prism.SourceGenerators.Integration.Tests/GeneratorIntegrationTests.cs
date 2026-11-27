@@ -134,6 +134,7 @@ public sealed class GeneratorIntegrationTests
 
                     private bool CanSave() => !string.IsNullOrEmpty(FirstName);
                     public string FullName => FirstName;
+                    public void ClearPriority() => Priority = null;
                 }
             }
             """;
