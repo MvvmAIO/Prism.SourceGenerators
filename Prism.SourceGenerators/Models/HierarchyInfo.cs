@@ -10,6 +10,7 @@ using Prism.SourceGenerators.Helpers;
 using Prism.SourceGenerators.Models;
 
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 
 using static Microsoft.CodeAnalysis.SymbolDisplayTypeQualificationStyle;
 
@@ -22,7 +23,8 @@ namespace Prism.SourceGenerators.Models;
 /// <param name="MetadataName">The metadata name for the current type.</param>
 /// <param name="Namespace">Gets the namespace for the current type.</param>
 /// <param name="Hierarchy">Gets the sequence of type definitions containing the current type.</param>
-internal sealed partial record HierarchyInfo(string FilenameHint, string MetadataName, string Namespace, EquatableArray<TypeInfo> Hierarchy)
+/// <param name="SupportsCSharp8">Whether the consumer language version supports nullable reference types and null-coalescing assignment.</param>
+internal sealed partial record HierarchyInfo(string FilenameHint, string MetadataName, string Namespace, EquatableArray<TypeInfo> Hierarchy, bool SupportsCSharp8)
 {
     /// <summary>
     /// Creates a new <see cref="HierarchyInfo"/> instance from a given <see cref="INamedTypeSymbol"/>.
@@ -47,6 +49,7 @@ internal sealed partial record HierarchyInfo(string FilenameHint, string Metadat
             typeSymbol.GetFullyQualifiedMetadataName(),
             typeSymbol.MetadataName,
             typeSymbol.ContainingNamespace.ToDisplayString(new(typeQualificationStyle: NameAndContainingTypesAndNamespaces)),
-            hierarchy.ToImmutable());
+            hierarchy.ToImmutable(),
+            ((CSharpParseOptions)typeSymbol.DeclaringSyntaxReferences[0].SyntaxTree.Options).LanguageVersion >= LanguageVersion.CSharp8);
     }
 }

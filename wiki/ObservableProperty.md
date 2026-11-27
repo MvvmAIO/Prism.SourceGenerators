@@ -118,3 +118,5 @@ public string FullName => $"{FirstName} {LastName}";
 | PSG0003 | partial property 目标需 `partial` |
 
 更多见 [诊断与排错](Diagnostics)。
+
+使用 C# 7.3 时，字段支持的属性及其生成的通知辅助方法会省略可空引用类型标注；诸如 `int?` 之类的可空值类型仍会保留。

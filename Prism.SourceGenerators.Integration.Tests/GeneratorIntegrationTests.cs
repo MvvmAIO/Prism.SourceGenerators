@@ -110,6 +110,40 @@ public sealed class GeneratorIntegrationTests
         AssertOutputCompiles(output, source);
     }
 
+    [Theory]
+    [InlineData("public partial class EditorViewModel : Prism.Mvvm.BindableBase")]
+    [InlineData("[BindableBase] public partial class EditorViewModel")]
+    public void Field_and_command_compile_in_CSharp73(string declaration)
+    {
+        string source = $$"""
+            using Prism.SourceGenerators;
+            namespace Demo
+            {
+                {{declaration}}
+                {
+                    [ObservableProperty]
+                    [NotifyPropertyChangedFor(nameof(FullName))]
+                    [NotifyCanExecuteChangedFor(nameof(SaveCommand))]
+                    private string _firstName = "";
+
+                    [ObservableProperty] private int? _priority;
+
+                    [DelegateCommand(CanExecute = nameof(CanSave))]
+                    [ObservesProperty(nameof(FirstName))]
+                    private void Save() { }
+
+                    private bool CanSave() => !string.IsNullOrEmpty(FirstName);
+                    public string FullName => FirstName;
+                    public void ClearPriority() => Priority = null;
+                }
+            }
+            """;
+
+        GeneratorRunOutput output = RunAllGenerators(source, LanguageVersion.CSharp7_3);
+        AssertNoPsgErrors(output);
+        AssertOutputCompiles(output, source, LanguageVersion.CSharp7_3);
+    }
+
     #endregion
 
     #region NotifyPropertyChangedFor

@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented in this file.
 
+## [0.8.2] - 2026-11-27
+
+### Fixed
+
+- Field-backed `[ObservableProperty]` and `[DelegateCommand]` now generate code that compiles with C# 7.3, including when using Prism 8 on .NET Framework 4.8 (#117, #127). Command names are unchanged from 0.8.1.
+
 ## [0.8.1] - 2026-06-30
 
 ### Fixed

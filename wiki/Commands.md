@@ -55,8 +55,8 @@ private void Submit() { /* ... */ }
 
 ## 四、Prism 8 与 **PSG3002**  checklist
 
-1. 已引用 **`MvvmAIO.Prism.SourceGenerators`**（带来 **`MvvmAIO.Prism.Core`** 特性）。  
-2. 若使用 **异步命令** 且 Prism 为 **8.x**：已安装 **`MvvmAIO.Prism.Bcl.Commands`**。  
+1. 已引用 **`MvvmAIO.Prism.SourceGenerators`**（带来 **`MvvmAIO.Prism.Core`** 特性）。
+2. 若使用 **异步命令** 且 Prism 为 **8.x**：已安装 **`MvvmAIO.Prism.Bcl.Commands`**。
 3. 仍报 **PSG3002**：检查是否错误地移除了 BCL 包、或包版本与 **`Prism.Core`** 不兼容。
 
 ---
@@ -73,3 +73,5 @@ private void Submit() { /* ... */ }
 | PSG3002 | 缺少 `AsyncDelegateCommand` 类型 |
 
 详见 [诊断与排错](Diagnostics)。
+
+使用 C# 7.3 时，生成的委托命令 getter 使用带赋值操作的 `??`，而不是 `??=`。命令仍会只初始化一次并被重复使用。
