@@ -4,10 +4,12 @@
 
 [Prism](https://github.com/PrismLibrary/Prism) MVVM ライブラリ向けの Roslyn ソースジェネレーター。
 
-## CI ステータス
-
 [![.NET](https://github.com/MvvmAIO/Prism.SourceGenerators/actions/workflows/dotnet.yml/badge.svg?branch=master)](https://github.com/MvvmAIO/Prism.SourceGenerators/actions/workflows/dotnet.yml)
 [![Tests](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/MvvmAIO/Prism.SourceGenerators/master/.github/badges/tests.json)](https://github.com/MvvmAIO/Prism.SourceGenerators/actions/workflows/dotnet.yml)
+[![NuGet](https://img.shields.io/nuget/v/MvvmAIO.Prism.SourceGenerators.svg?label=NuGet&logo=nuget)](https://www.nuget.org/packages/MvvmAIO.Prism.SourceGenerators)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.txt)
+
+## CI ステータス
 
 - 上記ワークフローリンクから最新のパイプライン状態を確認できます。
 - `Tests` バッジに最新の pass/fail/skip 件数が表示されます。
@@ -33,7 +35,7 @@ Prism.SourceGenerators.Core/                   # MvvmAIO.Prism.Core（属性）�
 Prism.Bcl.Commands/                            # MvvmAIO.Prism.Bcl.Commands（Prism 8 AsyncDelegateCommand パッケージ、手動インストール）
 ```
 
-サンプル（Avalonia）: 別リポジトリ [Prism.SourceGenerators.Samples](https://github.com/MvvmAIO/Prism.SourceGenerators.Samples) — Prism 8 / 9 のデモ。NuGet の **`MvvmAIO.Prism.SourceGenerators`** を参照。
+サンプル（Avalonia・WPF・MAUI・Uno）: 別リポジトリ [Prism.SourceGenerators.Samples](https://github.com/MvvmAIO/Prism.SourceGenerators.Samples) — Prism 8 / 9 のデモアプリと ViewModel ライブラリ。NuGet の **`MvvmAIO.Prism.SourceGenerators`** を参照。
 
 ## ジェネレーター
 
