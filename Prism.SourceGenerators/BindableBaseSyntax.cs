@@ -14,23 +14,24 @@ namespace Prism.SourceGenerators;
 /// </summary>
 internal static class BindableBaseSyntax
 {
-    private static readonly Lazy<ImmutableArray<MemberDeclarationSyntax>> MembersLazy = new(ParseMembers);
+    private static readonly Lazy<ImmutableArray<MemberDeclarationSyntax>> NullableMembers = new(static () => ParseMembers("?"));
+    private static readonly Lazy<ImmutableArray<MemberDeclarationSyntax>> LegacyMembers = new(static () => ParseMembers(string.Empty));
 
-    private static ImmutableArray<MemberDeclarationSyntax> ParseMembers()
+    private static ImmutableArray<MemberDeclarationSyntax> ParseMembers(string nullableSuffix)
     {
         CSharpParseOptions options = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Preview);
 
         MemberDeclarationSyntax[] members =
         [
             ParseMemberDeclaration(
-                    """
+                    $$"""
                     /// <inheritdoc cref="global::System.ComponentModel.INotifyPropertyChanged.PropertyChanged"/>
-                    public event global::System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+                    public event global::System.ComponentModel.PropertyChangedEventHandler{{nullableSuffix}} PropertyChanged;
                     """,
                     options: options)
                 ?? throw new InvalidOperationException("Failed to parse PropertyChanged event."),
             ParseMemberDeclaration(
-                    """
+                    $$"""
                     /// <summary>
                     /// Sets the property value and raises <see cref="PropertyChanged"/> if the value has changed.
                     /// </summary>
@@ -39,7 +40,7 @@ internal static class BindableBaseSyntax
                     /// <param name="value">The new value.</param>
                     /// <param name="propertyName">The property name (auto-filled by the compiler).</param>
                     /// <returns><see langword="true"/> if the value was changed; otherwise <see langword="false"/>.</returns>
-                    protected bool SetProperty<T>(ref T storage, T value, [global::System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
+                    protected bool SetProperty<T>(ref T storage, T value, [global::System.Runtime.CompilerServices.CallerMemberName] string{{nullableSuffix}} propertyName = null)
                     {
                         if (global::System.Collections.Generic.EqualityComparer<T>.Default.Equals(storage, value))
                         {
@@ -55,7 +56,7 @@ internal static class BindableBaseSyntax
                     options: options)
                 ?? throw new InvalidOperationException("Failed to parse SetProperty(ref, value, propertyName)."),
             ParseMemberDeclaration(
-                    """
+                    $$"""
                     /// <summary>
                     /// Sets the property value, invokes <paramref name="onChanged"/> after assignment, then raises <see cref="PropertyChanged"/>.
                     /// Does not raise <see cref="global::System.ComponentModel.INotifyPropertyChanging.PropertyChanging"/> here; callers such as generated <c>[ObservableProperty]</c> setters raise it before changing callbacks.
@@ -66,7 +67,7 @@ internal static class BindableBaseSyntax
                     /// <param name="onChanged">Optional callback invoked after the value is stored and before <see cref="PropertyChanged"/>.</param>
                     /// <param name="propertyName">The property name (auto-filled by the compiler).</param>
                     /// <returns><see langword="true"/> if the value was changed; otherwise <see langword="false"/>.</returns>
-                    protected bool SetProperty<T>(ref T storage, T value, global::System.Action? onChanged, [global::System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
+                    protected bool SetProperty<T>(ref T storage, T value, global::System.Action{{nullableSuffix}} onChanged, [global::System.Runtime.CompilerServices.CallerMemberName] string{{nullableSuffix}} propertyName = null)
                     {
                         if (global::System.Collections.Generic.EqualityComparer<T>.Default.Equals(storage, value))
                         {
@@ -82,12 +83,12 @@ internal static class BindableBaseSyntax
                     options: options)
                 ?? throw new InvalidOperationException("Failed to parse SetProperty with onChanged."),
             ParseMemberDeclaration(
-                    """
+                    $$"""
                     /// <summary>
                     /// Raises the <see cref="PropertyChanged"/> event for the specified property.
                     /// </summary>
                     /// <param name="propertyName">The property name.</param>
-                    protected void RaisePropertyChanged([global::System.Runtime.CompilerServices.CallerMemberName] string? propertyName = null)
+                    protected void RaisePropertyChanged([global::System.Runtime.CompilerServices.CallerMemberName] string{{nullableSuffix}} propertyName = null)
                     {
                         OnPropertyChanged(new global::System.ComponentModel.PropertyChangedEventArgs(propertyName));
                     }
@@ -118,6 +119,6 @@ internal static class BindableBaseSyntax
             SingletonSeparatedList<BaseTypeSyntax>(
                 SimpleBaseType(ParseTypeName("global::System.ComponentModel.INotifyPropertyChanged"))));
 
-        return hierarchy.GetCompilationUnit(MembersLazy.Value, baseList);
+        return hierarchy.GetCompilationUnit((hierarchy.SupportsCSharp8 ? NullableMembers : LegacyMembers).Value, baseList);
     }
 }
