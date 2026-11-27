@@ -410,10 +410,9 @@ dotnet run --project build/_build.csproj -- --target Ci --configuration Release
 
 # Pack NuGet package (optionally override version)
 dotnet run --project build/_build.csproj -- --target Pack --configuration Release --version 0.2.0
-
-# Publish NuGet packages (MvvmAIO.Prism.SourceGenerators + MvvmAIO.Prism.Bcl.Commands)
-dotnet run --project build/_build.csproj -- --target Publish --configuration Release --version 0.2.0 --nuget-api-key <NUGET_API_KEY>
 ```
+
+For NuGet releases, see [Trusted Publishing](docs/PUBLISHING.md).
 
 ## Requirements
 

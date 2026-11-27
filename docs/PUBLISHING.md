@@ -7,7 +7,7 @@ NuGet 包发布与版本管理。工程约束见 [`../AGENTS.md`](../AGENTS.md)�
 | PackageId | 项目 | 说明 |
 |-----------|------|------|
 | **MvvmAIO.Prism.SourceGenerators** | `Prism.SourceGenerators.Package` | 分析器 + 捆绑 **MvvmAIO.Prism.Core** |
-| **MvvmAIO.Prism.Bcl.Commands** | `Prism.Bcl.Commands` | Prism 8 `AsyncDelegateCommand`（**独立 API Key**） |
+| **MvvmAIO.Prism.Bcl.Commands** | `Prism.Bcl.Commands` | Prism 8 `AsyncDelegateCommand` |
 
 ## 本地打包
 
@@ -15,7 +15,7 @@ NuGet 包发布与版本管理。工程约束见 [`../AGENTS.md`](../AGENTS.md)�
 dotnet run --project build/_build.csproj -- --target Pack --configuration Release --version <VER>
 ```
 
-产物位于 `artifacts/`（以 Nuke 配置为准）。
+产物位于 `Prism.SourceGenerators.Package/bin/Release/` 与 `Prism.Bcl.Commands/bin/Release/`。
 
 ## 发布前检查
 
@@ -31,13 +31,20 @@ dotnet run --project build/_build.csproj -- --target Pack --configuration Releas
 
 ## CI 发布
 
-- 工作流：`.github/workflows/`（`dotnet.yml`、Publish NuGet）
-- 主包与 Bcl.Commands 可使用 **不同** `NUGET_API_KEY` / `NUGET_API_KEY_BCL`
-- Tag：`v<VER>` 触发发布（维护者权限）
+`.github/workflows/release.yml` 使用 GitHub Actions OIDC 与 `NuGet/login`；只有 `publish` job 具有 `id-token: write`。NuGet.org Trusted Publishing 策略面向仓库 `MvvmAIO/Prism.SourceGenerators`、工作流 `release.yml`，未设置 Environment；包名 glob 为 `MvvmAIO.Prism*`，允许向两个包推送新版本。
 
-```bash
-dotnet run --project build/_build.csproj -- --target Publish --configuration Release --version <VER> --nuget-api-key <KEY>
-```
+在 GitHub Actions 仓库变量中设置 `NUGET_USER` 为创建该策略、或被该策略信任的 NuGet.org 帐户的 **profile 名称**（不要假定它与 GitHub 用户名或组织包所有者相同，也不要使用邮箱）。两个包都不需要持久 API Key。
+
+- 白名单维护者推送 `vX.Y.Z` tag 会触发发布。
+- 恢复已存在标签（例如 `v0.8.2`）时，在 `master` 上运行：
+
+  ```bash
+  gh workflow run release.yml --ref master -f version=0.8.2
+  ```
+
+  发布会从既有 tag 构建，而不是当前 `master`；不要移动或重建 tag，也不要重跑旧的 API Key 工作流。
+- `--skip-duplicate` 支持部分重试。
+- 旧 API Key secret 只有在迁移验证成功后才能退役。
 
 ## 版本策略
 

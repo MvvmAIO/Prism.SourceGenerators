@@ -13,7 +13,7 @@ dotnet test Prism.SourceGenerators.slnx
 ```
 
 - Requires **.NET 8** and **.NET 10** SDKs (`global.json` pins the 10.0 band).
-- Pack / Publish: `--target Pack --configuration Release --version <VER>`; NuGet publishing runs via `v*` tag or maintainer `workflow_dispatch`.
+- Pack / Publish: `--target Pack --configuration Release --version <VER>`; for tag releases or retrying an existing tag, see [Trusted Publishing](docs/PUBLISHING.md).
 
 ## Architecture & Invariants
 
@@ -27,7 +27,6 @@ dotnet test Prism.SourceGenerators.slnx
 
 - CI enforces `TreatWarningsAsErrors=true` via Nuke; there is no separate `dotnet format` CI gate.
 - The `System.IO.Hashing` warning from `Prism.Bcl.Commands` NuGet targets is a known upstream nuisance and does not fail CI.
-- `MvvmAIO.Prism.Bcl.Commands` publishes with a separate NuGet API key (`NUGET_API_KEY_BCL`), so a main-package tag release does not automatically republish `Bcl.Commands`.
 - Review Verify `*.received.*` snapshots carefully when generator output changes intentionally; never bulk-delete `.verified.*` files without inspection.
 
 ## Docs & Agent Config

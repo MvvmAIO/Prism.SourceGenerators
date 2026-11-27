@@ -121,7 +121,7 @@ Backlog: [`docs/ROADMAP.md`](docs/ROADMAP.md). **Prism.SourceGenerators.Docs** r
 
 ## Security
 
-Do not commit **secrets** (NuGet API keys, PATs, private feed URLs with credentials). Use GitHub **encrypted secrets** or local environment variables for publish operations.
+Do not commit **secrets** (NuGet API keys, PATs, private feed URLs with credentials). For NuGet publishing, follow [Trusted Publishing](docs/PUBLISHING.md).
 
 ---
 

@@ -29,7 +29,7 @@
 ## 已知局限
 
 - `System.IO.Hashing` 来自 Bcl.Commands targets 的上游警告，不阻断 CI。
-- Bcl.Commands 与主包可独立发版（不同 API Key）。
+- 两个包由同一个 [Trusted Publishing 工作流](../PUBLISHING.md) 发布。
 
 ## 参考
 
